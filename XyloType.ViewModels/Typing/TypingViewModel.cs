@@ -8,6 +8,7 @@ using XyloType.Application;
 using XyloType.Application.Interfaces;
 using XyloType.Application.Interfaces.Typing;
 using XyloType.Application.Models.Themes;
+using XyloType.Domain.Enums;
 using XyloType.Domain.Typing;
 using XyloType.Domain.Typing.Analysis;
 
@@ -24,11 +25,14 @@ public partial class TypingViewModel : ObservableObject
     private readonly ITypingThemeProvider _typingThemeProvider;
     private readonly IInputCharMapperService _charMapper;
     private readonly IThemeChangerService _themeChangerService;
+    private readonly IPlaySoundSample _soundSamplePlayer;
+
 
     public TypingViewModel(
         IInputCharMapperService charMapper,
         ITypingThemeProvider typingThemeProvider,
-        IThemeChangerService themeChangerService)
+        IThemeChangerService themeChangerService,
+        IPlaySoundSample soundSamplePlayer)
     {
         _charMapper = charMapper;
 
@@ -36,10 +40,26 @@ public partial class TypingViewModel : ObservableObject
         {
             LineChanged?.Invoke(lineNumber);
         };
+
+        Session.HitKeyStatusChanged += Session_HitKeyStatusChanged;
+
+
         _typingThemeProvider = typingThemeProvider;
         _themeChangerService = themeChangerService;
+        _soundSamplePlayer = soundSamplePlayer;
     }
 
+    private async void Session_HitKeyStatusChanged(HitKeyStatus hitKeyStatus)
+    {
+        if (hitKeyStatus == HitKeyStatus.Success)
+        {
+            await _soundSamplePlayer.PLaySoundAsync("keypress.wav", .3);
+        }
+        else
+        {
+            await _soundSamplePlayer.PLaySoundAsync("Mi.wav", .5);
+        }
+    }
 
     public bool StopOnErrorEnable
     {

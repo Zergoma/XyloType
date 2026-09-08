@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Input;
-
 
 using XyloType.Application.Interfaces;
 using XyloType.Domain.Typing;
@@ -58,6 +56,7 @@ public partial class TypingView : ContentPage
                 ScrollToCurrentLine(lineNumber);
             });
         };
+        
         _navigationService = navigationService;
     }
 

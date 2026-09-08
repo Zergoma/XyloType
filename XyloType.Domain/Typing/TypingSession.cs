@@ -1,10 +1,13 @@
 ﻿using System.Diagnostics;
 
+using XyloType.Domain.Enums;
+
 namespace XyloType.Domain.Typing;
 
 public class TypingSession
 {
     public event Action<int>? LineChanged;
+    public event Action<HitKeyStatus>? HitKeyStatusChanged;
 
     private TypingChar? _previousCurrent;
     public List<TypingLine> Lines { get; set; } = [];
@@ -254,6 +257,8 @@ public class TypingSession
         }
 
         bool success = current.ChallengeValue(mapper(input), _stopwatch.Elapsed);
+
+        HitKeyStatusChanged?.Invoke(success ? HitKeyStatus.Success : HitKeyStatus.Fail);
 
         if (success || !StopOnError)
         {
