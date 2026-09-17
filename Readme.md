@@ -2,6 +2,8 @@
 ![MAUI](https://img.shields.io/badge/MAUI-11.0.preview6-brightgreen?logo=dotnet)
 ![xUnit](https://img.shields.io/badge/xUnit-tests-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
+![Seq](https://img.shields.io/badge/Seq-Structured%20Logging-5A67D8)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 
 
 # XyloType
@@ -59,6 +61,18 @@ CommunityToolkit.Mvvm 8.4.2
 CommunityToolkit.Maui 14.2.0  
 Google.Protobuf 3.35.1  
 Grpc.Tools 2.81.1  
+Serilog — application logging  
+Seq — structured log visualization and analysis  
+🐳 Docker — runs the local Seq instance  
+
+----
+
+## 📝 Logging
+
+The application uses Serilog for logging and Seq for structured log visualization and analysis.
+
+### Seq visualization
+Details about how to use [Seq](ReadmeSeq.md)
 
 ----
 
