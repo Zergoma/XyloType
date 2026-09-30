@@ -23,10 +23,11 @@ public partial class TypingLauncherViewModel : ObservableObject
 
     private readonly ITypingExercicesStorage _typingExerciceStorage;
     private readonly INavigationService _navigation;
-    private readonly ICreateStringProviderOrchestrator _createStringProviderOrchestrator;
+    private readonly ITypingExerciseRunService _runService;
     private readonly IThemeChangerService _themeChangerService;
     private readonly IThemeIconeCodeProvider _themeIconeProvider;
-    private ITypingExercicesEngine? _typingExerciceEngine;
+    private TypingExercices? _loadedExercises;
+    private Guid? _lastSeenRunExerciseId;
     private ILogger<TypingLauncherViewModel> _logger;
 
     private readonly ITypingExerciseWordNumberService _typingExerciceWordNumberService;
@@ -40,7 +41,7 @@ public partial class TypingLauncherViewModel : ObservableObject
     public TypingLauncherViewModel(
         ITypingExercicesStorage typingExerciceStorage,
         INavigationService navigation,
-        ICreateStringProviderOrchestrator createStringProviderOrchestrator,
+        ITypingExerciseRunService runService,
         IKeyBoardLayoutAvailableService keyboardLayoutAvailableService,
         IThemeChangerService themeChangerService,
         IThemeIconeCodeProvider themeIconeProvider,
@@ -50,7 +51,7 @@ public partial class TypingLauncherViewModel : ObservableObject
     {
         _typingExerciceStorage = typingExerciceStorage;
         _navigation = navigation;
-        _createStringProviderOrchestrator = createStringProviderOrchestrator;
+        _runService = runService;
         _keyboardLayoutAvailableElem = keyboardLayoutAvailableService.GetKeyBoardAvailable();
 
         _themeChangerService = themeChangerService;
@@ -146,17 +147,33 @@ public partial class TypingLauncherViewModel : ObservableObject
 
         if (exercicesListLoadedResult.Success)
         {
+            // The list is rebuilt each time the page appears: reselect the last played
+            // exercise if one was played since, otherwise keep the user selection
+            Guid? playedId = _runService.CurrentExerciseId;
+            Guid? toReselect = playedId is not null && playedId != _lastSeenRunExerciseId
+                ? playedId
+                : ExerciceSelected?.Guid;
+            _lastSeenRunExerciseId = playedId;
+
+            ExerciceSelected = null;
             AllExercice.Clear();
 
-            List<TypingExercise> exercises = exercicesListLoadedResult.GetValue.Exercices;
+            _loadedExercises = exercicesListLoadedResult.GetValue;
+            List<TypingExercise> exercises = _loadedExercises.Exercices;
 
-            _typingExerciceEngine = new TypingExercicesEngine(exercicesListLoadedResult.GetValue, 0);
 
             for (int i = 0; i < exercises.Count; i++)
             {
                 AllExercice.Add(new ExerciceItemViewModel(exercises[i], i));
             }
-            Result<bool>
+
+            ExerciceItemViewModel? previous = AllExercice.FirstOrDefault(e => e.Guid == toReselect);
+            if (previous is not null)
+            {
+                Select(previous);
+            }
+
+            return Result<bool>
                 .Ok(true);
         }
         
@@ -200,45 +217,33 @@ public partial class TypingLauncherViewModel : ObservableObject
         ExerciceSelected?.IsSelected = false;
         ExerciceSelected = exerciceSelected;
         ExerciceSelected.IsSelected = true;
-
-        _typingExerciceEngine?.SetIdx(ExerciceSelected.Idx);
     }
 
     [RelayCommand(CanExecute = nameof(CanLaunch))]
     public async Task Launch()
     {
-        if (_typingExerciceEngine == null)
-            return;
-
-        Result<TypingExercise> currentExerciceResult = _typingExerciceEngine.CurrentExercice();
-        if (!currentExerciceResult.Success)
+        if (_loadedExercises is null
+            || ExerciceSelected is null
+            || KeyboardLayoutSelected is not KeyBoardLayoutDto keyboardLayoutDto)
         {
-            //return Result<ContentPage>.Fail(currentExerciceResult.Error);
             return;
         }
 
-        if (KeyboardLayoutSelected is KeyBoardLayoutDto keyboardLayoutDto)
-        {
-            TypingExercise exer = currentExerciceResult.GetValue;
-            Result<IStringsProvider> stringProviderResult = _createStringProviderOrchestrator.Create(exer, keyboardLayoutDto);
-            if (!stringProviderResult.Success)
-            {
-                return;
-            }
+        Result<IStringsProvider> stringProviderResult =
+            _runService.Start(_loadedExercises, ExerciceSelected.Idx, keyboardLayoutDto);
 
-            _logger.LogInformation(
+        if (!stringProviderResult.Success)
+        {
+            _logger.LogWarning("Unable to start exercise: {Error}", stringProviderResult.Error);
+            return;
+        }
+
+        _logger.LogInformation(
             "Exercise started {ExerciseId} {ExerciceName}",
-            exer.Id,
-            exer.Name);
+            ExerciceSelected.Guid,
+            ExerciceSelected.Name);
 
-            // TODO
-            // Think about ExerciceEngine inside
-            // This give the ability to autolaunch next exercice
-            // Was the original thinking
-            // But firts... MAke it works, and that's now working perfectly ^^
-            // So next time
-            await _navigation.NavigateToTypingExerciseAsync(stringProviderResult.GetValue);
-        }
+        await _navigation.NavigateToTypingExerciseAsync(stringProviderResult.GetValue);
     }
 
     [RelayCommand]

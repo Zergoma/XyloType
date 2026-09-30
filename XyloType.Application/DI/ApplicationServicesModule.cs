@@ -28,6 +28,7 @@ internal static class ApplicationServicesModule
 
         services.AddSingleton<ITypingExerciseWordNumberService, TypingExerciseWordNumberService>();
         services.AddSingleton<ITypingExerciseLineNumberService, TypingExerciseLineNumberService>();
+        services.AddSingleton<ITypingExerciseRunService, TypingExerciseRunService>();
 
         // TODO
         // need to add qwerty etc keyboard keys locators

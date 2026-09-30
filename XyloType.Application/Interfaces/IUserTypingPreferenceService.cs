@@ -26,4 +26,13 @@ public interface IUserTypingPreferenceService
 
     int GetWordNumber();
     void SetWordNumber(int wordNumber);
+
+    bool GetShowSpeedResult();
+    void SetShowSpeedResult(bool show);
+
+    bool GetShowResponseTimeResult();
+    void SetShowResponseTimeResult(bool show);
+
+    bool GetShowErrorsResult();
+    void SetShowErrorsResult(bool show);
 }

@@ -21,11 +21,31 @@ You will have to select the letters you want, text you want or dynamically gener
 
 
 ---
+## Features
+
+- **Typing screen**: live coloring of each character (pending, current, correct, corrected, wrong)
+- **Sound feedback**: short wooden "tock" on a correct key, deeper note on an error, with a volume per sound
+- **Settings** (collapsible panel grouped by theme, saved between sessions): typing (back return, stop on error), results (speed, response time per key, errors), sounds (volume per sound)
+- **Results**: words and letters per minute, duration, accuracy, error count, response time and error rate per key
+- **Chaining**: from the results, retry the exercise (new words for generated exercises), go to the next one, or back home — the last played exercise stays selected
+- **Themes**: light, dark or system
+
+---
+## Statistics
+
+- **Duration**: time from the first key press to the last character; the clock stops while the typing area has lost the focus (click outside to pause, "Reprendre la saisie" to resume)
+- **Letters per minute**: typed characters (spaces included) / duration
+- **Words per minute**: letters per minute / 5 (standard word length)
+- **Accuracy**: share of characters typed right the first time
+- **Errors**: number of wrong key presses
+- **Response time per key**: average time between the previous character and this one (capped at 5 s in the chart to ignore pauses)
+
+---
 ## Roadmap
 - [ ] Add user database for exercice's stats  
   - [ ] Local 
   - [ ] Online (not the priority)
-- [ ] From stat page, Add buttons: redo, or next exercice
+- [x] From stat page, Add buttons: redo, or next exercice
 - [ ] Exercices settings: reorder exercice
 
 ---
@@ -53,17 +73,35 @@ Application --> Domain
 
 ---
 ## Technos
-.NET11 preview5  
-MAUI11.0.0-preview.5  
-EF Core 11.0.0-preview.5  
-Sqlite 11.0.0-preview.5  
-CommunityToolkit.Mvvm 8.4.2  
-CommunityToolkit.Maui 14.2.0  
-Google.Protobuf 3.35.1  
-Grpc.Tools 2.81.1  
-Serilog — application logging  
-Seq — structured log visualization and analysis  
+.NET 11 preview 6  
+MAUI 11.0.0-preview.6  
 🐳 Docker — runs the local Seq instance  
+
+### NuGet packages
+
+| Project | Package | Version | Usage |
+|---|---|---|---|
+| XyloType (MAUI) | CommunityToolkit.Maui | 14.2.2 | Expander, behaviors |
+| | CommunityToolkit.Mvvm | 8.4.2 | Observable properties, relay commands |
+| | Microcharts.Maui | 2.0.0.3 | Result charts |
+| | NAudio.Wasapi | 3.1.0 | Low-latency typing sounds (WASAPI output + mixer) |
+| | Serilog | 4.3.1 | Application logging |
+| | Serilog.Extensions.Logging | 10.0.0 | Serilog behind `ILogger` |
+| | Serilog.Sinks.Console / File / Seq | 6.1.1 / 7.0.0 / 9.1.0 | Log outputs |
+| | Serilog.Enrichers.Context / CorrelationId | 4.6.5 / 3.0.1 | Log enrichment |
+| | SerilogTracing | 2.4.0 | Tracing |
+| | Microsoft.Extensions.Logging.Debug | 11.0.0-preview.6 | Debug output |
+| XyloType.ViewModels | CommunityToolkit.Mvvm | 8.4.2 | MVVM |
+| XyloType.Application | FluentValidation | 12.1.1 | Validators |
+| | Microsoft.Extensions.DependencyInjection / Logging | 11.0.0-preview.6 | DI, logging abstractions |
+| XyloType.Domain | Microsoft.Extensions.DependencyInjection | 11.0.0-preview.6 | DI |
+| XyloType.Infrastructure | Microsoft.EntityFrameworkCore (+ Sqlite, Design, Tools) | 11.0.0-preview.6 | Local database |
+| | Google.Protobuf | 3.35.1 | Exercise storage |
+| | Grpc.Tools | 2.81.1 | Protobuf code generation |
+| XyloType.Tests | xunit / xunit.runner.visualstudio | 2.9.3 / 3.1.5 | Test framework |
+| | FluentAssertions | 8.10.0 | Assertions |
+| | NSubstitute | 5.3.0 | Mocks |
+| | Microsoft.NET.Test.Sdk / coverlet.collector | 18.7.0 / 6.0.4 | Test runner, coverage |
 
 ----
 

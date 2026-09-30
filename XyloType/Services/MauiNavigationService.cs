@@ -70,9 +70,9 @@ public class MauiNavigationService : INavigationService
     }
 
 
-    public async Task<Result<bool>> NavigateToStatisticAsync(Dictionary<char, CharStats> stat)
+    public async Task<Result<bool>> NavigateToStatisticAsync(TypingSessionResult result)
     {
-        Result<ContentPage> viewCReationResult = await _statisticViewFactory.Create(stat);
+        Result<ContentPage> viewCReationResult = await _statisticViewFactory.Create(result, this);
 
         if(!viewCReationResult.Success)
         {
@@ -89,5 +89,35 @@ public class MauiNavigationService : INavigationService
     public async Task PopBackAsync()
     {
         await Shell.Current.Navigation.PopAsync();
+    }
+
+    public async Task<Result<bool>> ReplaceWithTypingExerciseAsync(IStringsProvider stringProvider)
+        => await ReplaceCurrentPageAsync(() => NavigateToTypingExerciseAsync(stringProvider));
+
+    public async Task<Result<bool>> ReplaceWithStatisticAsync(TypingSessionResult result)
+        => await ReplaceCurrentPageAsync(() => NavigateToStatisticAsync(result));
+
+    public async Task PopToRootAsync()
+    {
+        await Shell.Current.Navigation.PopToRootAsync();
+    }
+
+    /// <summary>
+    /// Pushes the new page first, then removes the previous one,
+    /// so the home screen never flashes in between.
+    /// </summary>
+    private static async Task<Result<bool>> ReplaceCurrentPageAsync(Func<Task<Result<bool>>> navigate)
+    {
+        INavigation navigation = Shell.Current.Navigation;
+        Page? current = navigation.NavigationStack.LastOrDefault();
+
+        Result<bool> result = await navigate();
+
+        if (result.Success && current is not null && navigation.NavigationStack.Contains(current))
+        {
+            navigation.RemovePage(current);
+        }
+
+        return result;
     }
 }
