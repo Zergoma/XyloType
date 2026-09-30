@@ -17,26 +17,39 @@ public class StatisticViewFactory : IStatisticViewFactory
     private readonly IChartResponseTimeColorsProvider _chartResponseTimeColorsProvider;
     private readonly IChartErrorProvider _chartErrorColorsProvider;
     private readonly ILogger<StatisticViewModelMauiAdapter> _logger;
+    private readonly ITypingExerciseRunService _runService;
+    private readonly IUserTypingPreferenceService _typingPreference;
 
     public StatisticViewFactory(
         IThemeChangerService themeChangerService,
         IChartResponseTimeColorsProvider chartResponseTimeColorsProvider,
         IChartErrorProvider chartErrorColorsProvider,
-        ILogger<StatisticViewModelMauiAdapter> logger)
+        ILogger<StatisticViewModelMauiAdapter> logger,
+        ITypingExerciseRunService runService,
+        IUserTypingPreferenceService typingPreference)
     {
         _themeChangerService = themeChangerService;
         _chartResponseTimeColorsProvider = chartResponseTimeColorsProvider;
         _chartErrorColorsProvider = chartErrorColorsProvider;
         _logger = logger;
+        _runService = runService;
+        _typingPreference = typingPreference;
     }
 
-    public async Task<Result<ContentPage>> Create(Dictionary<char, CharStats> stat)
+    public async Task<Result<ContentPage>> Create(
+        TypingSessionResult result,
+        INavigationService navigationService)
     {
         // Get current theme apply
         ThemeState themeState = _themeChangerService.GetTheme();
 
 
-        StatisticViewModel vm = new(stat);
+        StatisticViewModel vm =
+            new(
+                result,
+                _runService,
+                navigationService,
+                _typingPreference);
 
         StatisticViewModelMauiAdapter vmadapter =
             new(

@@ -45,7 +45,8 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
     }
 
     public int TotalOccurence { get; set; } = 0;
-    public double TotalMinute { get; set; } = 0.0;
+    // Duration of the session, without the time spent out of the typing area
+    public double TotalMinute => _statisticViewModel.Duration.TotalMinutes;
 
 
     public double LettersPerMinute => TotalMinute > 0
@@ -54,8 +55,46 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
 
     public double WordsPerMinute => LettersPerMinute / 5.0;
 
-    public string LetterPerMinuteText => $"{LettersPerMinute:F2}";
-    public string WordsPerMinuteText => $"{WordsPerMinute:F2}";
+    public string LetterPerMinuteText => $"{LettersPerMinute:F0}";
+    public string WordsPerMinuteText => $"{WordsPerMinute:F1}";
+
+    /// <summary>
+    /// Result actions (retry, next, home) and display preferences.
+    /// </summary>
+    public StatisticViewModel Core => _statisticViewModel;
+
+    /// <summary>
+    /// Number of wrong key presses (a character can be missed several times).
+    /// </summary>
+    public int TotalErrors { get; private set; }
+
+    /// <summary>
+    /// Number of characters that needed at least one retry.
+    /// </summary>
+    public int TotalCharsWithError { get; private set; }
+
+    // Share of characters typed right the first time
+    public double Accuracy => TotalOccurence > 0
+                                ? 100.0 * (TotalOccurence - TotalCharsWithError) / TotalOccurence
+                                : 100.0;
+
+    public string AccuracyText => $"{Accuracy:F0} %";
+    public string TotalErrorsText => TotalErrors.ToString();
+
+    public string DurationText
+    {
+        get
+        {
+            TimeSpan duration = TimeSpan.FromMinutes(TotalMinute);
+            return duration.TotalHours >= 1
+                ? duration.ToString(@"h\:mm\:ss")
+                : duration.ToString(@"m\:ss");
+        }
+    }
+
+    public bool ShowSpeedSection => Core.ShowSpeed || Core.ShowResponseTime;
+    public bool ShowErrorsChart => Core.ShowErrors && HasError;
+    public bool ShowNoErrorMessage => Core.ShowErrors && !HasError;
 
     [ObservableProperty]
     public partial bool HasError { get; set; } = false;
@@ -70,7 +109,8 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
             CharStats charStats = item.Value;
 
             TotalOccurence += charStats.NbOccurence;
-            TotalMinute += charStats.RespondeTime.TotalMinutes;
+            TotalErrors += charStats.RealErrors.Count;
+            TotalCharsWithError += charStats.NbCharError;
 
             // We concidere 5sec as the maximum time to press the key
             // This to avoid to have chart useless because of a pause

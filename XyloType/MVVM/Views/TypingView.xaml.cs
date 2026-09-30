@@ -38,12 +38,22 @@ public partial class TypingView : ContentPage
 
         HiddenInput.Focused += (_, __) =>
         {
+            // Windows gives the focus back on its own when the focused control disappears
+            // (e.g. the settings fold away): only accept a focus we asked for
+            if (!IsFocusJustRequested)
+            {
+                Dispatcher.Dispatch(() => HiddenInput.Unfocus());
+                return;
+            }
+
             TakeFocusOverlay.IsVisible = false;
+            vm.ResumeTyping();
         };
 
         HiddenInput.Unfocused += (_, __) =>
         {
             TakeFocusOverlay.IsVisible = true;
+            vm.PauseTyping();
         };
         #endregion
 
@@ -64,12 +74,9 @@ public partial class TypingView : ContentPage
     {
         if (BindingContext is TypingViewModel vm)
         {
-            Dictionary<char, CharStats> stat = vm.GetTotalCharStats();
+            TypingSessionResult result = vm.GetResult();
 
-            // TODO
-            // Make it better
-            await _navigationService.PopBackAsync();
-            await _navigationService.NavigateToStatisticAsync(stat);
+            await _navigationService.ReplaceWithStatisticAsync(result);
         }
     }
 
@@ -82,7 +89,7 @@ public partial class TypingView : ContentPage
         await Dispatcher.DispatchAsync(async () =>
         {
             await Task.Delay(100);
-            HiddenInput.Focus();
+            RequestTypingFocus();
         });
     }
 
@@ -116,7 +123,7 @@ public partial class TypingView : ContentPage
 
         Dispatcher.Dispatch(() =>
         {
-            HiddenInput.Focus();
+            RequestTypingFocus();
         });
     }
 
@@ -152,9 +159,64 @@ public partial class TypingView : ContentPage
         }
     }
 
+    // Taps bubble up to the page: ignore the page tap that follows a focus request
+    private static readonly TimeSpan s_focusRequestGrace = TimeSpan.FromMilliseconds(300);
+    private DateTime _lastFocusRequestUtc = DateTime.MinValue;
+
+    private bool IsFocusJustRequested
+        => DateTime.UtcNow - _lastFocusRequestUtc < s_focusRequestGrace;
+
+    private void RequestTypingFocus()
+    {
+        _lastFocusRequestUtc = DateTime.UtcNow;
+        HiddenInput.Focus();
+    }
+
+    private void PauseTypingFocus()
+    {
+        if (IsFocusJustRequested)
+            return;
+
+        // clicking outside the text pauses the typing (and its clock)
+        if (HiddenInput.IsFocused)
+            HiddenInput.Unfocus();
+    }
+
     private void TakeFocusButton_Clicked(object sender, EventArgs e)
     {
-        HiddenInput.Focus();
+        // mark the request first: folding the settings must not pause the typing
+        _lastFocusRequestUtc = DateTime.UtcNow;
+
+        // back to typing: fold the settings away (scrolls back to the top)
+        SettingsExpander.IsExpanded = false;
+        RequestTypingFocus();
+    }
+
+    private void TypingArea_Tapped(object sender, TappedEventArgs e)
+    {
+        // clicking on the text keeps typing
+        RequestTypingFocus();
+    }
+
+    private void Page_Tapped(object? sender, TappedEventArgs e)
+        => PauseTypingFocus();
+
+    private async void SettingsExpander_ExpandedChanged(object? sender, CommunityToolkit.Maui.Core.ExpandedChangedEventArgs e)
+    {
+        // the expander header handles its own click, which never reaches Page_Tapped
+        PauseTypingFocus();
+
+        // let the expander lay out its content before scrolling
+        await Task.Delay(50);
+
+        if (e.IsExpanded)
+        {
+            await PageScrollView.ScrollToAsync(SettingsExpander, ScrollToPosition.End, animated: true);
+        }
+        else
+        {
+            await PageScrollView.ScrollToAsync(0, 0, animated: true);
+        }
     }
 
     public void ScrollToCurrentLine(int index)

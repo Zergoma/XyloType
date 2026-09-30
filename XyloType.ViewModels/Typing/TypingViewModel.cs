@@ -155,6 +155,57 @@ public partial class TypingViewModel : ObservableObject
     public string BackReturnTxt
         => BackReturnEnable ? "Retour arrière activé" : "Retour arrière interdit";
 
+    public bool ShowSpeedResult
+    {
+        get => _typingPreference.GetShowSpeedResult();
+        set
+        {
+            if (ShowSpeedResult == value)
+                return;
+
+            _typingPreference.SetShowSpeedResult(value);
+            OnPropertyChanged(nameof(ShowSpeedResult));
+        }
+    }
+
+    [RelayCommand]
+    public void SwitchShowSpeedResult()
+        => ShowSpeedResult = !ShowSpeedResult;
+
+    public bool ShowResponseTimeResult
+    {
+        get => _typingPreference.GetShowResponseTimeResult();
+        set
+        {
+            if (ShowResponseTimeResult == value)
+                return;
+
+            _typingPreference.SetShowResponseTimeResult(value);
+            OnPropertyChanged(nameof(ShowResponseTimeResult));
+        }
+    }
+
+    [RelayCommand]
+    public void SwitchShowResponseTimeResult()
+        => ShowResponseTimeResult = !ShowResponseTimeResult;
+
+    public bool ShowErrorsResult
+    {
+        get => _typingPreference.GetShowErrorsResult();
+        set
+        {
+            if (ShowErrorsResult == value)
+                return;
+
+            _typingPreference.SetShowErrorsResult(value);
+            OnPropertyChanged(nameof(ShowErrorsResult));
+        }
+    }
+
+    [RelayCommand]
+    public void SwitchShowErrorsResult()
+        => ShowErrorsResult = !ShowErrorsResult;
+
     public async Task LoadTextAsync(IStringsProvider stringProvider)
     {
         Session.Lines.Clear();
@@ -203,29 +254,13 @@ public partial class TypingViewModel : ObservableObject
     public TypingStatus ProcessInput(char input)
         => Session.ProcessInput(input, _charMapper.Map);
 
+    public void PauseTyping()
+        => Session.Pause();
 
-    public Dictionary<char, CharStats> GetTotalCharStats()
-    {
-        Dictionary<char, CharStats> total = [];
-
-        foreach (TypingLineStateViewModel itemLine in LinesStates)
-        {
-            Dictionary<char, CharStats> stat = itemLine.GetLineCharStats();
-            
-            foreach (KeyValuePair<char, CharStats> item in stat)
-            {
-                if (total.TryGetValue(item.Key, out CharStats? charstat))
-                {
-                    total[item.Key] = charstat.Add(item.Value);
-                }
-                else
-                {
-                    total[item.Key] = item.Value;
-                }
-            }
-        }
-        return total;
-    }
+    public void ResumeTyping()
+        => Session.Resume();
 
 
+    public TypingSessionResult GetResult()
+        => Session.GetResult();
 }

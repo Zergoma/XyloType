@@ -9,75 +9,185 @@
              Shell.FlyoutBehavior="Disabled"
              StyleClass="xylotype_page_bg">
 
+    <ContentPage.Resources>
+        <Style TargetType="Border" Class="kpi_card">
+            <Setter Property="Padding" Value="20,16" />
+        </Style>
+    </ContentPage.Resources>
 
-    <ScrollView>
-        <VerticalStackLayout Padding="30,20,30,30" Spacing="20">
+    <Grid RowDefinitions="auto,*,auto">
 
-            <Label Text="Statistics"
-                   StyleClass="label_page_title"/>
+        <!-- header: stays on top, like the actions bar at the bottom -->
+        <Border Grid.Row="0"
+                StyleClass="BorderBgStd"
+                StrokeThickness="0"
+                Padding="30,16">
+            <VerticalStackLayout Spacing="2">
+                <Label Text="Résultats"
+                       StyleClass="label_page_title"/>
+                <Label Text="{Binding Core.ExerciseName}"
+                       IsVisible="{Binding Core.HasExerciseName}"
+                       StyleClass="label_muted"
+                       FontSize="16"/>
+            </VerticalStackLayout>
+        </Border>
 
-            <!-- speed -->
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="30,24,30,30" Spacing="24">
 
-                <Border Grid.Column="0"
+                <!-- everything hidden -->
+                <Border IsVisible="{Binding Core.IsEverythingHidden}"
                         StyleClass="BorderTypingRounded10, BorderBgTyping"
-                        Padding="20,16">
-                    <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
-                        <Label Text="{Binding WordsPerMinuteText}"
-                               StyleClass="label_stat_value"
-                               HorizontalOptions="Center"/>
-                        <Label Text="WPM · words per minute"
-                               StyleClass="label_muted"
-                               HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </Border>
-
-                <Border Grid.Column="1"
-                        StyleClass="BorderTypingRounded10, BorderBgTyping"
-                        Padding="20,16">
-                    <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
-                        <Label Text="{Binding LetterPerMinuteText}"
-                               StyleClass="label_stat_value"
-                               HorizontalOptions="Center"/>
-                        <Label Text="LPM · letters per minute"
-                               StyleClass="label_muted"
-                               HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </Border>
-            </Grid>
-
-            <!-- response time -->
-            <Border StyleClass="BorderTypingRounded10, BorderBgTyping"
-                    Padding="20,16,20,20">
-
-                <VerticalStackLayout Spacing="4">
-                    <Label Text="Response time (s)"
-                           StyleClass="label_section_title"/>
-
-                    <Label Text="The less, the better"
+                        Padding="24,20">
+                    <Label Text="Les résultats sont masqués. Tu peux les réafficher dans les réglages de l'écran de frappe."
                            StyleClass="label_muted"
-                           Margin="0,0,0,10"/>
+                           HorizontalTextAlignment="Center"/>
+                </Border>
 
-                    <micro:ChartView Chart="{Binding TimeResponseChart}"
-                                     HeightRequest="200"/>
+                <!-- speed -->
+                <VerticalStackLayout IsVisible="{Binding ShowSpeedSection}" Spacing="12">
+
+                    <Label Text="Vitesse" StyleClass="label_section_title"/>
+
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="16" IsVisible="{Binding Core.ShowSpeed}">
+
+                        <Border Grid.Column="0" StyleClass="BorderTypingRounded10, BorderBgTyping, kpi_card">
+                            <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                                <Label Text="{Binding WordsPerMinuteText}"
+                                       StyleClass="label_stat_value"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="mots / minute"
+                                       StyleClass="label_muted"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Column="1" StyleClass="BorderTypingRounded10, BorderBgTyping, kpi_card">
+                            <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                                <Label Text="{Binding LetterPerMinuteText}"
+                                       StyleClass="label_stat_value"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="lettres / minute"
+                                       StyleClass="label_muted"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Column="2" StyleClass="BorderTypingRounded10, BorderBgTyping, kpi_card">
+                            <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                                <Label Text="{Binding DurationText}"
+                                       StyleClass="label_stat_value"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="durée"
+                                       StyleClass="label_muted"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <Border StyleClass="BorderTypingRounded10, BorderBgTyping"
+                            Padding="20,16,20,20"
+                            IsVisible="{Binding Core.ShowResponseTime}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Temps de réponse par touche (s)"
+                                   FontSize="16"
+                                   FontAttributes="Bold"/>
+                            <Label Text="Plus c'est bas, mieux c'est"
+                                   StyleClass="label_muted"
+                                   Margin="0,0,0,10"/>
+                            <micro:ChartView Chart="{Binding TimeResponseChart}"
+                                             HeightRequest="200"/>
+                        </VerticalStackLayout>
+                    </Border>
                 </VerticalStackLayout>
-            </Border>
 
-            <!-- errors -->
-            <Border StyleClass="BorderTypingRounded10, BorderBgTyping"
-                    Padding="20,16,20,20"
-                    IsVisible="{Binding HasError}">
+                <!-- errors -->
+                <VerticalStackLayout IsVisible="{Binding Core.ShowErrors}" Spacing="12">
 
-                <VerticalStackLayout Spacing="4">
-                    <Label Text="Errors"
-                           StyleClass="label_section_title"
-                           Margin="0,0,0,10"/>
+                    <Label Text="Erreurs" StyleClass="label_section_title"/>
 
-                    <micro:ChartView Chart="{Binding ErrorsChart}"
-                                     HeightRequest="350"/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+
+                        <Border Grid.Column="0" StyleClass="BorderTypingRounded10, BorderBgTyping, kpi_card">
+                            <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                                <Label Text="{Binding AccuracyText}"
+                                       StyleClass="label_stat_value"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="précision"
+                                       StyleClass="label_muted"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Column="1" StyleClass="BorderTypingRounded10, BorderBgTyping, kpi_card">
+                            <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                                <Label Text="{Binding TotalErrorsText}"
+                                       StyleClass="label_stat_value"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="erreurs"
+                                       StyleClass="label_muted"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <Border IsVisible="{Binding ShowNoErrorMessage}"
+                            StyleClass="BorderTypingRounded10, BorderBgTyping"
+                            Padding="24,20">
+                        <Label Text="Aucune erreur, bravo !"
+                               StyleClass="label_success"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center"/>
+                    </Border>
+
+                    <Border IsVisible="{Binding ShowErrorsChart}"
+                            StyleClass="BorderTypingRounded10, BorderBgTyping"
+                            Padding="20,16,20,20">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Taux d'erreur par touche"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   Margin="0,0,0,10"/>
+                            <micro:ChartView Chart="{Binding ErrorsChart}"
+                                             HeightRequest="350"/>
+                        </VerticalStackLayout>
+                    </Border>
                 </VerticalStackLayout>
-            </Border>
 
-        </VerticalStackLayout>
-    </ScrollView>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- actions -->
+        <Border Grid.Row="2"
+                StyleClass="BorderBgStd"
+                StrokeThickness="0"
+                Padding="30,14">
+
+            <Grid ColumnDefinitions="auto,*,auto,auto" ColumnSpacing="12">
+
+                <Button Grid.Column="0"
+                        Text="Accueil"
+                        StyleClass="button_hover"
+                        Padding="24,10"
+                        CornerRadius="10"
+                        Command="{Binding Core.HomeCommand}"/>
+
+                <Button Grid.Column="2"
+                        Text="Refaire"
+                        StyleClass="button_hover"
+                        Padding="24,10"
+                        CornerRadius="10"
+                        Command="{Binding Core.RetryCommand}"/>
+
+                <Button Grid.Column="3"
+                        Text="Suivant"
+                        StyleClass="ButtonHoverLaunch"
+                        FontAttributes="Bold"
+                        Padding="32,10"
+                        CornerRadius="10"
+                        Command="{Binding Core.NextCommand}"/>
+            </Grid>
+        </Border>
+    </Grid>
 </ContentPage>

@@ -10,11 +10,17 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
     private const string StopOnErrorKey = "typing_stop_on_error";
     private const string LineNumberKey = "exercise_line_number";
     private const string WordNumberKey = "exercise_word_number";
+    private const string ShowSpeedResultKey = "result_show_speed";
+    private const string ShowResponseTimeResultKey = "result_show_response_time";
+    private const string ShowErrorsResultKey = "result_show_errors";
 
     private const double DefaultOkVolume = .3;
     private const double DefaultErrorVolume = .4;
     private const bool DefaultBackReturnEnable = true;
     private const bool DefaultStopOnError = true;
+    private const bool DefaultShowSpeedResult = true;
+    private const bool DefaultShowResponseTimeResult = true;
+    private const bool DefaultShowErrorsResult = true;
 
     public double GetOkVolume()
         => Preferences.Default.Get(OkVolumeKey, DefaultOkVolume);
@@ -51,4 +57,22 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
 
     public void SetWordNumber(int wordNumber)
         => Preferences.Default.Set(WordNumberKey, wordNumber);
+
+    public bool GetShowSpeedResult()
+        => Preferences.Default.Get(ShowSpeedResultKey, DefaultShowSpeedResult);
+
+    public void SetShowSpeedResult(bool show)
+        => Preferences.Default.Set(ShowSpeedResultKey, show);
+
+    public bool GetShowResponseTimeResult()
+        => Preferences.Default.Get(ShowResponseTimeResultKey, DefaultShowResponseTimeResult);
+
+    public void SetShowResponseTimeResult(bool show)
+        => Preferences.Default.Set(ShowResponseTimeResultKey, show);
+
+    public bool GetShowErrorsResult()
+        => Preferences.Default.Get(ShowErrorsResultKey, DefaultShowErrorsResult);
+
+    public void SetShowErrorsResult(bool show)
+        => Preferences.Default.Set(ShowErrorsResultKey, show);
 }

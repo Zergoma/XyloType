@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 
 using XyloType.Domain.Enums;
+using XyloType.Domain.Typing.Analysis;
 
 namespace XyloType.Domain.Typing;
 
@@ -19,8 +20,16 @@ public class TypingSession
     public bool BackReturnEnable { get; set; } = true;
     public bool StopOnError { get; set; } = true;
 
+    // Time spent on the current character
     private readonly Stopwatch _stopwatch = new();
+
+    // Time of the whole session, from the first key press to the last character
+    private readonly Stopwatch _sessionStopwatch = new();
+
+    public TimeSpan Duration => _sessionStopwatch.Elapsed;
     private bool _isFirstChar = true;
+    private bool _isEnded;
+    private bool _isPaused;
 
     private void SetPosition(int lineIndex, int characterIndex, bool forceRefresh = false)
     {
@@ -63,6 +72,10 @@ public class TypingSession
         _previousCurrent = null;
         SetPosition(0, 0, true);
         _isFirstChar = true;
+        _isEnded = false;
+        _isPaused = false;
+        _stopwatch.Reset();
+        _sessionStopwatch.Reset();
     }
 
 
@@ -223,10 +236,14 @@ public class TypingSession
 
     public TypingStatus ProcessInput(char input, Func<char, char> mapper)
     {
+        // a key press always means the user is typing again
+        Resume();
+
         if(_isFirstChar)
         {
             _isFirstChar = false;
             _stopwatch.Restart();
+            _sessionStopwatch.Restart();
         }
 
         // BACKSPACE
@@ -269,10 +286,69 @@ public class TypingSession
             else
             {
                 _stopwatch.Stop();
+                _sessionStopwatch.Stop();
+                _isEnded = true;
                 return TypingStatus.Ended;
             }
         }
 
         return TypingStatus.InProgress;
+    }
+
+    /// <summary>
+    /// Stops the clocks while the user is not typing (e.g. the typing area lost the focus).
+    /// </summary>
+    public void Pause()
+    {
+        if (_isFirstChar || _isEnded || _isPaused)
+            return;
+
+        _stopwatch.Stop();
+        _sessionStopwatch.Stop();
+        _isPaused = true;
+    }
+
+    /// <summary>
+    /// Restarts the clocks after a <see cref="Pause"/>.
+    /// </summary>
+    public void Resume()
+    {
+        if (!_isPaused)
+            return;
+
+        _stopwatch.Start();
+        _sessionStopwatch.Start();
+        _isPaused = false;
+    }
+
+    /// <summary>
+    /// Aggregates the statistics of every typed character, per character.
+    /// </summary>
+    public TypingSessionResult GetResult()
+    {
+        Dictionary<char, CharStats> stats = [];
+
+        foreach (TypingChar typed in Lines.SelectMany(l => l.Characters))
+        {
+            if (!stats.TryGetValue(typed.Character, out CharStats? charStats))
+            {
+                charStats = new CharStats
+                {
+                    NbOccurence = 0
+                };
+                stats[typed.Character] = charStats;
+            }
+
+            charStats.NbOccurence++;
+            charStats.RespondeTime += typed.RespondeTime;
+
+            if (typed.Errors.Count > 0)
+            {
+                charStats.NbCharError++;
+                charStats.RealErrors.AddRange(typed.Errors);
+            }
+        }
+
+        return new TypingSessionResult(stats, Duration);
     }
 }
