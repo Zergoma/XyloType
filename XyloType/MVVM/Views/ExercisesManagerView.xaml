@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.ExercisesManager;assembly=XyloType.ViewModels"
+             xmlns:behaviors="clr-namespace:XyloType.Behaviors"
+             x:Class="XyloType.MVVM.Views.ExercisesManagerView"
+             x:DataType="vm:ExercisesManagerViewModel"
+             x:Name="RootPage"
+             Title="Exercices"
+             Shell.NavBarIsVisible="False"
+             StyleClass="xylotype_page_bg">
+
+    <Grid RowDefinitions="auto,*,auto"
+          ColumnDefinitions="380,*"
+          ColumnSpacing="20"
+          Padding="20,16,20,0">
+
+        <!-- header -->
+        <Grid Grid.Row="0" Grid.ColumnSpan="2"
+              ColumnDefinitions="auto,*,auto,auto"
+              ColumnSpacing="12"
+              Margin="0,0,0,16">
+
+            <Label Text="Exercices"
+                   StyleClass="label_page_title"
+                   VerticalOptions="Center"/>
+
+            <Label Grid.Column="2"
+                   Text="Clavier"
+                   StyleClass="label_field"
+                   VerticalOptions="Center"/>
+
+            <Picker Grid.Column="3"
+                    ItemsSource="{Binding KeyboardLayoutAvailable}"
+                    SelectedItem="{Binding KeyboardLayoutSelected}"
+                    StyleClass="picker_themed"
+                    MinimumWidthRequest="160"
+                    VerticalOptions="Center"/>
+        </Grid>
+
+        <!-- exercise list -->
+        <Border Grid.Row="1" Grid.Column="0"
+                StyleClass="BorderTypingRounded10, BorderBgStd"
+                Padding="12">
+
+            <Grid RowDefinitions="auto,*" RowSpacing="10">
+
+                <Grid ColumnDefinitions="*,auto">
+                    <Label Text="Glisser pour réordonner"
+                           StyleClass="label_muted"
+                           FontSize="12"
+                           VerticalOptions="Center"/>
+                    <Button Grid.Column="1"
+                            Text="+ Nouveau"
+                            StyleClass="ButtonHoverAddExercice"
+                            Padding="14,0"
+                            HeightRequest="34"
+                            MinimumHeightRequest="34"
+                            CornerRadius="17"
+                            Command="{Binding NewExerciseCommand}"/>
+                </Grid>
+
+                <Label Grid.Row="1"
+                       Text="Aucun exercice pour ce clavier. Crée-en un avec « + Nouveau »."
+                       StyleClass="label_muted"
+                       IsVisible="{Binding HasNoItems}"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,30"/>
+
+                <ScrollView Grid.Row="1" x:Name="ListScrollView">
+                    <!-- transparent background: pointer moves are received between the items too -->
+                    <VerticalStackLayout x:Name="ExerciseList"
+                                         BackgroundColor="Transparent"
+                                         BindableLayout.ItemsSource="{Binding Items}">
+
+                        <VerticalStackLayout.GestureRecognizers>
+                            <PointerGestureRecognizer PointerMoved="List_PointerMoved"
+                                                      PointerReleased="List_PointerReleased"
+                                                      PointerExited="List_PointerExited"/>
+                        </VerticalStackLayout.GestureRecognizers>
+
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ExerciseListItemViewModel">
+                                <Border HeightRequest="64"
+                                        Margin="0,0,0,8"
+                                        Padding="0,0,12,0"
+                                        StyleClass="BorderRounded10, BorderBgDescription">
+
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding BindingContext.SelectCommand, Source={x:Reference RootPage}, x:DataType=ContentPage}"
+                                                              CommandParameter="{Binding .}"/>
+                                        <PointerGestureRecognizer PointerPressed="Item_PointerPressed"
+                                                                  PointerReleased="List_PointerReleased"/>
+                                    </Border.GestureRecognizers>
+
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}"/>
+                                            <Setter Property="StrokeThickness" Value="2"/>
+                                        </DataTrigger>
+                                    </Border.Triggers>
+
+                                    <Grid ColumnDefinitions="34,*,auto" ColumnSpacing="6">
+
+                                        <!-- drag handle -->
+                                        <Label Text="⠿"
+                                               FontSize="20"
+                                               StyleClass="label_on_description"
+                                               Opacity="0.5"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"/>
+
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                            <Label Text="{Binding Name}"
+                                                   StyleClass="label_on_description"
+                                                   FontAttributes="Bold"
+                                                   LineBreakMode="TailTruncation"/>
+                                            <Label Text="{Binding Letters}"
+                                                   StyleClass="label_on_description"
+                                                   Opacity="0.7"
+                                                   FontSize="12"
+                                                   LineBreakMode="TailTruncation"/>
+                                        </VerticalStackLayout>
+
+                                        <Label Grid.Column="2"
+                                               Text="{Binding TypeText}"
+                                               StyleClass="label_on_description"
+                                               FontSize="11"
+                                               Opacity="0.7"
+                                               VerticalOptions="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+        </Border>
+
+        <!-- editor -->
+        <Border Grid.Row="1" Grid.Column="1"
+                StyleClass="BorderTypingRounded10, BorderBgStd"
+                Padding="24,20">
+
+            <Grid>
+                <Label Text="Sélectionne un exercice à gauche pour le modifier"
+                       IsVisible="{Binding HasNoSelection}"
+                       StyleClass="label_muted"
+                       FontSize="18"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+
+                <ScrollView IsVisible="{Binding HasSelection}">
+                    <VerticalStackLayout Spacing="16">
+
+                        <Grid ColumnDefinitions="*,auto">
+                            <Label Text="Modifier l'exercice"
+                                   StyleClass="label_section_title"
+                                   VerticalOptions="Center"/>
+                            <Button Grid.Column="1"
+                                    Text="Supprimer"
+                                    StyleClass="button_hover"
+                                    Padding="14,0"
+                                    HeightRequest="34"
+                                    MinimumHeightRequest="34"
+                                    CornerRadius="17"
+                                    Command="{Binding DeleteExerciseCommand}"/>
+                        </Grid>
+
+                        <!-- name / description -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Nom" StyleClass="label_field"/>
+                            <Entry Text="{Binding ExerciseName}"
+                                   StyleClass="entry_no_spell_no_prediction"
+                                   Placeholder="Nom de l'exercice"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Description" StyleClass="label_field"/>
+                            <Editor Text="{Binding Description}"
+                                    StyleClass="editor_no_spell_no_prediction"
+                                    AutoSize="TextChanges"
+                                    MinimumHeightRequest="70"
+                                    Placeholder="Description"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Lettres autorisées" StyleClass="label_field"/>
+                            <Entry Text="{Binding AllowedChars}"
+                                   StyleClass="entry_no_spell_no_prediction"/>
+                        </VerticalStackLayout>
+
+                        <!-- static / dynamic -->
+                        <Grid ColumnDefinitions="auto,*" ColumnSpacing="10">
+                            <Switch IsToggled="{Binding IsDynamic}"
+                                    VerticalOptions="Center"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding StaticDynamicText}"
+                                   VerticalOptions="Center">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SwitchStaticDynamicCommand}"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+
+                        <!-- word length (generation and dynamic exercises) -->
+                        <Grid ColumnDefinitions="auto,80,auto,80,auto,80" ColumnSpacing="10">
+                            <Label Text="Longueur min" StyleClass="label_field" VerticalOptions="Center"/>
+                            <Entry Grid.Column="1"
+                                   Keyboard="Numeric"
+                                   StyleClass="entry_no_spell_no_prediction, entry_small"
+                                   Text="{Binding MinLengthWord}">
+                                <Entry.Behaviors>
+                                    <behaviors:DigitsOnlyBehavior />
+                                </Entry.Behaviors>
+                            </Entry>
+
+                            <Label Grid.Column="2" Text="max" StyleClass="label_field" VerticalOptions="Center"/>
+                            <Entry Grid.Column="3"
+                                   Keyboard="Numeric"
+                                   StyleClass="entry_no_spell_no_prediction, entry_small"
+                                   Text="{Binding MaxLengthWord}">
+                                <Entry.Behaviors>
+                                    <behaviors:DigitsOnlyBehavior />
+                                </Entry.Behaviors>
+                            </Entry>
+
+                            <Label Grid.Column="4" Text="Nombre de mots" StyleClass="label_field" VerticalOptions="Center" IsVisible="{Binding IsStatic}"/>
+                            <Entry Grid.Column="5"
+                                   Keyboard="Numeric"
+                                   IsVisible="{Binding IsStatic}"
+                                   StyleClass="entry_no_spell_no_prediction, entry_small"
+                                   Text="{Binding NumberWords}">
+                                <Entry.Behaviors>
+                                    <behaviors:DigitsOnlyBehavior />
+                                </Entry.Behaviors>
+                            </Entry>
+                        </Grid>
+
+                        <!-- dynamic settings -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12" IsVisible="{Binding IsDynamic}">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Langue" StyleClass="label_field"/>
+                                <Picker ItemsSource="{Binding LanguageAvailable}"
+                                        SelectedItem="{Binding LanguageSelected}"
+                                        StyleClass="picker_themed"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="6">
+                                <Label Text="Source des mots" StyleClass="label_field"/>
+                                <Picker ItemsSource="{Binding GenerationTypeSourceAvailable}"
+                                        SelectedItem="{Binding GenerationTypeSourceSelected}"
+                                        StyleClass="picker_themed"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- static text -->
+                        <VerticalStackLayout Spacing="6" IsVisible="{Binding IsStatic}">
+                            <Grid ColumnDefinitions="*,auto">
+                                <Label Text="Texte (clic droit : ↵ retour à la ligne, ⟶ tabulation)"
+                                       StyleClass="label_field"
+                                       VerticalOptions="End"/>
+                                <Button Grid.Column="1"
+                                        Text="Générer"
+                                        StyleClass="ButtonHoverAddExercice"
+                                        Padding="14,0"
+                                        HeightRequest="34"
+                                        MinimumHeightRequest="34"
+                                        CornerRadius="17"
+                                        Command="{Binding GenerateWordsCommand}"/>
+                            </Grid>
+                            <Editor x:Name="EditorGeneratedText"
+                                    Text="{Binding GeneratedText}"
+                                    StyleClass="editor_no_spell_no_prediction"
+                                    AutoSize="TextChanges"
+                                    MinimumHeightRequest="140"
+                                    FontSize="20"
+                                    Placeholder="Tape un texte ou génère des pseudo-mots">
+                                <FlyoutBase.ContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="Ajouter ↵ (retour à la ligne)" Clicked="AddEnterMark_Clicked"/>
+                                        <MenuFlyoutSeparator/>
+                                        <MenuFlyoutItem Text="Ajouter ⟶ (tabulation)" Clicked="AddTabMark_Clicked"/>
+                                    </MenuFlyout>
+                                </FlyoutBase.ContextFlyout>
+                            </Editor>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+        </Border>
+
+        <!-- actions -->
+        <Grid Grid.Row="2" Grid.ColumnSpan="2"
+              ColumnDefinitions="*,auto,auto"
+              ColumnSpacing="12"
+              Padding="0,14">
+
+            <VerticalStackLayout VerticalOptions="Center">
+                <Label Text="● Modifications non enregistrées"
+                       IsVisible="{Binding HasChanges}"
+                       StyleClass="label_muted"
+                       FontAttributes="Bold"/>
+                <Label Text="{Binding StatusMessage}"
+                       IsVisible="{Binding HasStatus}">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsStatusError}" Value="True">
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextErrorLight}, Dark={StaticResource TextErrorDark}}"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsStatusError}" Value="False">
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextSuccessLight}, Dark={StaticResource TextSuccessDark}}"/>
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </VerticalStackLayout>
+
+            <Button Grid.Column="1"
+                    Text="Annuler"
+                    StyleClass="button_hover"
+                    Padding="24,10"
+                    CornerRadius="10"
+                    Command="{Binding CancelCommand}"/>
+
+            <Button Grid.Column="2"
+                    Text="Enregistrer"
+                    StyleClass="ButtonHoverLaunch"
+                    FontAttributes="Bold"
+                    Padding="32,10"
+                    CornerRadius="10"
+                    Command="{Binding SaveCommand}"/>
+        </Grid>
+    </Grid>
+</ContentPage>

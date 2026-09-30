@@ -10,6 +10,7 @@ public static class UiServicesModule
         // depends on ViewFactoriesModule
         services.AddTransient<INavigationService, MauiNavigationService>();
         services.AddSingleton<IPlaySoundSample, MauiPlaySoundSample>();
+        services.AddTransient<IUserDialogService, MauiUserDialogService>();
 
         return services;
     }

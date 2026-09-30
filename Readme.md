@@ -28,6 +28,7 @@ You will have to select the letters you want, text you want or dynamically gener
 - **Settings** (collapsible panel grouped by theme, saved between sessions): typing (back return, stop on error), results (speed, response time per key, errors), sounds (volume per sound)
 - **Results**: words and letters per minute, duration, accuracy, error count, response time and error rate per key
 - **Chaining**: from the results, retry the exercise (new words for generated exercises), go to the next one, or back home — the last played exercise stays selected
+- **Exercises menu**: create, edit, delete and reorder (drag and drop) the exercises of a keyboard; changes stay in memory until you save, cancel restores the saved file
 - **Themes**: light, dark or system
 
 ---
@@ -46,7 +47,7 @@ You will have to select the letters you want, text you want or dynamically gener
   - [ ] Local 
   - [ ] Online (not the priority)
 - [x] From stat page, Add buttons: redo, or next exercice
-- [ ] Exercices settings: reorder exercice
+- [x] Exercices settings: reorder exercice
 
 ---
 
