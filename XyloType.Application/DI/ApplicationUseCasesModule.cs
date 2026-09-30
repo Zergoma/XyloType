@@ -7,7 +7,7 @@ namespace XyloType.Application.DI;
 
 static internal class ApplicationUseCasesModule
 {
-    public static IServiceCollection AddOctoTypeApplicationUseCases(this IServiceCollection services)
+    public static IServiceCollection AddXyloTypeApplicationUseCases(this IServiceCollection services)
     {
         services.AddTransient<ISaveTypingExerciceUseCase, SaveTypingExerciceUseCase>();
 

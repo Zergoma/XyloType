@@ -7,50 +7,70 @@
              x:DataType="vm:ImportWordViewModel"
              Shell.NavBarIsVisible="False"
              StyleClass="xylotype_page_bg">
-    
-    <Grid RowDefinitions="0.2*,0.8*"
-          HorizontalOptions="Center"
-          VerticalOptions="Fill">
-        
-        <Label Grid.Row="0"
-            Text="Import mots"
-            FontSize="Large"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
 
-        <Grid Grid.Row="1"
-              RowDefinitions="*,*,*,*"
-              ColumnDefinitions="*,*,*"
-              VerticalOptions="Center"
-              HorizontalOptions="Center"
-              RowSpacing="10"
-              Margin="10">
+    <ScrollView>
+        <Border StyleClass="BorderTypingRounded10, BorderBgStd"
+                Padding="30,24"
+                Margin="30"
+                MaximumWidthRequest="560"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
 
-            <Button Text="Sélection d'un fichier"
-                    StyleClass="button_hover"
-                    Command="{Binding SelectFileCommand}"/>
+            <VerticalStackLayout Spacing="16">
 
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Import mots"
+                           StyleClass="label_page_title"/>
+                    <Label Text="Choisissez un fichier de mots, sa langue et le clavier cible."
+                           StyleClass="label_muted"/>
+                </VerticalStackLayout>
 
-            <Picker Grid.Column="1" ItemsSource="{Binding AllLanguage}" 
-                    SelectedItem="{Binding SelectedLanguage}"/>
+                <!-- file -->
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Fichier" StyleClass="label_field"/>
+                    <Grid ColumnDefinitions="auto,*" ColumnSpacing="12">
+                        <Button Text="Sélection d'un fichier"
+                                StyleClass="button_hover"
+                                Command="{Binding SelectFileCommand}"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding ImportFilePath}"
+                               StyleClass="label_muted"
+                               LineBreakMode="MiddleTruncation"
+                               VerticalOptions="Center"/>
+                    </Grid>
+                </VerticalStackLayout>
 
-            <Picker Grid.Column="2" ItemsSource="{Binding KeyboardLayoutAvailable}" 
-                    SelectedItem="{Binding SelectedKeyboard}"/>
+                <!-- language / keyboard -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <VerticalStackLayout Grid.Column="0" Spacing="6">
+                        <Label Text="Langue" StyleClass="label_field"/>
+                        <Picker ItemsSource="{Binding AllLanguage}"
+                                SelectedItem="{Binding SelectedLanguage}"
+                                StyleClass="picker_themed"/>
+                    </VerticalStackLayout>
 
-            <Button Grid.Row="2" Grid.Column="1"
-                    Text="Analyser"
-                    StyleClass="button_hover"
-                    FontSize="24"
-                    FontAttributes="Bold"
-                    CornerRadius="20"
-                    IsEnabled="{Binding IsFileSelected}"
-                    Command="{Binding ImportWordsFromFileCommand}"/>
-            
-            <Label Grid.Row="3"
-                   Grid.Column="1"
-                   Text="{Binding ErrorImport}"
-                   TextColor="OrangeRed"/>
-        </Grid>
-    </Grid>
-    
+                    <VerticalStackLayout Grid.Column="1" Spacing="6">
+                        <Label Text="Clavier" StyleClass="label_field"/>
+                        <Picker ItemsSource="{Binding KeyboardLayoutAvailable}"
+                                SelectedItem="{Binding SelectedKeyboard}"
+                                StyleClass="picker_themed"/>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <Button Text="Analyser"
+                        StyleClass="ButtonHoverAddExercice"
+                        FontSize="18"
+                        FontAttributes="Bold"
+                        CornerRadius="10"
+                        Padding="30,12"
+                        HorizontalOptions="End"
+                        IsEnabled="{Binding IsFileSelected}"
+                        Command="{Binding ImportWordsFromFileCommand}"/>
+
+                <Label Text="{Binding ErrorImport}"
+                       StyleClass="label_error"/>
+            </VerticalStackLayout>
+        </Border>
+    </ScrollView>
+
 </ContentPage>

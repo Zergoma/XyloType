@@ -74,12 +74,12 @@ public static class MauiProgram
 
         builder.Services
             .AddMauiInfrastructure()        // declare a IAssetReader
-            .AddOctoTypeInfrastructure()    // need a IAssetReader
+            .AddXyloTypeInfrastructure()    // need a IAssetReader
 
             // presenters are used inside App Orchestrators
             .AddMauiPresenters()
 
-            .AddOctoTypeApplication()
+            .AddXyloTypeApplication()
             .AddViewModelsModule()
 
             .AddMauiViewFactories()

@@ -7,7 +7,7 @@ namespace XyloType.Application.DI;
 
 static internal class ApplicationOrchestratorModule
 {
-    public static IServiceCollection AddOctoTypeApplicationOrchestrators(this IServiceCollection services)
+    public static IServiceCollection AddXyloTypeApplicationOrchestrators(this IServiceCollection services)
     {
         // ****************************************************************************************************
         // Order manner

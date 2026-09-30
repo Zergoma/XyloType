@@ -8,6 +8,8 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
     private const string ErrorVolumeKey = "sound_error_volume";
     private const string BackReturnEnableKey = "typing_back_return_enable";
     private const string StopOnErrorKey = "typing_stop_on_error";
+    private const string LineNumberKey = "exercise_line_number";
+    private const string WordNumberKey = "exercise_word_number";
 
     private const double DefaultOkVolume = .3;
     private const double DefaultErrorVolume = .4;
@@ -37,4 +39,16 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
 
     public void SetStopOnError(bool enable)
         => Preferences.Default.Set(StopOnErrorKey, enable);
+
+    public int GetLineNumber()
+        => Preferences.Default.Get(LineNumberKey, IUserTypingPreferenceService.DefaultLineNumber);
+
+    public void SetLineNumber(int lineNumber)
+        => Preferences.Default.Set(LineNumberKey, lineNumber);
+
+    public int GetWordNumber()
+        => Preferences.Default.Get(WordNumberKey, IUserTypingPreferenceService.DefaultWordNumber);
+
+    public void SetWordNumber(int wordNumber)
+        => Preferences.Default.Set(WordNumberKey, wordNumber);
 }

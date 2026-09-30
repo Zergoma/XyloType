@@ -7,7 +7,7 @@ namespace XyloType.Application.DI;
 
 internal static class ApplicationServicesModule
 {
-    public static IServiceCollection AddOctoTypeApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddXyloTypeApplicationServices(this IServiceCollection services)
     {
         // ********************************************************************************************
         // Zero dependancies services

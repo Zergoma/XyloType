@@ -32,6 +32,13 @@
                         </VisualState.Setters>
                     </VisualState>
 
+                    <VisualState Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonDisabledBgLight}, Dark={StaticResource ButtonDisabledBgDark}}" />
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ButtonDisabledTextLight}, Dark={StaticResource ButtonDisabledTextDark}}" />
+                        </VisualState.Setters>
+                    </VisualState>
+
                 </VisualStateGroup>
 
             </VisualStateGroupList>
@@ -66,6 +73,13 @@
                         <VisualState.Setters>
                             <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonLaunchBgPressedLight}, Dark={StaticResource ButtonLaunchBgPressedDark}}" />
                             <Setter Property="Scale" Value="0.98" />
+                        </VisualState.Setters>
+                    </VisualState>
+
+                    <VisualState Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonDisabledBgLight}, Dark={StaticResource ButtonDisabledBgDark}}" />
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ButtonDisabledTextLight}, Dark={StaticResource ButtonDisabledTextDark}}" />
                         </VisualState.Setters>
                     </VisualState>
 
@@ -104,6 +118,13 @@
                             <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgPressedLight}, Dark={StaticResource ButtonPrimaryBgPressedDark}}" />
                             <Setter Property="Scale" Value="0.98" />
                             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryTextPressedLight}, Dark={StaticResource ButtonPrimaryTextPressedDark}}" />
+                        </VisualState.Setters>
+                    </VisualState>
+
+                    <VisualState Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonDisabledBgLight}, Dark={StaticResource ButtonDisabledBgDark}}" />
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ButtonDisabledTextLight}, Dark={StaticResource ButtonDisabledTextDark}}" />
                         </VisualState.Setters>
                     </VisualState>
 
