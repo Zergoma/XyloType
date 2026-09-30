@@ -159,12 +159,15 @@ public partial class TypingView : ContentPage
 
     public void ScrollToCurrentLine(int index)
     {
-        if(index <0 )
+        if (index < 0 || index >= TypingLinesLayout.Children.Count)
             return;
 
-        TypingCollectionView.ScrollTo(
-            index,
-            position: ScrollToPosition.Start,
-            animate: true);
+        if (TypingLinesLayout.Children[index] is not Element line)
+            return;
+
+        _ = TypingScrollView.ScrollToAsync(
+            line,
+            ScrollToPosition.Start,
+            animated: true);
     }
 }

@@ -30,56 +30,62 @@
                 StyleClass="BorderTypingRounded10, BorderBgTyping"
                 Padding="10">
 
-            <CollectionView ItemsSource="{Binding LinesStates}"
-                            x:DataType="vm:TypingViewModel"
-                            x:Name="TypingCollectionView"
-                            HeightRequest="350"
-                            VerticalOptions="Fill">
+            <!-- ScrollView + BindableLayout instead of CollectionView:
+                 CollectionView recycles its containers on Windows, which detaches
+                 FlexLayouts while they are still being arranged and crashes on resize. -->
+            <ScrollView x:Name="TypingScrollView"
+                        HeightRequest="350"
+                        VerticalOptions="Fill"
+                        VerticalScrollBarVisibility="Always">
 
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <FlexLayout x:DataType="vm:TypingLineStateViewModel"
-                                    Wrap="Wrap"
-                                    Direction="Row"
-                                    BindableLayout.ItemsSource="{Binding Characters}"
-                                    Padding="10,10">
+                <VerticalStackLayout x:Name="TypingLinesLayout"
+                                     BindableLayout.ItemsSource="{Binding LinesStates}">
 
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="vm:TypingCharStateViewModel">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TypingLineStateViewModel">
+                            <FlexLayout x:DataType="vm:TypingLineStateViewModel"
+                                        Wrap="Wrap"
+                                        Direction="Row"
+                                        BindableLayout.ItemsSource="{Binding Characters}"
+                                        Padding="10,10">
 
-                                    <Border StrokeShape="RoundRectangle 5"
-                                            Stroke="Transparent"
-                                            StrokeThickness="0"
-                                            BackgroundColor="{Binding BgColor, Converter={StaticResource stringToColor}}"
-                                            Margin="0,0,1,6"
-                                            VerticalOptions="Center">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:TypingCharStateViewModel">
 
-                                        <Grid RowDefinitions="auto, *"
-                                              HorizontalOptions="Center"
-                                              VerticalOptions="Center">
+                                        <Border StrokeShape="RoundRectangle 5"
+                                                Stroke="Transparent"
+                                                StrokeThickness="0"
+                                                BackgroundColor="{Binding BgColor, Converter={StaticResource stringToColor}}"
+                                                Margin="0,0,1,6"
+                                                VerticalOptions="Center">
 
-                                            <Label Text="{Binding Character}"
-                                                   TextColor="{Binding TextColor, Converter={StaticResource stringToColor}}"
-                                                   BackgroundColor="Transparent"
-                                                   FontSize="45"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center"/>
+                                            <Grid RowDefinitions="auto, *"
+                                                  HorizontalOptions="Center"
+                                                  VerticalOptions="Center">
 
-                                            <BoxView Grid.Row="1"
-                                                     HeightRequest="4"
-                                                     WidthRequest="20"
-                                                     BackgroundColor="{Binding BorderColor, Converter={StaticResource stringToColor}}" />
+                                                <Label Text="{Binding Character}"
+                                                       TextColor="{Binding TextColor, Converter={StaticResource stringToColor}}"
+                                                       BackgroundColor="Transparent"
+                                                       FontSize="45"
+                                                       HorizontalOptions="Center"
+                                                       VerticalOptions="Center"/>
 
-                                        </Grid>
-                                    </Border>
+                                                <BoxView Grid.Row="1"
+                                                         HeightRequest="4"
+                                                         WidthRequest="20"
+                                                         BackgroundColor="{Binding BorderColor, Converter={StaticResource stringToColor}}" />
 
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </FlexLayout>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
+                                            </Grid>
+                                        </Border>
 
-            </CollectionView>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+
+                </VerticalStackLayout>
+            </ScrollView>
         </Border>
 
         <Button Grid.Row="2"
