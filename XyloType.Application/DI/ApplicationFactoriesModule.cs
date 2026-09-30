@@ -8,7 +8,7 @@ namespace XyloType.Application.DI;
 
 internal static class ApplicationFactoriesModule
 {
-    public static IServiceCollection AddOctoTypeApplicationFactories(this IServiceCollection services)
+    public static IServiceCollection AddXyloTypeApplicationFactories(this IServiceCollection services)
     {
         services.AddTransient<IKeyBoardLayoutDtoFactory, KeyBoardLayoutDtoFactory>();
         services.AddTransient<ITypingExerciceSettingFactory, TypingExerciceSettingFactory>();

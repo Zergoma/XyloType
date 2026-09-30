@@ -4,14 +4,14 @@ namespace XyloType.Application.DI;
 
 static public class ApplicationModule
 {
-    public static IServiceCollection AddOctoTypeApplication(this IServiceCollection services)
+    public static IServiceCollection AddXyloTypeApplication(this IServiceCollection services)
     {
-        services.AddOctoTypeApplicationFactories();
-        services.AddOctoTypeApplicationValidators();
-        services.AddOctoTypeApplicationServices();
-        services.AddOctoTypeApplicationManagers();
-        services.AddOctoTypeApplicationOrchestrators();
-        services.AddOctoTypeApplicationUseCases();
+        services.AddXyloTypeApplicationFactories();
+        services.AddXyloTypeApplicationValidators();
+        services.AddXyloTypeApplicationServices();
+        services.AddXyloTypeApplicationManagers();
+        services.AddXyloTypeApplicationOrchestrators();
+        services.AddXyloTypeApplicationUseCases();
         
         return services;
     }

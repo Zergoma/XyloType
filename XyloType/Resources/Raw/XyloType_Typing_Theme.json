@@ -1,12 +1,12 @@
 {
-  "name": "OctoType_Typing_Theme",
+  "name": "XyloType_Typing_Theme",
 
   "pending": {
     "textColorLight": "#FF6B7280",
     "backgroundColorLight": "#00000000",
     "borderColorLight": "#00000000",
     "borderThicknessLight": 2,
-    "textColorDark": "#FF757575",
+    "textColorDark": "#FF8B93A1",
     "backgroundColorDark": "#00000000",
     "borderColorDark": "#00000000",
     "borderThicknessDark": 2
@@ -17,9 +17,9 @@
     "backgroundColorLight": "#00000000",
     "borderColorLight": "#FF2563EB",
     "borderThicknessLight": 0,
-    "textColorDark": "#FF757575",
+    "textColorDark": "#FF8B93A1",
     "backgroundColorDark": "#00000000",
-    "borderColorDark": "#FF04FF00",
+    "borderColorDark": "#FF7C9CFF",
     "borderThicknessDark": 0
   },
 
@@ -28,8 +28,8 @@
     "backgroundColorLight": "#FFDBEAFE",
     "borderColorLight": "#00000000",
     "borderThicknessLight": 0,
-    "textColorDark": "#FF1D99F9",
-    "backgroundColorDark": "#00000000",
+    "textColorDark": "#FF7C9CFF",
+    "backgroundColorDark": "#FF222B45",
     "borderColorDark": "#00000000",
     "borderThicknessDark": 0
   },
@@ -39,8 +39,8 @@
     "backgroundColorLight": "#FFFFEDD5",
     "borderColorLight": "#00000000",
     "borderThicknessLight": 0,
-    "textColorDark": "#FFFF8000",
-    "backgroundColorDark": "#FF471C05",
+    "textColorDark": "#FFFB923C",
+    "backgroundColorDark": "#FF3A2616",
     "borderColorDark": "#00000000",
     "borderThicknessDark": 0
   },
@@ -50,9 +50,9 @@
     "backgroundColorLight": "#00000000",
     "borderColorLight": "#FFEF4444",
     "borderThicknessLight": 2,
-    "textColorDark": "#FFFF4500",
+    "textColorDark": "#FFF87171",
     "backgroundColorDark": "#00000000",
-    "borderColorDark": "#FFFF2345",
+    "borderColorDark": "#FFEF4444",
     "borderThicknessDark": 2
   }
 }

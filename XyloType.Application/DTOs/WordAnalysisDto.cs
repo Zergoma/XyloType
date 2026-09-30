@@ -1,7 +1,7 @@
-﻿//using OctoType.Domain.Entities;
-//using OctoType.Domain.Models;
+﻿//using XyloType.Domain.Entities;
+//using XyloType.Domain.Models;
 
-//namespace OctoType.Application.DTOs;
+//namespace XyloType.Application.DTOs;
 
 //public class WordAnalysisDto
 //{

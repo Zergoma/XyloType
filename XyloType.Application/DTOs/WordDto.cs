@@ -1,5 +1,5 @@
 ﻿
-//namespace OctoType.Application.DTOs;
+//namespace XyloType.Application.DTOs;
 
 //public class WordDto
 //{

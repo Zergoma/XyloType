@@ -43,55 +43,57 @@
         <!--Selected exercice description-->
         <Border Grid.Row="1" Grid.Column="1"
                 StyleClass="BorderBgStd, BorderTypingRounded10"
-                Padding="10">
+                Padding="24,20">
 
             <Grid>
 
                 <!--In case there is no selected exercise-->
-                <Label IsVisible="{Binding IsNoSelection}" 
-                    Text="Select an exercice on the left"
-                       WidthRequest="200"
-                       FontSize="40"
+                <Label IsVisible="{Binding IsNoSelection}"
+                       Text="Sélectionnez un exercice à gauche"
+                       StyleClass="label_muted"
+                       FontSize="22"
+                       HorizontalTextAlignment="Center"
                        HorizontalOptions="Center"
                        VerticalOptions="Center"/>
 
                 <!--Details infos-->
-                <VerticalStackLayout IsVisible="{Binding IsSelectedExercice}">
-                    <Grid RowDefinitions="auto,auto" Margin="5,5,0,15">
-                        <Label Text="{Binding ExerciceName}" FontSize="34" FontAttributes="Bold"  />
-                        <Button Grid.Row="1" 
-                                StyleClass="ButtonHoverAddExercice"
-                                Text="Edit"
-                                MinimumHeightRequest="10"
-                                MinimumWidthRequest="10"
-                                HeightRequest="30"
-                                WidthRequest="30"
-                                Padding="0"
-                                FontSize="10" 
-                                Command="{Binding GoToUpdateExerciceCommand}"
-                                HorizontalOptions="Start"/>
+                <VerticalStackLayout IsVisible="{Binding IsSelectedExercice}" Spacing="16">
+                    <Grid ColumnDefinitions="*,auto" ColumnSpacing="10">
+                        <Label Text="{Binding ExerciceName}"
+                               StyleClass="label_page_title"
+                               VerticalOptions="Center"/>
+                        <Button Grid.Column="1"
+                                StyleClass="button_hover"
+                                Text="Modifier"
+                                MinimumHeightRequest="32"
+                                HeightRequest="32"
+                                Padding="16,0"
+                                CornerRadius="16"
+                                FontSize="12"
+                                VerticalOptions="Center"
+                                Command="{Binding GoToUpdateExerciceCommand}"/>
                     </Grid>
 
-                    <Border StyleClass="BorderRounded10, BorderBgDescription" Padding="10" Margin="0,0,0,30">
-                        <VerticalStackLayout>
-                            <Label Text="Description:" StyleClass="label_on_description" FontSize="12" Margin="0,0,0,10" />
-                            <Label Text="{Binding ExerciceDescription}" StyleClass="label_on_description" MinimumHeightRequest="50" />
+                    <Border StyleClass="BorderRounded10, BorderBgDescription" Padding="16,12">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="DESCRIPTION" StyleClass="label_on_description" FontSize="11" FontAttributes="Bold" Opacity="0.7"/>
+                            <Label Text="{Binding ExerciceDescription}" StyleClass="label_on_description" MinimumHeightRequest="40" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border StyleClass="BorderRounded10, BorderBgDescription" Padding="10" Margin="0,0,0,30">
-                        <VerticalStackLayout>
-                            <Label Text="Lettres:" StyleClass="label_on_description" FontSize="12" Margin="0,0,0,10" />
-                            <Label Text="{Binding ExerciceLetters}" StyleClass="label_on_description" />
+                    <Border StyleClass="BorderRounded10, BorderBgDescription" Padding="16,12">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="LETTRES" StyleClass="label_on_description" FontSize="11" FontAttributes="Bold" Opacity="0.7"/>
+                            <Label Text="{Binding ExerciceLetters}" StyleClass="label_on_description" FontSize="16"/>
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border IsVisible="{Binding IsDynamic}" HorizontalOptions="Center" StyleClass="BorderRounded10, BorderBgDescription" Padding="10">
-                        <Grid RowDefinitions="*,auto"
-                              ColumnDefinitions="auto,*"
-                              RowSpacing="5"
-                              ColumnSpacing="5">
-                            <Label Grid.Row="0" Text="Nombre de ligne" StyleClass="label_on_description" Margin="0,0,0,0" VerticalOptions="Center"/>
+                    <Border IsVisible="{Binding IsDynamic}" StyleClass="BorderRounded10, BorderBgDescription" Padding="16,12">
+                        <Grid RowDefinitions="auto,auto,auto"
+                              ColumnDefinitions="auto,100"
+                              RowSpacing="8"
+                              ColumnSpacing="12">
+                            <Label Grid.Row="0" Text="Nombre de lignes" StyleClass="label_on_description" VerticalOptions="Center"/>
                             <Entry Grid.Row="0" Grid.Column="1"
                                     Keyboard="Numeric"
                                     StyleClass="entry_no_spell_no_prediction, entry_small"
@@ -101,7 +103,7 @@
                                 </Entry.Behaviors>
                             </Entry>
 
-                            <Label Grid.Row="1" Text="Nombre de mot" StyleClass="label_on_description" Margin="0,0,0,0" VerticalOptions="Center"/>
+                            <Label Grid.Row="1" Text="Mots par ligne" StyleClass="label_on_description" VerticalOptions="Center"/>
                             <Entry Grid.Row="1" Grid.Column="1"
                                     Keyboard="Numeric"
                                     StyleClass="entry_no_spell_no_prediction, entry_small"
@@ -110,16 +112,31 @@
                                     <behaviors:DigitsOnlyBehavior />
                                 </Entry.Behaviors>
                             </Entry>
+
+                            <VerticalStackLayout Grid.Row="2" Grid.ColumnSpan="2">
+                                <Label Text="{Binding NbLineError}"
+                                       IsVisible="{Binding HasNbLineError}"
+                                       StyleClass="label_error"
+                                       FontSize="12"/>
+                                <Label Text="{Binding NbWordPerLineError}"
+                                       IsVisible="{Binding HasNbWordPerLineError}"
+                                       StyleClass="label_error"
+                                       FontSize="12"/>
+                            </VerticalStackLayout>
                         </Grid>
                     </Border>
-                    
 
-                    <Button HorizontalOptions="End" MinimumWidthRequest="70" MaximumWidthRequest="200" Text="Lancer !"
+
+                    <Button HorizontalOptions="End"
+                            Text="Lancer !"
                             Command="{Binding LaunchCommand}"
                             StyleClass="ButtonHoverLaunch"
-                            HeightRequest="90"
+                            HeightRequest="56"
+                            Padding="48,0"
+                            CornerRadius="12"
                             FontSize="20"
-                            Margin="10,40,50,10" />
+                            FontAttributes="Bold"
+                            Margin="0,14,0,0" />
 
 
                 </VerticalStackLayout>
@@ -129,22 +146,19 @@
         <!--All exercices-->
         <Border Grid.Row="1" Grid.Column="0"
                 StyleClass="BorderBgStd, BorderTypingRounded10"
-                Padding="10">
+                Padding="20">
 
 
             <Grid RowDefinitions="auto,*, 0.15*">
 
-                <Grid RowDefinitions="*,*">
+                <Grid RowDefinitions="auto,auto" RowSpacing="12" Margin="0,0,0,10">
 
                     <Label Grid.Row="0"
-                       Grid.ColumnSpan="2"
-                       Text="Exercices !"
-                       FontSize="34"
-                       FontAttributes="Bold"
-                       VerticalOptions="Center"
-                       HorizontalOptions="Center"/>
+                       Text="Exercices"
+                       StyleClass="label_page_title"
+                       VerticalOptions="Center"/>
 
-                    <Border Grid.Row="1" StyleClass="BorderRounded10, BorderBgDescription" Padding="10">
+                    <Border Grid.Row="1" StyleClass="BorderRounded10, BorderBgDescription" Padding="16,10">
                         <Grid ColumnDefinitions="auto,*"
                               RowDefinitions="*,auto">
                             <Label Text="Type de clavier" StyleClass="label_on_description" Margin="0,0,0,0" VerticalOptions="Center"/>
@@ -161,12 +175,12 @@
 
                 <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Always">
                     <Grid >
-                        <Label Text="Ajoutez des exercices !"
+                        <Label Text="Ajoutez des exercices avec le bouton +"
                            StyleClass="label_muted"
+                           FontSize="18"
                            IsVisible="{Binding HasNoExercice}"
- 
-                           WidthRequest="400"
-                           HeightRequest="400"/>
+                           HorizontalOptions="Center"
+                           Margin="0,40"/>
 
                         <FlexLayout Wrap="Wrap"
                             IsVisible="{Binding HasExercice}"
@@ -179,7 +193,8 @@
                                 <DataTemplate x:DataType="vm:ExerciceItemViewModel">
                                     <Border HeightRequest="120" WidthRequest="120"
                                             StyleClass="BorderBgBlue,BorderRounded10,BorderHoverLaunch"
-                                            Margin="5,5,0,0">
+                                            Margin="6"
+                                            Padding="10,12">
 
                                         <Border.GestureRecognizers>
                                             <TapGestureRecognizer 
@@ -224,7 +239,7 @@
                                             </DataTrigger>
                                         </Border.Triggers>
 
-                                        <Grid RowDefinitions="auto,auto,auto">
+                                        <Grid RowDefinitions="auto,*,auto">
 
                                             <Label Grid.Row="0" Text="{Binding Name}" 
                                                    StyleClass="label_on_tile"
@@ -232,17 +247,22 @@
                                                    HorizontalOptions="Center"
                                                    VerticalOptions="Center"
                                                    FontSize="17"
-                                                   Margin="0,0,0,15"/>
+                                                   LineBreakMode="TailTruncation"
+                                                   Margin="0,0,0,8"/>
 
                                             <Label Grid.Row="1" Text="{Binding Letters}"
                                                    StyleClass="label_on_tile_secondary"
-                                                   FontSize="10"
-                                                   Margin="10,0"/>
+                                                   FontSize="11"
+                                                   LineBreakMode="WordWrap"
+                                                   MaxLines="3"
+                                                   Margin="0"/>
 
                                             <Border Grid.Row="2"
                                                 IsVisible="{Binding IsDynamic}"
                                                 StrokeShape="RoundRectangle 6" HorizontalOptions="End"
-                                                Padding="5,0,5,2" Margin="0,10,5,0">
+                                                Stroke="Transparent"
+                                                BackgroundColor="#33FFFFFF"
+                                                Padding="6,1,6,2" Margin="0,6,0,0">
 
                                                 <Label Text="{Binding TextType}" HorizontalOptions="End"
                                                        VerticalOptions="End"

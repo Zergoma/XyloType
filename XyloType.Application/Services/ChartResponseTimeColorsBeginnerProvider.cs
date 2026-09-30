@@ -32,7 +32,7 @@ public class ChartResponseTimeColorsBeginnerProvider : IChartResponseTimeColorsP
     {
         return themeState switch
         {
-            ThemeState.Dark => "#000000",
+            ThemeState.Dark => "#1E2229",
             _ => "#FFFFFF",
         };
         
@@ -42,8 +42,8 @@ public class ChartResponseTimeColorsBeginnerProvider : IChartResponseTimeColorsP
     {
         return themeState switch
         {
-            ThemeState.Dark => "#FFFFFF",
-            _ => "#000000",
+            ThemeState.Dark => "#E5E7EB",
+            _ => "#1F2937",
         };
     }
 }

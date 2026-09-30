@@ -9,7 +9,7 @@ namespace XyloType.Application.DI;
 
 internal static class ApplicationManagersModule
 {
-    public static IServiceCollection AddOctoTypeApplicationManagers(this IServiceCollection services)
+    public static IServiceCollection AddXyloTypeApplicationManagers(this IServiceCollection services)
     {
         services.AddTransient<ITypingExercicesManager, TypingExercicesManager>();
         services.AddTransient<IKeyboardKeyLocatorManager, KeyboardKeyLocatorManager>(); //IKeyboardKeysLocator

@@ -48,6 +48,37 @@
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
     </Style>
 
+    <Style TargetType="Label" Class="label_page_title">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextTitleLight}, Dark={StaticResource TextTitleDark}}" />
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Label" Class="label_section_title">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextTitleLight}, Dark={StaticResource TextTitleDark}}" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Label" Class="label_field">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <Style TargetType="Label" Class="label_stat_value">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextAccentLight}, Dark={StaticResource TextAccentDark}}" />
+        <Setter Property="FontSize" Value="40" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style TargetType="Label" Class="label_error">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextErrorLight}, Dark={StaticResource TextErrorDark}}" />
+    </Style>
+
+    <Style TargetType="Label" Class="label_success">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextSuccessLight}, Dark={StaticResource TextSuccessDark}}" />
+    </Style>
+
 
     <Style TargetType="Picker" Class="picker_themed">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PickerTextLight}, Dark={StaticResource PickerTextDark}}" />

@@ -98,16 +98,35 @@ public partial class TypingLauncherViewModel : ObservableObject
     public partial int NbLine { get; set; }
     partial void OnNbLineChanged(int value)
     {
-        _typingExerciceLineNumberService.LineNumber=value;
+        Result<bool> result = _typingExerciceLineNumberService.SetLineNumber(value);
+        NbLineError = result.Success ? string.Empty : result.Error;
     }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasNbLineError))]
+    [NotifyCanExecuteChangedFor(nameof(LaunchCommand))]
+    public partial string NbLineError { get; set; } = string.Empty;
+
+    public bool HasNbLineError => !string.IsNullOrEmpty(NbLineError);
 
 
     [ObservableProperty]
     public partial int NbWordPerLine { get; set; }
     partial void OnNbWordPerLineChanged(int value)
     {
-        _typingExerciceWordNumberService.ItemNumber=value;
+        Result<bool> result = _typingExerciceWordNumberService.SetItemNumber(value);
+        NbWordPerLineError = result.Success ? string.Empty : result.Error;
     }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasNbWordPerLineError))]
+    [NotifyCanExecuteChangedFor(nameof(LaunchCommand))]
+    public partial string NbWordPerLineError { get; set; } = string.Empty;
+
+    public bool HasNbWordPerLineError => !string.IsNullOrEmpty(NbWordPerLineError);
+
+    private bool CanLaunch()
+        => !IsDynamic || (!HasNbLineError && !HasNbWordPerLineError);
 
     public bool HasExercice => AllExercice.Count > 0;
 
@@ -159,6 +178,7 @@ public partial class TypingLauncherViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ExerciceDescription))]
     [NotifyPropertyChangedFor(nameof(ExerciceLetters))]
     [NotifyPropertyChangedFor(nameof(IsDynamic))]
+    [NotifyCanExecuteChangedFor(nameof(LaunchCommand))]
     public partial ExerciceItemViewModel? ExerciceSelected { get; set; }
 
 
@@ -184,7 +204,7 @@ public partial class TypingLauncherViewModel : ObservableObject
         _typingExerciceEngine?.SetIdx(ExerciceSelected.Idx);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanLaunch))]
     public async Task Launch()
     {
         if (_typingExerciceEngine == null)

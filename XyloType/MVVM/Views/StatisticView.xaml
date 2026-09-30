@@ -1,4 +1,6 @@
 <ContentPage x:Class="XyloType.MVVM.Views.StatisticView"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm ="clr-namespace:XyloType.MVVM.ViewModels"
              xmlns:micro="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui"
              x:DataType="vm:StatisticViewModelMauiAdapter"
@@ -9,103 +11,73 @@
 
 
     <ScrollView>
-        <Grid RowDefinitions="auto,auto,auto,auto">
-            <Label Grid.Row="0"
-            Text="Statistics"
-               FontSize="45"
-               Margin="20,10,0,0"
-               />
+        <VerticalStackLayout Padding="30,20,30,30" Spacing="20">
 
-            <Border Grid.Row="1"
-            Margin="30,20,30,10"
-            StyleClass="BorderTypingRounded10, BorderBgTyping"
-                Padding="10">
+            <Label Text="Statistics"
+                   StyleClass="label_page_title"/>
 
-                <Grid ColumnDefinitions="*,*">
+            <!-- speed -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
 
-                    <Grid Grid.Column="0"
-                      HorizontalOptions="Center"
-                    ColumnDefinitions="auto,*">
+                <Border Grid.Column="0"
+                        StyleClass="BorderTypingRounded10, BorderBgTyping"
+                        Padding="20,16">
+                    <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                        <Label Text="{Binding WordsPerMinuteText}"
+                               StyleClass="label_stat_value"
+                               HorizontalOptions="Center"/>
+                        <Label Text="WPM · words per minute"
+                               StyleClass="label_muted"
+                               HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </Border>
 
-                        <Label Grid.Column="1" 
-                        Text="WPM"
-                        FontSize="20"
-                        VerticalOptions="Center"/>
+                <Border Grid.Column="1"
+                        StyleClass="BorderTypingRounded10, BorderBgTyping"
+                        Padding="20,16">
+                    <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                        <Label Text="{Binding LetterPerMinuteText}"
+                               StyleClass="label_stat_value"
+                               HorizontalOptions="Center"/>
+                        <Label Text="LPM · letters per minute"
+                               StyleClass="label_muted"
+                               HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
 
-                        <Label Grid.Column="0" 
-                        Text="{Binding WordsPerMinuteText}"
-                        Margin="10,0"
-                        FontSize="30"
-                           VerticalOptions="Center"
-                        TextColor="DarkSlateGray"/>
-                    </Grid>
+            <!-- response time -->
+            <Border StyleClass="BorderTypingRounded10, BorderBgTyping"
+                    Padding="20,16,20,20">
 
-                    <Grid Grid.Column="1"
-                      HorizontalOptions="Center"
-                    ColumnDefinitions="auto,*">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Response time (s)"
+                           StyleClass="label_section_title"/>
 
-                        <Label Grid.Column="1" 
-                        Text="LPM"
-                        FontSize="20"
-                           VerticalOptions="Center"/>
+                    <Label Text="The less, the better"
+                           StyleClass="label_muted"
+                           Margin="0,0,0,10"/>
 
-                        <Label Grid.Column="0" 
-                        Text="{Binding LetterPerMinuteText}"
-                        Margin="10"
-                        FontSize="30"
-                        TextColor="DarkSlateGray"
-                           VerticalOptions="Center"/>
-                    </Grid>
-                </Grid>
+                    <micro:ChartView Chart="{Binding TimeResponseChart}"
+                                     HeightRequest="200"/>
+                </VerticalStackLayout>
             </Border>
 
+            <!-- errors -->
+            <Border StyleClass="BorderTypingRounded10, BorderBgTyping"
+                    Padding="20,16,20,20"
+                    IsVisible="{Binding HasError}">
 
-            <Border Grid.Row="2"
-            Margin="30,30,30,10"
-                StyleClass="BorderTypingRounded10, BorderBgTyping"
-                Padding="20, 10,20,20">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Errors"
+                           StyleClass="label_section_title"
+                           Margin="0,0,0,10"/>
 
-                <Grid RowDefinitions="*,*,*">
-                    <Label Grid.Row="0"
-                    Text="Response time(s)"
-                       Margin="10,0"
-                       FontSize="25"/>
-
-                    <Label Grid.Row="1"
-                        Text="The less, the better"
-                        Margin="10,0"
-                        FontSize="15"
-                        TextColor="DarkSlateGray"/>
-
-                    <micro:ChartView  Grid.Row="2" 
-                            Chart="{Binding TimeResponseChart}" 
-                             HeightRequest="200"
-                             WidthRequest="800"
-                             />
-                </Grid>
+                    <micro:ChartView Chart="{Binding ErrorsChart}"
+                                     HeightRequest="350"/>
+                </VerticalStackLayout>
             </Border>
 
-            <Border Grid.Row="3"
-            Margin="30,0,30,30"
-                StyleClass="BorderTypingRounded10, BorderBgTyping"
-                Padding="20,10,20,20"
-                IsVisible="{Binding HasError}">
-
-                <Grid RowDefinitions="*,*">
-                    <Label Grid.Row="0"
-                    Text="Errors"
-                    Margin="10,0"
-                    FontSize="25"/>
-
-                    <micro:ChartView  Grid.Row="1" 
-                    Chart="{Binding ErrorsChart}" 
-                     HeightRequest="350"
-                     WidthRequest="800"
-                     />
-                </Grid>
-            </Border>
-
-
-        </Grid>
+        </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

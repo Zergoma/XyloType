@@ -97,16 +97,16 @@
 	  <MauiXaml Update="MVVM\Views\TypingView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Resources\Styles\OctoTypeColors.xaml">
+	  <MauiXaml Update="Resources\Styles\XyloTypeColors.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Resources\Styles\OctoTypeStyleButton.xaml">
+	  <MauiXaml Update="Resources\Styles\XyloTypeStyleButton.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Resources\Styles\OctoTypeStyleBorder.xaml">
+	  <MauiXaml Update="Resources\Styles\XyloTypeStyleBorder.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Resources\Styles\OctoTypeStyle.xaml">
+	  <MauiXaml Update="Resources\Styles\XyloTypeStyle.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

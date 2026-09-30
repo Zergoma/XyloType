@@ -3,98 +3,117 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <!-- Surfaces -->
-    <Color x:Key="PageBgDark">#26282C</Color>
+    <Color x:Key="PageBgDark">#14161B</Color>
     <Color x:Key="PageBgLight">#EEF1F6</Color>
 
-    <Color x:Key="BorderBgStdDark">#191A1C</Color>
+    <Color x:Key="BorderBgStdDark">#1E2229</Color>
     <Color x:Key="BorderBgStdLight">#FFFFFF</Color>
 
-    <Color x:Key="BorderBgDescriptionDark">#29292C</Color>
+    <Color x:Key="BorderBgDescriptionDark">#252C3B</Color>
     <Color x:Key="BorderBgDescriptionLight">#EAF0FD</Color>
 
-    <Color x:Key="BorderBgBlueDark">#3871E1</Color>
+    <Color x:Key="BorderBgBlueDark">#4A5FD6</Color>
     <Color x:Key="BorderBgBlueLight">#4F6BED</Color>
 
-    <Color x:Key="BorderBgTypingDark">#000</Color>
+    <Color x:Key="BorderBgTypingDark">#1E2229</Color>
     <Color x:Key="BorderBgTypingLight">#FFFFFF</Color>
 
-    <Color x:Key="BorderTypingRounded10BorderDark">#26282C</Color>
+    <Color x:Key="BorderTypingRounded10BorderDark">#2E3440</Color>
     <Color x:Key="BorderTypingRounded10BorderLight">#D8DEE8</Color>
 
     <!-- Semi-transparent veil over the typing area when focus is lost -->
-    <Color x:Key="OverlayBgDark">#B3000000</Color>
+    <Color x:Key="OverlayBgDark">#B314161B</Color>
     <Color x:Key="OverlayBgLight">#B3FFFFFF</Color>
 
     <!-- Text -->
-    <Color x:Key="TextOnDescriptionDark">#FFFFFF</Color>
+    <Color x:Key="TextOnDescriptionDark">#C7D2FE</Color>
     <Color x:Key="TextOnDescriptionLight">#1E3A8A</Color>
 
     <Color x:Key="TextOnTileDark">#FFFFFF</Color>
     <Color x:Key="TextOnTileLight">#FFFFFF</Color>
 
-    <Color x:Key="TextOnTileSecondaryDark">#FFFFFF</Color>
+    <Color x:Key="TextOnTileSecondaryDark">#DDE3FF</Color>
     <Color x:Key="TextOnTileSecondaryLight">#E0E7FF</Color>
 
-    <Color x:Key="TextMutedDark">#FFFFFF</Color>
+    <Color x:Key="TextMutedDark">#9AA3B2</Color>
     <Color x:Key="TextMutedLight">#6B7280</Color>
 
+    <Color x:Key="TextTitleDark">#F3F4F6</Color>
+    <Color x:Key="TextTitleLight">#111827</Color>
+
+    <Color x:Key="TextAccentDark">#7C9CFF</Color>
+    <Color x:Key="TextAccentLight">#2F6FEB</Color>
+
+    <Color x:Key="TextErrorDark">#F87171</Color>
+    <Color x:Key="TextErrorLight">#DC2626</Color>
+
+    <Color x:Key="TextSuccessDark">#34D399</Color>
+    <Color x:Key="TextSuccessLight">#047857</Color>
+
     <!-- Picker -->
-    <Color x:Key="PickerBgDark">#444</Color>
+    <Color x:Key="PickerBgDark">#2A303B</Color>
     <Color x:Key="PickerBgLight">#FFFFFF</Color>
 
-    <Color x:Key="PickerTextDark">#FFFFFF</Color>
+    <Color x:Key="PickerTextDark">#E5E7EB</Color>
     <Color x:Key="PickerTextLight">#1F2937</Color>
 
     <!-- Exercise tiles -->
-    <Color x:Key="TileBgDark">#0BA51D</Color>
+    <Color x:Key="TileBgDark">#3D4FB8</Color>
     <Color x:Key="TileBgLight">#4F6BED</Color>
 
-    <Color x:Key="TileBgHoverDark">#0EC923</Color>
+    <Color x:Key="TileBgHoverDark">#4A5FD6</Color>
     <Color x:Key="TileBgHoverLight">#3F5BD9</Color>
 
-    <Color x:Key="TileBgPressedDark">#00BCC6</Color>
+    <Color x:Key="TileBgPressedDark">#32429C</Color>
     <Color x:Key="TileBgPressedLight">#3349B8</Color>
 
-    <Color x:Key="TileSelectedBgDark">#FF2000</Color>
+    <Color x:Key="TileSelectedBgDark">#E8672A</Color>
     <Color x:Key="TileSelectedBgLight">#F97316</Color>
 
-    <Color x:Key="TileSelectedBgHoverDark">#FF5500</Color>
+    <Color x:Key="TileSelectedBgHoverDark">#F07B3F</Color>
     <Color x:Key="TileSelectedBgHoverLight">#EA580C</Color>
 
-    <Color x:Key="TileSelectedStrokeDark">#FF5500</Color>
+    <Color x:Key="TileSelectedStrokeDark">#FDBA74</Color>
     <Color x:Key="TileSelectedStrokeLight">#C2410C</Color>
 
+    <!-- Disabled buttons -->
+    <Color x:Key="ButtonDisabledBgDark">#2A303B</Color>
+    <Color x:Key="ButtonDisabledBgLight">#CBD5E1</Color>
+
+    <Color x:Key="ButtonDisabledTextDark">#6B7280</Color>
+    <Color x:Key="ButtonDisabledTextLight">#64748B</Color>
+
     <!-- Neutral button (button_hover) -->
-    <Color x:Key="ButtonNeutralBgDark">#333</Color>
+    <Color x:Key="ButtonNeutralBgDark">#343B47</Color>
     <Color x:Key="ButtonNeutralBgLight">#334155</Color>
 
-    <Color x:Key="ButtonNeutralBgHoverDark">#555</Color>
+    <Color x:Key="ButtonNeutralBgHoverDark">#434B59</Color>
     <Color x:Key="ButtonNeutralBgHoverLight">#475569</Color>
 
-    <Color x:Key="ButtonNeutralBgPressedDark">#777</Color>
+    <Color x:Key="ButtonNeutralBgPressedDark">#525B6B</Color>
     <Color x:Key="ButtonNeutralBgPressedLight">#64748B</Color>
 
     <!-- Launch button (ButtonHoverLaunch) -->
-    <Color x:Key="ButtonLaunchBgDark">#0BA51D</Color>
+    <Color x:Key="ButtonLaunchBgDark">#1F9D55</Color>
     <Color x:Key="ButtonLaunchBgLight">#16A34A</Color>
 
-    <Color x:Key="ButtonLaunchBgHoverDark">#0EC923</Color>
+    <Color x:Key="ButtonLaunchBgHoverDark">#26B563</Color>
     <Color x:Key="ButtonLaunchBgHoverLight">#15803D</Color>
 
-    <Color x:Key="ButtonLaunchBgPressedDark">#00BCC6</Color>
+    <Color x:Key="ButtonLaunchBgPressedDark">#188146</Color>
     <Color x:Key="ButtonLaunchBgPressedLight">#166534</Color>
 
     <!-- Primary button (ButtonHoverAddExercice) -->
-    <Color x:Key="ButtonPrimaryBgDark">#117FD2</Color>
+    <Color x:Key="ButtonPrimaryBgDark">#3B6FE0</Color>
     <Color x:Key="ButtonPrimaryBgLight">#2F6FEB</Color>
 
-    <Color x:Key="ButtonPrimaryBgHoverDark">#2AA18B</Color>
+    <Color x:Key="ButtonPrimaryBgHoverDark">#5584EA</Color>
     <Color x:Key="ButtonPrimaryBgHoverLight">#1D5BD8</Color>
 
-    <Color x:Key="ButtonPrimaryBgPressedDark">#2AE73F</Color>
+    <Color x:Key="ButtonPrimaryBgPressedDark">#2F5BC0</Color>
     <Color x:Key="ButtonPrimaryBgPressedLight">#1849B8</Color>
 
-    <Color x:Key="ButtonPrimaryTextDark">#002B36</Color>
+    <Color x:Key="ButtonPrimaryTextDark">#FFFFFF</Color>
     <Color x:Key="ButtonPrimaryTextLight">#FFFFFF</Color>
 
     <Color x:Key="ButtonPrimaryTextPressedDark">#FFFFFF</Color>

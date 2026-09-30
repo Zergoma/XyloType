@@ -10,7 +10,7 @@ namespace XyloType.Application.DI;
 
 internal static class ApplicationValidatorsModule
 {
-    public static IServiceCollection AddOctoTypeApplicationValidators(this IServiceCollection services)
+    public static IServiceCollection AddXyloTypeApplicationValidators(this IServiceCollection services)
     {
         services.AddTransient<IValidator<TypingExerciseCreateParameters>, TypingExerciseCreateParametersValidator>();
         services.AddTransient<IValidator<TypingExercise>, TypingExerciceValidator>();

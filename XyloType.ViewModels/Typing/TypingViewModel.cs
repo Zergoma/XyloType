@@ -168,7 +168,7 @@ public partial class TypingViewModel : ObservableObject
         // TODO
         // to property, + user access
         Result <ITypingTheme> themeResu =
-            await _typingThemeProvider.GetThemeAsync("OctoType_Typing_Theme", themeState);
+            await _typingThemeProvider.GetThemeAsync("XyloType_Typing_Theme", themeState);
 
         if (!themeResu.Success)
         {
