@@ -74,15 +74,15 @@
 
                     <Border StyleClass="BorderRounded10, BorderBgDescription" Padding="10" Margin="0,0,0,30">
                         <VerticalStackLayout>
-                            <Label Text="Description:" TextColor="White" FontSize="12" Margin="0,0,0,10" />
-                            <Label Text="{Binding ExerciceDescription}" TextColor="White" MinimumHeightRequest="50" />
+                            <Label Text="Description:" StyleClass="label_on_description" FontSize="12" Margin="0,0,0,10" />
+                            <Label Text="{Binding ExerciceDescription}" StyleClass="label_on_description" MinimumHeightRequest="50" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border StyleClass="BorderRounded10, BorderBgDescription" Padding="10" Margin="0,0,0,30">
                         <VerticalStackLayout>
-                            <Label Text="Lettres:" TextColor="White" FontSize="12" Margin="0,0,0,10" />
-                            <Label Text="{Binding ExerciceLetters}" TextColor="White" />
+                            <Label Text="Lettres:" StyleClass="label_on_description" FontSize="12" Margin="0,0,0,10" />
+                            <Label Text="{Binding ExerciceLetters}" StyleClass="label_on_description" />
                         </VerticalStackLayout>
                     </Border>
 
@@ -91,7 +91,7 @@
                               ColumnDefinitions="auto,*"
                               RowSpacing="5"
                               ColumnSpacing="5">
-                            <Label Grid.Row="0" Text="Nombre de ligne" TextColor="White" Margin="0,0,0,0" VerticalOptions="Center"/>
+                            <Label Grid.Row="0" Text="Nombre de ligne" StyleClass="label_on_description" Margin="0,0,0,0" VerticalOptions="Center"/>
                             <Entry Grid.Row="0" Grid.Column="1"
                                     Keyboard="Numeric"
                                     StyleClass="entry_no_spell_no_prediction, entry_small"
@@ -101,7 +101,7 @@
                                 </Entry.Behaviors>
                             </Entry>
 
-                            <Label Grid.Row="1" Text="Nombre de mot" TextColor="White" Margin="0,0,0,0" VerticalOptions="Center"/>
+                            <Label Grid.Row="1" Text="Nombre de mot" StyleClass="label_on_description" Margin="0,0,0,0" VerticalOptions="Center"/>
                             <Entry Grid.Row="1" Grid.Column="1"
                                     Keyboard="Numeric"
                                     StyleClass="entry_no_spell_no_prediction, entry_small"
@@ -147,10 +147,9 @@
                     <Border Grid.Row="1" StyleClass="BorderRounded10, BorderBgDescription" Padding="10">
                         <Grid ColumnDefinitions="auto,*"
                               RowDefinitions="*,auto">
-                            <Label Text="Type de clavier" TextColor="White" Margin="0,0,0,0" VerticalOptions="Center"/>
+                            <Label Text="Type de clavier" StyleClass="label_on_description" Margin="0,0,0,0" VerticalOptions="Center"/>
                             <Picker Grid.Column="1" ItemsSource="{Binding KeyboardLayoutAvailable}" SelectedItem="{Binding KeyboardLayoutSelected}" 
-                                TextColor="white"
-                                BackgroundColor="#444"
+                                StyleClass="picker_themed"
                                 Margin="10,0,0,0"
                                 VerticalTextAlignment="Center"/>
 
@@ -163,7 +162,7 @@
                 <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Always">
                     <Grid >
                         <Label Text="Ajoutez des exercices !"
-                           TextColor="White"
+                           StyleClass="label_muted"
                            IsVisible="{Binding HasNoExercice}"
  
                            WidthRequest="400"
@@ -193,9 +192,9 @@
                                             <DataTrigger TargetType="Border"
                                                          Binding="{Binding IsSelected}"
                                                          Value="True">
-                                                <Setter Property="BackgroundColor" Value="#FF2000"/>
+                                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgLight}, Dark={StaticResource TileSelectedBgDark}}"/>
                                                 <Setter Property="StrokeThickness" Value="2" />
-                                                <Setter Property="Stroke" Value="#FF5500" />
+                                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource TileSelectedStrokeLight}, Dark={StaticResource TileSelectedStrokeDark}}" />
                                                 <Setter Property="Scale" Value="1.05" />
 
 
@@ -207,13 +206,13 @@
 
                                                             <VisualState Name="Normal">
                                                                 <VisualState.Setters>
-                                                                    <Setter Property="BackgroundColor" Value="#FF2000" />
+                                                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgLight}, Dark={StaticResource TileSelectedBgDark}}" />
                                                                 </VisualState.Setters>
                                                             </VisualState>
 
                                                             <VisualState Name="PointerOver">
                                                                 <VisualState.Setters>
-                                                                    <Setter Property="BackgroundColor" Value="#FF5500" />
+                                                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgHoverLight}, Dark={StaticResource TileSelectedBgHoverDark}}" />
                                                                 </VisualState.Setters>
                                                             </VisualState>
 
@@ -228,14 +227,15 @@
                                         <Grid RowDefinitions="auto,auto,auto">
 
                                             <Label Grid.Row="0" Text="{Binding Name}" 
-                                                   TextColor="White"
+                                                   StyleClass="label_on_tile"
                                                    FontAttributes="Bold"
                                                    HorizontalOptions="Center"
                                                    VerticalOptions="Center"
                                                    FontSize="17"
                                                    Margin="0,0,0,15"/>
 
-                                            <Label Grid.Row="1" Text="{Binding Letters}" 
+                                            <Label Grid.Row="1" Text="{Binding Letters}"
+                                                   StyleClass="label_on_tile_secondary"
                                                    FontSize="10"
                                                    Margin="10,0"/>
 
@@ -246,7 +246,7 @@
 
                                                 <Label Text="{Binding TextType}" HorizontalOptions="End"
                                                        VerticalOptions="End"
-                                                        FontSize="12" TextColor="White"/>
+                                                        FontSize="12" StyleClass="label_on_tile"/>
                                             </Border>
                                         </Grid>
                                     </Border>

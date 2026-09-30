@@ -4,7 +4,7 @@
 
 
     <Style TargetType="Button" Class="button_hover">
-        <Setter Property="BackgroundColor" Value="#333"/>
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonNeutralBgLight}, Dark={StaticResource ButtonNeutralBgDark}}"/>
         <Setter Property="TextColor" Value="White"/>
 
         <Setter Property="VisualStateManager.VisualStateGroups">
@@ -15,19 +15,19 @@
 
                     <VisualState Name="Normal">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#333"/>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonNeutralBgLight}, Dark={StaticResource ButtonNeutralBgDark}}"/>
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="PointerOver">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#555"/>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonNeutralBgHoverLight}, Dark={StaticResource ButtonNeutralBgHoverDark}}"/>
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#777"/>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonNeutralBgPressedLight}, Dark={StaticResource ButtonNeutralBgPressedDark}}"/>
                             <Setter Property="Scale" Value="0.98"/>
                         </VisualState.Setters>
                     </VisualState>
@@ -41,7 +41,7 @@
 
 
     <Style TargetType="Button" Class="ButtonHoverLaunch">
-        <Setter Property="BackgroundColor" Value="#0BA51D" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonLaunchBgLight}, Dark={StaticResource ButtonLaunchBgDark}}" />
         <Setter Property="TextColor" Value="White" />
 
         <Setter Property="VisualStateManager.VisualStateGroups">
@@ -52,19 +52,19 @@
 
                     <VisualState Name="Normal">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#0BA51D" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonLaunchBgLight}, Dark={StaticResource ButtonLaunchBgDark}}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="PointerOver">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#0EC923" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonLaunchBgHoverLight}, Dark={StaticResource ButtonLaunchBgHoverDark}}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#00BCC6" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonLaunchBgPressedLight}, Dark={StaticResource ButtonLaunchBgPressedDark}}" />
                             <Setter Property="Scale" Value="0.98" />
                         </VisualState.Setters>
                     </VisualState>
@@ -77,8 +77,8 @@
     </Style>
 
     <Style TargetType="Button" Class="ButtonHoverAddExercice">
-        <Setter Property="BackgroundColor" Value="#117FD2" />
-        <Setter Property="TextColor" Value="#002B36" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryTextLight}, Dark={StaticResource ButtonPrimaryTextDark}}" />
 
         <Setter Property="VisualStateManager.VisualStateGroups">
 
@@ -88,22 +88,22 @@
 
                     <VisualState Name="Normal">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#117FD2" />
-                            <Setter Property="TextColor" Value="#002B36" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}" />
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryTextLight}, Dark={StaticResource ButtonPrimaryTextDark}}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="PointerOver">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#2AA18B" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgHoverLight}, Dark={StaticResource ButtonPrimaryBgHoverDark}}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#2AE73F" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgPressedLight}, Dark={StaticResource ButtonPrimaryBgPressedDark}}" />
                             <Setter Property="Scale" Value="0.98" />
-                            <Setter Property="TextColor" Value="White" />
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryTextPressedLight}, Dark={StaticResource ButtonPrimaryTextPressedDark}}" />
                         </VisualState.Setters>
                     </VisualState>
 
@@ -115,7 +115,7 @@
     </Style>
 
     <Style TargetType="Border" Class="BorderHoverLaunch">
-        <Setter Property="BackgroundColor" Value="#0BA51D" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileBgLight}, Dark={StaticResource TileBgDark}}" />
 
 
         <Setter Property="VisualStateManager.VisualStateGroups">
@@ -126,19 +126,19 @@
 
                     <VisualState Name="Normal">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#0BA51D" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileBgLight}, Dark={StaticResource TileBgDark}}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="PointerOver">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#0EC923" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileBgHoverLight}, Dark={StaticResource TileBgHoverDark}}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="#00BCC6" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileBgPressedLight}, Dark={StaticResource TileBgPressedDark}}" />
                             <Setter Property="Scale" Value="0.98" />
                         </VisualState.Setters>
                     </VisualState>

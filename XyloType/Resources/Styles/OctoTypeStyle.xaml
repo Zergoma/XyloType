@@ -32,6 +32,29 @@
     </Style>
 
 
+    <Style TargetType="Label" Class="label_on_description">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextOnDescriptionLight}, Dark={StaticResource TextOnDescriptionDark}}" />
+    </Style>
+
+    <Style TargetType="Label" Class="label_on_tile">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextOnTileLight}, Dark={StaticResource TextOnTileDark}}" />
+    </Style>
+
+    <Style TargetType="Label" Class="label_on_tile_secondary">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextOnTileSecondaryLight}, Dark={StaticResource TextOnTileSecondaryDark}}" />
+    </Style>
+
+    <Style TargetType="Label" Class="label_muted">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
+    </Style>
+
+
+    <Style TargetType="Picker" Class="picker_themed">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PickerTextLight}, Dark={StaticResource PickerTextDark}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PickerBgLight}, Dark={StaticResource PickerBgDark}}" />
+    </Style>
+
+
     <Style TargetType="Entry" Class="entry_no_spell_no_prediction">
         <Setter Property="IsTextPredictionEnabled" Value="False" />
         <Setter Property="IsSpellCheckEnabled" Value="False" />
