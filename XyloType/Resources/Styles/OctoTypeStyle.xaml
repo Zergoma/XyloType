@@ -55,6 +55,13 @@
     </Style>
 
 
+    <Style TargetType="Slider" Class="slider_themed">
+        <Setter Property="MinimumTrackColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}" />
+        <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}" />
+        <Setter Property="MaximumTrackColor" Value="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource PickerBgDark}}" />
+    </Style>
+
+
     <Style TargetType="Entry" Class="entry_no_spell_no_prediction">
         <Setter Property="IsTextPredictionEnabled" Value="False" />
         <Setter Property="IsSpellCheckEnabled" Value="False" />

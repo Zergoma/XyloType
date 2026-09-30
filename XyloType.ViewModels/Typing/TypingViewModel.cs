@@ -17,6 +17,9 @@ namespace XyloType.ViewModels.Typing;
 
 public partial class TypingViewModel : ObservableObject
 {
+    private const string KeyOkSound = "key_ok.wav";
+    private const string KeyErrorSound = "key_error.wav";
+
     public event Action<int>? LineChanged;
 
     public TypingSession Session { get; } = new();
@@ -26,13 +29,15 @@ public partial class TypingViewModel : ObservableObject
     private readonly IInputCharMapperService _charMapper;
     private readonly IThemeChangerService _themeChangerService;
     private readonly IPlaySoundSample _soundSamplePlayer;
+    private readonly IUserTypingPreferenceService _typingPreference;
 
 
     public TypingViewModel(
         IInputCharMapperService charMapper,
         ITypingThemeProvider typingThemeProvider,
         IThemeChangerService themeChangerService,
-        IPlaySoundSample soundSamplePlayer)
+        IPlaySoundSample soundSamplePlayer,
+        IUserTypingPreferenceService typingPreference)
     {
         _charMapper = charMapper;
 
@@ -47,19 +52,65 @@ public partial class TypingViewModel : ObservableObject
         _typingThemeProvider = typingThemeProvider;
         _themeChangerService = themeChangerService;
         _soundSamplePlayer = soundSamplePlayer;
+        _typingPreference = typingPreference;
+
+        _okVolume = typingPreference.GetOkVolume();
+        _errorVolume = typingPreference.GetErrorVolume();
+        Session.BackReturnEnable = typingPreference.GetBackReturnEnable();
+        Session.StopOnError = typingPreference.GetStopOnError();
     }
 
-    private async void Session_HitKeyStatusChanged(HitKeyStatus hitKeyStatus)
+    private void Session_HitKeyStatusChanged(HitKeyStatus hitKeyStatus)
     {
         if (hitKeyStatus == HitKeyStatus.Success)
         {
-            await _soundSamplePlayer.PLaySoundAsync("keypress.wav", .3);
+            _soundSamplePlayer.PlaySound(KeyOkSound, OkVolume);
         }
         else
         {
-            await _soundSamplePlayer.PLaySoundAsync("Mi.wav", .5);
+            _soundSamplePlayer.PlaySound(KeyErrorSound, ErrorVolume);
         }
     }
+
+    private double _okVolume;
+    public double OkVolume
+    {
+        get => _okVolume;
+        set
+        {
+            if (!SetProperty(ref _okVolume, value))
+                return;
+            _typingPreference.SetOkVolume(value);
+            OnPropertyChanged(nameof(OkVolumeTxt));
+        }
+    }
+
+    public string OkVolumeTxt
+        => $"{OkVolume:P0}";
+
+    private double _errorVolume;
+    public double ErrorVolume
+    {
+        get => _errorVolume;
+        set
+        {
+            if (!SetProperty(ref _errorVolume, value))
+                return;
+            _typingPreference.SetErrorVolume(value);
+            OnPropertyChanged(nameof(ErrorVolumeTxt));
+        }
+    }
+
+    public string ErrorVolumeTxt
+        => $"{ErrorVolume:P0}";
+
+    [RelayCommand]
+    public void PreviewOkSound()
+        => _soundSamplePlayer.PlaySound(KeyOkSound, OkVolume);
+
+    [RelayCommand]
+    public void PreviewErrorSound()
+        => _soundSamplePlayer.PlaySound(KeyErrorSound, ErrorVolume);
 
     public bool StopOnErrorEnable
     {
@@ -69,6 +120,7 @@ public partial class TypingViewModel : ObservableObject
             if (Session.StopOnError == value)
                 return;
             Session.StopOnError = value;
+            _typingPreference.SetStopOnError(value);
             OnPropertyChanged(nameof(StopOnErrorEnable));
             OnPropertyChanged(nameof(StopOnErrorTxt));
         }
@@ -90,6 +142,7 @@ public partial class TypingViewModel : ObservableObject
                 return;
 
             Session.BackReturnEnable = value;
+            _typingPreference.SetBackReturnEnable(value);
             OnPropertyChanged(nameof(BackReturnEnable));
             OnPropertyChanged(nameof(BackReturnTxt));
         }
@@ -106,6 +159,8 @@ public partial class TypingViewModel : ObservableObject
     {
         Session.Lines.Clear();
         LinesStates.Clear();
+
+        await _soundSamplePlayer.PreloadAsync(KeyOkSound, KeyErrorSound);
 
         // Get current theme apply
         ThemeState themeState = _themeChangerService.GetTheme();
