@@ -18,6 +18,7 @@ public static class PresenterModule
         // Preferences are not as flexible as expected
         // need more standar way, completely out of maui
         services.AddTransient<IUserKeyboardLayoutPreferenceService, MauiUserKeyboardLayoutPreferenceService>();
+        services.AddTransient<IUserTypingPreferenceService, MauiUserTypingPreferenceService>();
         return services;
     }
 }

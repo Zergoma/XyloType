@@ -33,4 +33,8 @@
     </Style>
 
 
+
+    <Style TargetType="Border" Class="BorderBgOverlay">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource OverlayBgLight}, Dark={StaticResource OverlayBgDark}}" />
+    </Style>
 </ResourceDictionary>

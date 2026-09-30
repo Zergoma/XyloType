@@ -38,12 +38,12 @@ public partial class TypingView : ContentPage
 
         HiddenInput.Focused += (_, __) =>
         {
-            TakeFocusButton.IsVisible = false;
+            TakeFocusOverlay.IsVisible = false;
         };
 
         HiddenInput.Unfocused += (_, __) =>
         {
-            TakeFocusButton.IsVisible = true;
+            TakeFocusOverlay.IsVisible = true;
         };
         #endregion
 

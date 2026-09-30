@@ -21,6 +21,10 @@
     <Color x:Key="BorderTypingRounded10BorderDark">#26282C</Color>
     <Color x:Key="BorderTypingRounded10BorderLight">#D8DEE8</Color>
 
+    <!-- Semi-transparent veil over the typing area when focus is lost -->
+    <Color x:Key="OverlayBgDark">#B3000000</Color>
+    <Color x:Key="OverlayBgLight">#B3FFFFFF</Color>
+
     <!-- Text -->
     <Color x:Key="TextOnDescriptionDark">#FFFFFF</Color>
     <Color x:Key="TextOnDescriptionLight">#1E3A8A</Color>
