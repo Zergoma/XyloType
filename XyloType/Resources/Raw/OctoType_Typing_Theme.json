@@ -2,7 +2,7 @@
   "name": "OctoType_Typing_Theme",
 
   "pending": {
-    "textColorLight": "#FF757575",
+    "textColorLight": "#FF6B7280",
     "backgroundColorLight": "#00000000",
     "borderColorLight": "#00000000",
     "borderThicknessLight": 2,
@@ -13,9 +13,9 @@
   },
 
   "current": {
-    "textColorLight": "#FF757575",
+    "textColorLight": "#FF6B7280",
     "backgroundColorLight": "#00000000",
-    "borderColorLight": "#FF04FF00",
+    "borderColorLight": "#FF2563EB",
     "borderThicknessLight": 0,
     "textColorDark": "#FF757575",
     "backgroundColorDark": "#00000000",
@@ -24,8 +24,8 @@
   },
 
   "correct": {
-    "textColorLight": "#FF1D99F9",
-    "backgroundColorLight": "#FFD5EEF2",
+    "textColorLight": "#FF1D4ED8",
+    "backgroundColorLight": "#FFDBEAFE",
     "borderColorLight": "#00000000",
     "borderThicknessLight": 0,
     "textColorDark": "#FF1D99F9",
@@ -35,8 +35,8 @@
   },
 
   "correctWithError": {
-    "textColorLight": "#FFFF8000",
-    "backgroundColorLight": "#FFFFEC77",
+    "textColorLight": "#FFC2410C",
+    "backgroundColorLight": "#FFFFEDD5",
     "borderColorLight": "#00000000",
     "borderThicknessLight": 0,
     "textColorDark": "#FFFF8000",
@@ -46,9 +46,9 @@
   },
 
   "CurrentWrong": {
-    "textColorLight": "#FFFF4500",
+    "textColorLight": "#FFDC2626",
     "backgroundColorLight": "#00000000",
-    "borderColorLight": "#FFFF2345",
+    "borderColorLight": "#FFEF4444",
     "borderThicknessLight": 2,
     "textColorDark": "#FFFF4500",
     "backgroundColorDark": "#00000000",

@@ -2,27 +2,98 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <!-- Surfaces -->
     <Color x:Key="PageBgDark">#26282C</Color>
-    <Color x:Key="PageBgLight">#FFF</Color>
+    <Color x:Key="PageBgLight">#EEF1F6</Color>
 
     <Color x:Key="BorderBgStdDark">#191A1C</Color>
-    <Color x:Key="BorderBgStdLight">#FFF</Color>
+    <Color x:Key="BorderBgStdLight">#FFFFFF</Color>
 
     <Color x:Key="BorderBgDescriptionDark">#29292C</Color>
-    <Color x:Key="BorderBgDescriptionLight">#0A6CFA</Color>
-
+    <Color x:Key="BorderBgDescriptionLight">#EAF0FD</Color>
 
     <Color x:Key="BorderBgBlueDark">#3871E1</Color>
-    <Color x:Key="BorderBgBlueLight">#FA861B</Color>
-
+    <Color x:Key="BorderBgBlueLight">#4F6BED</Color>
 
     <Color x:Key="BorderBgTypingDark">#000</Color>
-    <Color x:Key="BorderBgTypingLight">#FFF</Color>
-
+    <Color x:Key="BorderBgTypingLight">#FFFFFF</Color>
 
     <Color x:Key="BorderTypingRounded10BorderDark">#26282C</Color>
-    <Color x:Key="BorderTypingRounded10BorderLight">#444</Color>
+    <Color x:Key="BorderTypingRounded10BorderLight">#D8DEE8</Color>
 
+    <!-- Text -->
+    <Color x:Key="TextOnDescriptionDark">#FFFFFF</Color>
+    <Color x:Key="TextOnDescriptionLight">#1E3A8A</Color>
 
+    <Color x:Key="TextOnTileDark">#FFFFFF</Color>
+    <Color x:Key="TextOnTileLight">#FFFFFF</Color>
+
+    <Color x:Key="TextOnTileSecondaryDark">#FFFFFF</Color>
+    <Color x:Key="TextOnTileSecondaryLight">#E0E7FF</Color>
+
+    <Color x:Key="TextMutedDark">#FFFFFF</Color>
+    <Color x:Key="TextMutedLight">#6B7280</Color>
+
+    <!-- Picker -->
+    <Color x:Key="PickerBgDark">#444</Color>
+    <Color x:Key="PickerBgLight">#FFFFFF</Color>
+
+    <Color x:Key="PickerTextDark">#FFFFFF</Color>
+    <Color x:Key="PickerTextLight">#1F2937</Color>
+
+    <!-- Exercise tiles -->
+    <Color x:Key="TileBgDark">#0BA51D</Color>
+    <Color x:Key="TileBgLight">#4F6BED</Color>
+
+    <Color x:Key="TileBgHoverDark">#0EC923</Color>
+    <Color x:Key="TileBgHoverLight">#3F5BD9</Color>
+
+    <Color x:Key="TileBgPressedDark">#00BCC6</Color>
+    <Color x:Key="TileBgPressedLight">#3349B8</Color>
+
+    <Color x:Key="TileSelectedBgDark">#FF2000</Color>
+    <Color x:Key="TileSelectedBgLight">#F97316</Color>
+
+    <Color x:Key="TileSelectedBgHoverDark">#FF5500</Color>
+    <Color x:Key="TileSelectedBgHoverLight">#EA580C</Color>
+
+    <Color x:Key="TileSelectedStrokeDark">#FF5500</Color>
+    <Color x:Key="TileSelectedStrokeLight">#C2410C</Color>
+
+    <!-- Neutral button (button_hover) -->
+    <Color x:Key="ButtonNeutralBgDark">#333</Color>
+    <Color x:Key="ButtonNeutralBgLight">#334155</Color>
+
+    <Color x:Key="ButtonNeutralBgHoverDark">#555</Color>
+    <Color x:Key="ButtonNeutralBgHoverLight">#475569</Color>
+
+    <Color x:Key="ButtonNeutralBgPressedDark">#777</Color>
+    <Color x:Key="ButtonNeutralBgPressedLight">#64748B</Color>
+
+    <!-- Launch button (ButtonHoverLaunch) -->
+    <Color x:Key="ButtonLaunchBgDark">#0BA51D</Color>
+    <Color x:Key="ButtonLaunchBgLight">#16A34A</Color>
+
+    <Color x:Key="ButtonLaunchBgHoverDark">#0EC923</Color>
+    <Color x:Key="ButtonLaunchBgHoverLight">#15803D</Color>
+
+    <Color x:Key="ButtonLaunchBgPressedDark">#00BCC6</Color>
+    <Color x:Key="ButtonLaunchBgPressedLight">#166534</Color>
+
+    <!-- Primary button (ButtonHoverAddExercice) -->
+    <Color x:Key="ButtonPrimaryBgDark">#117FD2</Color>
+    <Color x:Key="ButtonPrimaryBgLight">#2F6FEB</Color>
+
+    <Color x:Key="ButtonPrimaryBgHoverDark">#2AA18B</Color>
+    <Color x:Key="ButtonPrimaryBgHoverLight">#1D5BD8</Color>
+
+    <Color x:Key="ButtonPrimaryBgPressedDark">#2AE73F</Color>
+    <Color x:Key="ButtonPrimaryBgPressedLight">#1849B8</Color>
+
+    <Color x:Key="ButtonPrimaryTextDark">#002B36</Color>
+    <Color x:Key="ButtonPrimaryTextLight">#FFFFFF</Color>
+
+    <Color x:Key="ButtonPrimaryTextPressedDark">#FFFFFF</Color>
+    <Color x:Key="ButtonPrimaryTextPressedLight">#FFFFFF</Color>
 
 </ResourceDictionary>
