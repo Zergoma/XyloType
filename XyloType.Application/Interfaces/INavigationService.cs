@@ -18,10 +18,6 @@ public interface INavigationService
     /// </summary>
     Task<Result<bool>> ReplaceWithStatisticAsync(TypingSessionResult result);
 
-    Task<Result<bool>> NavigateToExerciceGeneratorAsync();
-
-    Task<Result<bool>> NavigateToUpdateExerciceAsync(Guid exercice);
-
     Task PopBackAsync();
 
     /// <summary>

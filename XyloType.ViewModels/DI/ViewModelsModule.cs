@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
+using XyloType.ViewModels.ExercisesManager;
 using XyloType.ViewModels.Import;
 using XyloType.ViewModels.TypingLauncher;
 
@@ -13,6 +14,7 @@ public static class ViewModelsModule
         services.AddTransient<ImportBookViewModel>();
         services.AddTransient<ImportWordViewModel>();
         services.AddTransient<TypingLauncherViewModel>();
+        services.AddTransient<ExercisesManagerViewModel>();
         return services;
     }
 }

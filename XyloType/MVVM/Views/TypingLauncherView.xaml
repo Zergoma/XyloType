@@ -62,16 +62,6 @@
                         <Label Text="{Binding ExerciceName}"
                                StyleClass="label_page_title"
                                VerticalOptions="Center"/>
-                        <Button Grid.Column="1"
-                                StyleClass="button_hover"
-                                Text="Modifier"
-                                MinimumHeightRequest="32"
-                                HeightRequest="32"
-                                Padding="16,0"
-                                CornerRadius="16"
-                                FontSize="12"
-                                VerticalOptions="Center"
-                                Command="{Binding GoToUpdateExerciceCommand}"/>
                     </Grid>
 
                     <Border StyleClass="BorderRounded10, BorderBgDescription" Padding="16,12">
@@ -149,7 +139,7 @@
                 Padding="20">
 
 
-            <Grid RowDefinitions="auto,*, 0.15*">
+            <Grid RowDefinitions="auto,*">
 
                 <Grid RowDefinitions="auto,auto" RowSpacing="12" Margin="0,0,0,10">
 
@@ -175,7 +165,7 @@
 
                 <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Always">
                     <Grid >
-                        <Label Text="Ajoutez des exercices avec le bouton +"
+                        <Label Text="Ajoutez des exercices depuis le menu Exercices"
                            StyleClass="label_muted"
                            FontSize="18"
                            IsVisible="{Binding HasNoExercice}"
@@ -276,15 +266,6 @@
                         </FlexLayout>
                     </Grid>
                 </ScrollView>
-
-                <Button Grid.Row="2"
-                    Text="+" CornerRadius="30" HeightRequest="60" WidthRequest="60"
-                        StyleClass="ButtonHoverAddExercice"
-                        
-                        FontSize="35"
-                        VerticalOptions="Center" HorizontalOptions="End"
-                        Margin="0,0,60,0"
-                        Command="{Binding GoToExerciceGeneratorCommand}"/>
             </Grid>
         </Border>
     </Grid>

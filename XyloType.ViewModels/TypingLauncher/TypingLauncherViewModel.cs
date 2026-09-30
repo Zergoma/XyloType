@@ -246,20 +246,6 @@ public partial class TypingLauncherViewModel : ObservableObject
         await _navigation.NavigateToTypingExerciseAsync(stringProviderResult.GetValue);
     }
 
-    [RelayCommand]
-    public async Task GoToExerciceGenerator()
-    {
-        await _navigation.NavigateToExerciceGeneratorAsync();
-    }
-
-    [RelayCommand]
-    public async Task GoToUpdateExercice()
-    {
-        if (ExerciceSelected == null)
-            return;
-
-        await _navigation.NavigateToUpdateExerciceAsync(ExerciceSelected.Guid);
-    }
 
 
     [ObservableProperty]

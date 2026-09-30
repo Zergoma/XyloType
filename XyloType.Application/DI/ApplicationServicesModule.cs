@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
 using XyloType.Application.Interfaces;
+using XyloType.Application.Interfaces.Typing;
 using XyloType.Application.Services;
 
 namespace XyloType.Application.DI;
@@ -29,6 +30,7 @@ internal static class ApplicationServicesModule
         services.AddSingleton<ITypingExerciseWordNumberService, TypingExerciseWordNumberService>();
         services.AddSingleton<ITypingExerciseLineNumberService, TypingExerciseLineNumberService>();
         services.AddSingleton<ITypingExerciseRunService, TypingExerciseRunService>();
+        services.AddTransient<IExercisesEditSession, ExercisesEditSession>();
 
         // TODO
         // need to add qwerty etc keyboard keys locators

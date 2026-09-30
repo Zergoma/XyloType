@@ -1,0 +1,483 @@
+﻿using System.Collections.ObjectModel;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
+using XyloType.Application;
+using XyloType.Application.DTOs;
+using XyloType.Application.Interfaces;
+using XyloType.Application.Interfaces.Typing;
+using XyloType.Application.Mappers;
+using XyloType.Application.Models.Typing;
+using XyloType.Application.Models.Typing.Exercices;
+using XyloType.Application.ValueObjects;
+using XyloType.Domain.Typing;
+
+namespace XyloType.ViewModels.ExercisesManager;
+
+/// <summary>
+/// Exercises menu: create, edit, delete and reorder the exercises of a keyboard.
+/// Every change stays in memory until the user saves.
+/// </summary>
+public partial class ExercisesManagerViewModel : ObservableObject
+{
+    private readonly IExercisesEditSession _session;
+    private readonly IPseudoWordBatchGenerator _pseudoWordBatchGenerator;
+    private readonly IUserDialogService _dialogService;
+    private readonly IUserKeyboardLayoutPreferenceService _keyboardPreference;
+
+    private readonly List<KeyBoardLayoutDto> _keyboardLayoutAvailable;
+    private readonly List<string> _languageAvailable;
+    private readonly List<GeneratedTypeSourceDto> _generationTypeSourceAvailable;
+
+    // true while the editor fields are filled from the selected exercise
+    private bool _isLoadingEditor;
+
+    // true while the keyboard picker is reverted after a cancelled switch
+    private bool _isRevertingKeyboard;
+
+    public ExercisesManagerViewModel(
+        IExercisesEditSession session,
+        IPseudoWordBatchGenerator pseudoWordBatchGenerator,
+        IUserDialogService dialogService,
+        IUserKeyboardLayoutPreferenceService keyboardPreference,
+        IKeyBoardLayoutAvailableService keyboardLayoutAvailableService,
+        ILanguageAvailableService languageAvailableService,
+        IGenerationTypeSourceAvailableService generationTypeSourceAvailableService)
+    {
+        _session = session;
+        _pseudoWordBatchGenerator = pseudoWordBatchGenerator;
+        _dialogService = dialogService;
+        _keyboardPreference = keyboardPreference;
+
+        _keyboardLayoutAvailable = keyboardLayoutAvailableService.GetKeyBoardAvailable();
+        _languageAvailable = languageAvailableService.GetAvailableLanguage();
+        _generationTypeSourceAvailable = generationTypeSourceAvailableService.GetGenerationTypeSourceAvailable();
+    }
+
+    #region Keyboard and list
+
+    public IReadOnlyList<KeyBoardLayoutDto> KeyboardLayoutAvailable => _keyboardLayoutAvailable;
+
+    [ObservableProperty]
+    public partial KeyBoardLayoutDto? KeyboardLayoutSelected { get; set; }
+
+    partial void OnKeyboardLayoutSelectedChanged(KeyBoardLayoutDto? oldValue, KeyBoardLayoutDto? newValue)
+    {
+        if (_isRevertingKeyboard || newValue is null || ReferenceEquals(oldValue, newValue))
+            return;
+
+        _ = SwitchKeyboardAsync(oldValue, newValue);
+    }
+
+    public ObservableCollection<ExerciseListItemViewModel> Items { get; } = [];
+
+    public bool HasItems => Items.Count > 0;
+    public bool HasNoItems => !HasItems;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSelection))]
+    [NotifyPropertyChangedFor(nameof(HasNoSelection))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteExerciseCommand))]
+    public partial ExerciseListItemViewModel? SelectedItem { get; set; }
+
+    public bool HasSelection => SelectedItem is not null;
+    public bool HasNoSelection => !HasSelection;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
+    public partial bool HasChanges { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStatus))]
+    public partial string StatusMessage { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsStatusError { get; set; }
+
+    public bool HasStatus => !string.IsNullOrEmpty(StatusMessage);
+
+    /// <summary>
+    /// Opens the exercises of the keyboard saved in the user preferences.
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        if (KeyboardLayoutSelected is not null)
+            return;
+
+        Result<int> keyboardResult = _keyboardPreference.GetKeyboardType();
+        KeyBoardLayoutDto? keyboard =
+            keyboardResult.Success
+                ? _keyboardLayoutAvailable.Find(k => (int)k.KeyBoardCode == keyboardResult.GetValue)
+                : null;
+
+        keyboard ??= _keyboardLayoutAvailable.FirstOrDefault();
+        if (keyboard is null)
+            return;
+
+        _isRevertingKeyboard = true;
+        KeyboardLayoutSelected = keyboard;
+        _isRevertingKeyboard = false;
+
+        await OpenKeyboardAsync(keyboard);
+    }
+
+    private async Task SwitchKeyboardAsync(KeyBoardLayoutDto? previous, KeyBoardLayoutDto next)
+    {
+        if (!await ConfirmDiscardChangesAsync())
+        {
+            _isRevertingKeyboard = true;
+            KeyboardLayoutSelected = previous;
+            _isRevertingKeyboard = false;
+            return;
+        }
+
+        await OpenKeyboardAsync(next);
+    }
+
+    private async Task OpenKeyboardAsync(KeyBoardLayoutDto keyboard)
+    {
+        await _session.OpenAsync(keyboard);
+        RebuildItems(selectId: null);
+        SetStatus(string.Empty);
+    }
+
+    private void RebuildItems(Guid? selectId)
+    {
+        SelectItem(null);
+        Items.Clear();
+
+        foreach (TypingExercise exercise in _session.Exercises)
+            Items.Add(new ExerciseListItemViewModel(exercise));
+
+        OnPropertyChanged(nameof(HasItems));
+        OnPropertyChanged(nameof(HasNoItems));
+        HasChanges = _session.HasChanges;
+
+        ExerciseListItemViewModel? toSelect = Items.FirstOrDefault(i => i.Id == selectId);
+        if (toSelect is not null)
+            SelectItem(toSelect);
+    }
+
+    [RelayCommand]
+    public void Select(ExerciseListItemViewModel item)
+        => SelectItem(item);
+
+    private void SelectItem(ExerciseListItemViewModel? item)
+    {
+        if (SelectedItem == item)
+            return;
+
+        SelectedItem?.IsSelected = false;
+        SelectedItem = item;
+        SelectedItem?.IsSelected = true;
+
+        LoadEditor(item?.Exercise);
+    }
+
+    /// <summary>
+    /// Moves an exercise in the list (drag and drop).
+    /// </summary>
+    public void Move(int fromIndex, int toIndex)
+    {
+        if (!_session.Move(fromIndex, toIndex).Success || fromIndex == toIndex)
+            return;
+
+        Items.Move(fromIndex, toIndex);
+        HasChanges = _session.HasChanges;
+    }
+
+    [RelayCommand]
+    public void NewExercise()
+    {
+        Result<TypingExercise> createResult = _session.CreateNew("Nouvel exercice");
+        if (!createResult.Success)
+        {
+            SetStatus(createResult.Error, isError: true);
+            return;
+        }
+
+        ExerciseListItemViewModel item = new(createResult.GetValue);
+        Items.Add(item);
+        OnPropertyChanged(nameof(HasItems));
+        OnPropertyChanged(nameof(HasNoItems));
+        HasChanges = _session.HasChanges;
+
+        SelectItem(item);
+    }
+
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    public async Task DeleteExercise()
+    {
+        if (SelectedItem is not ExerciseListItemViewModel item)
+            return;
+
+        bool confirmed = await _dialogService.ConfirmAsync(
+            "Supprimer l'exercice",
+            $"Supprimer « {item.Name} » ? La suppression sera effective à l'enregistrement.",
+            "Supprimer",
+            "Annuler");
+
+        if (!confirmed || !_session.Remove(item.Id).Success)
+            return;
+
+        int index = Items.IndexOf(item);
+        SelectItem(null);
+        Items.Remove(item);
+        OnPropertyChanged(nameof(HasItems));
+        OnPropertyChanged(nameof(HasNoItems));
+        HasChanges = _session.HasChanges;
+
+        // select the neighbour to keep editing smoothly
+        if (Items.Count > 0)
+            SelectItem(Items[Math.Min(index, Items.Count - 1)]);
+    }
+
+    [RelayCommand(CanExecute = nameof(HasChanges))]
+    public async Task Save()
+    {
+        Result<bool> saveResult = await _session.SaveAsync();
+        if (!saveResult.Success)
+        {
+            SetStatus(saveResult.Error, isError: true);
+            return;
+        }
+
+        HasChanges = false;
+        SetStatus("Exercices enregistrés");
+    }
+
+    [RelayCommand(CanExecute = nameof(HasChanges))]
+    public async Task Cancel()
+    {
+        bool confirmed = await _dialogService.ConfirmAsync(
+            "Annuler les modifications",
+            "Toutes les modifications non enregistrées seront perdues.",
+            "Annuler les modifications",
+            "Continuer l'édition");
+
+        if (!confirmed)
+            return;
+
+        Guid? selectedId = SelectedItem?.Id;
+        await _session.DiscardAsync();
+        RebuildItems(selectedId);
+        SetStatus("Modifications annulées");
+    }
+
+    /// <summary>
+    /// Asks the user before losing unsaved changes (keyboard switch, leaving the page).
+    /// </summary>
+    /// <returns>true if there is nothing to lose or the user accepted to lose it</returns>
+    public async Task<bool> ConfirmDiscardChangesAsync()
+    {
+        if (!_session.HasChanges)
+            return true;
+
+        bool confirmed = await _dialogService.ConfirmAsync(
+            "Modifications non enregistrées",
+            "Les modifications seront perdues. Continuer ?",
+            "Perdre les modifications",
+            "Rester");
+
+        if (confirmed)
+        {
+            await _session.DiscardAsync();
+            RebuildItems(SelectedItem?.Id);
+        }
+
+        return confirmed;
+    }
+
+    private void SetStatus(string message, bool isError = false)
+    {
+        IsStatusError = isError;
+        StatusMessage = message;
+    }
+
+    #endregion
+
+    #region Editor
+
+    public IReadOnlyList<string> LanguageAvailable => _languageAvailable;
+    public IReadOnlyList<GeneratedTypeSourceDto> GenerationTypeSourceAvailable => _generationTypeSourceAvailable;
+
+    [ObservableProperty]
+    public partial string ExerciseName { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string Description { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string AllowedChars { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDynamic))]
+    [NotifyPropertyChangedFor(nameof(StaticDynamicText))]
+    public partial bool IsStatic { get; set; } = true;
+
+    public bool IsDynamic
+    {
+        get => !IsStatic;
+        set => IsStatic = !value;
+    }
+
+    public string StaticDynamicText
+        => IsStatic ? "Texte fixe" : "Texte généré à chaque partie";
+
+    [ObservableProperty]
+    public partial string GeneratedText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial int NumberWords { get; set; } = 10;
+
+    [ObservableProperty]
+    public partial int MinLengthWord { get; set; } = 3;
+
+    [ObservableProperty]
+    public partial int MaxLengthWord { get; set; } = 5;
+
+    [ObservableProperty]
+    public partial string? LanguageSelected { get; set; }
+
+    [ObservableProperty]
+    public partial GeneratedTypeSourceDto? GenerationTypeSourceSelected { get; set; }
+
+    partial void OnExerciseNameChanged(string value) => ApplyEditor();
+    partial void OnDescriptionChanged(string value) => ApplyEditor();
+    partial void OnAllowedCharsChanged(string value) => ApplyEditor();
+    partial void OnIsStaticChanged(bool value) => ApplyEditor();
+    partial void OnMinLengthWordChanged(int value) => ApplyEditor();
+    partial void OnMaxLengthWordChanged(int value) => ApplyEditor();
+    partial void OnLanguageSelectedChanged(string? value) => ApplyEditor();
+    partial void OnGenerationTypeSourceSelectedChanged(GeneratedTypeSourceDto? value) => ApplyEditor();
+
+    partial void OnGeneratedTextChanged(string value)
+    {
+        // letters typed in the text are added to the allowed letters
+        if (!_isLoadingEditor)
+        {
+            string missing = string.Concat(value
+                .Where(c => !char.IsWhiteSpace(c) && !AllowedChars.Contains(c))
+                .Distinct());
+
+            if (missing.Length > 0)
+            {
+                AllowedChars += missing;
+                return; // AllowedChars change already applied the editor
+            }
+        }
+
+        ApplyEditor();
+    }
+
+    [RelayCommand]
+    public void SwitchStaticDynamic()
+        => IsStatic = !IsStatic;
+
+    [RelayCommand]
+    public void GenerateWords()
+    {
+        Result<List<string>> result =
+            _pseudoWordBatchGenerator.Generate(
+                Math.Clamp(NumberWords, 1, 100),
+                new PseudoWordOptions(
+                    AllowedChars,
+                    Math.Min(MinLengthWord, MaxLengthWord),
+                    Math.Max(MinLengthWord, MaxLengthWord)));
+
+        if (!result.Success)
+        {
+            SetStatus(result.Error, isError: true);
+            return;
+        }
+
+        GeneratedText = string.Join(" ", result.GetValue);
+        SetStatus(string.Empty);
+    }
+
+    private void LoadEditor(TypingExercise? exercise)
+    {
+        _isLoadingEditor = true;
+        try
+        {
+            ExerciseName = exercise?.Name ?? string.Empty;
+            Description = exercise?.Description ?? string.Empty;
+            AllowedChars = exercise?.AllowedCharacters ?? string.Empty;
+
+            switch (exercise?.TextDataType)
+            {
+                case TypingTextDataDynamic dynamic:
+                    IsStatic = false;
+                    GeneratedText = string.Empty;
+                    MinLengthWord = dynamic.LengthMin;
+                    MaxLengthWord = dynamic.LengthMax;
+                    LanguageSelected = dynamic.LanguagesSelected.FirstOrDefault();
+                    Result<GeneratedTypeSourceDto> sourceResult = dynamic.GeneratedTypeSource.ToDto();
+                    GenerationTypeSourceSelected = sourceResult.Success ? sourceResult.GetValue : GeneratedTypeSourceDto.PseudoWords;
+                    break;
+
+                case TypingTextDataStatic staticData:
+                    IsStatic = true;
+                    GeneratedText = staticData.GeneratedText;
+                    LanguageSelected = null;
+                    GenerationTypeSourceSelected = GeneratedTypeSourceDto.PseudoWords;
+                    break;
+
+                default:
+                    IsStatic = true;
+                    GeneratedText = string.Empty;
+                    break;
+            }
+        }
+        finally
+        {
+            _isLoadingEditor = false;
+        }
+    }
+
+    /// <summary>
+    /// Writes the editor fields into the selected exercise (in memory only).
+    /// </summary>
+    private void ApplyEditor()
+    {
+        if (_isLoadingEditor || SelectedItem is not ExerciseListItemViewModel item)
+            return;
+
+        TypingExercise exercise = item.Exercise;
+        exercise.Name = ExerciseName.Trim();
+        exercise.Description = Description;
+
+        if (IsStatic)
+        {
+            exercise.TextDataType = new TypingTextDataStatic { GeneratedText = GeneratedText };
+
+            // keep the order of the allowed letters, restricted to the ones used in the text
+            exercise.AllowedCharacters =
+                string.IsNullOrWhiteSpace(GeneratedText)
+                    ? AllowedChars
+                    : AllowedLettersExtractor.ExtractAllowedLetters(AllowedChars, GeneratedText);
+        }
+        else
+        {
+            Result<GeneratedTypeSource> sourceResult =
+                (GenerationTypeSourceSelected ?? GeneratedTypeSourceDto.PseudoWords).ToModel();
+
+            exercise.TextDataType = new TypingTextDataDynamic
+            {
+                LengthMin = Math.Min(MinLengthWord, MaxLengthWord),
+                LengthMax = Math.Max(MinLengthWord, MaxLengthWord),
+                LanguagesSelected = LanguageSelected is null ? [] : [LanguageSelected],
+                GeneratedTypeSource = sourceResult.Success ? sourceResult.GetValue : GeneratedTypeSource.PseudoWords
+            };
+            exercise.AllowedCharacters = AllowedChars;
+        }
+
+        _session.MarkChanged();
+        HasChanges = _session.HasChanges;
+        item.Refresh();
+    }
+
+    #endregion
+}
