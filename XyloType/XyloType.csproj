@@ -30,7 +30,7 @@
 		<ApplicationTitle>XyloType</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>de.xylotype.xylocopadream</ApplicationId>
+		<ApplicationId>de.xylocopadream.xylotype</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>

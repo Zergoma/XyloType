@@ -2,11 +2,23 @@
 
 namespace XyloType.Domain.Models;
 
+/// <summary>
+/// French AZERTY layout, with the standard touch typing finger assignment.
+/// Row A: number row (&amp; é " ' ( - è _ ç à), B: AZERTYUIOP, C: QSDFGHJKLM, D: WXCVBN.
+/// A character typed with several keys (dead key accents) combines the rows and fingers
+/// of every key pressed and is flagged <see cref="KeyInfo.ExtrenalAccent"/>.
+/// </summary>
 public class AzertKeyLocatorsBuilder
 {
+    // ^ dead key, right of P, typed with the right pinky
+    private static readonly KeyInfo s_circumflexKey = new(KeyboardRow.B, Finger.RightPinky);
+
+    // ¨ = Shift (left pinky, the dead key being on the right side) + ^ key
+    private static readonly KeyInfo s_diaeresisKeys = new(KeyboardRow.B, Finger.RightPinky | Finger.LeftPinky);
+
     public static Dictionary<char, KeyInfo> BuildMap()
     {
-        return new Dictionary<char, KeyInfo>
+        Dictionary<char, KeyInfo> map = new()
         {
             // =========================
             // ROW B (AZERTYUIOP)
@@ -25,7 +37,7 @@ public class AzertKeyLocatorsBuilder
             ['p'] = new KeyInfo(KeyboardRow.B, Finger.RightPinky),
 
             // =========================
-            // ROW C (QSDFGHJKLM)
+            // ROW C (QSDFGHJKLM ù)
             // =========================
 
             ['q'] = new KeyInfo(KeyboardRow.C, Finger.LeftPinky),
@@ -39,6 +51,7 @@ public class AzertKeyLocatorsBuilder
             ['k'] = new KeyInfo(KeyboardRow.C, Finger.RightMiddle),
             ['l'] = new KeyInfo(KeyboardRow.C, Finger.RightRing),
             ['m'] = new KeyInfo(KeyboardRow.C, Finger.RightPinky),
+            ['ù'] = new KeyInfo(KeyboardRow.C, Finger.RightPinky),
 
             // =========================
             // ROW D (WXCVBN)
@@ -48,14 +61,22 @@ public class AzertKeyLocatorsBuilder
             ['x'] = new KeyInfo(KeyboardRow.D, Finger.LeftRing),
             ['c'] = new KeyInfo(KeyboardRow.D, Finger.LeftMiddle),
             ['v'] = new KeyInfo(KeyboardRow.D, Finger.LeftIndex),
+            ['b'] = new KeyInfo(KeyboardRow.D, Finger.LeftIndex),
 
-            ['b'] = new KeyInfo(KeyboardRow.D, Finger.RightIndex),
-            ['n'] = new KeyInfo(KeyboardRow.D, Finger.RightMiddle),
+            ['n'] = new KeyInfo(KeyboardRow.D, Finger.RightIndex),
 
             // =========================
-            // ROW A (numbers / symbols simplifié)
+            // ROW A (number row, unshifted: & é " ' ( - è _ ç à)
             // =========================
 
+            ['é'] = new KeyInfo(KeyboardRow.A, Finger.LeftRing),     // key 2
+            ['\''] = new KeyInfo(KeyboardRow.A, Finger.LeftIndex),   // key 4
+            ['-'] = new KeyInfo(KeyboardRow.A, Finger.RightIndex),   // key 6
+            ['è'] = new KeyInfo(KeyboardRow.A, Finger.RightIndex),   // key 7
+            ['ç'] = new KeyInfo(KeyboardRow.A, Finger.RightRing),    // key 9
+            ['à'] = new KeyInfo(KeyboardRow.A, Finger.RightPinky),   // key 0
+
+            // digits need Shift on AZERTY, kept for completeness
             ['1'] = new KeyInfo(KeyboardRow.A, Finger.LeftPinky),
             ['2'] = new KeyInfo(KeyboardRow.A, Finger.LeftRing),
             ['3'] = new KeyInfo(KeyboardRow.A, Finger.LeftMiddle),
@@ -69,26 +90,36 @@ public class AzertKeyLocatorsBuilder
             ['0'] = new KeyInfo(KeyboardRow.A, Finger.RightPinky),
 
             // =========================
-            // ACCENTS FR (IMPORTANT pour ton use case)
-            // =========================
-
-            ['é'] = new KeyInfo(KeyboardRow.B, Finger.RightIndex),
-            ['è'] = new KeyInfo(KeyboardRow.C, Finger.RightRing),
-            ['à'] = new KeyInfo(KeyboardRow.D, Finger.RightPinky),
-            ['ç'] = new KeyInfo(KeyboardRow.D, Finger.LeftPinky),
-            ['ù'] = new KeyInfo(KeyboardRow.C, Finger.RightPinky),
-
-            ['ê'] = new KeyInfo(KeyboardRow.C, Finger.RightRing, true),
-            ['â'] = new KeyInfo(KeyboardRow.B, Finger.LeftPinky, true),
-            ['î'] = new KeyInfo(KeyboardRow.B, Finger.RightMiddle, true),
-            ['ô'] = new KeyInfo(KeyboardRow.C, Finger.RightMiddle, true),
-            ['û'] = new KeyInfo(KeyboardRow.C, Finger.RightPinky, true),
-
-            // =========================
-            // SPACE (optionnel mais utile pour stats)
+            // SPACE
             // =========================
 
             [' '] = new KeyInfo(KeyboardRow.None, Finger.LeftThumb | Finger.RightThumb),
         };
+
+        // =========================
+        // DEAD KEY ACCENTS: dead key, then the vowel
+        // =========================
+
+        AddDeadKey(map, 'â', 'a', s_circumflexKey);
+        AddDeadKey(map, 'ê', 'e', s_circumflexKey);
+        AddDeadKey(map, 'î', 'i', s_circumflexKey);
+        AddDeadKey(map, 'ô', 'o', s_circumflexKey);
+        AddDeadKey(map, 'û', 'u', s_circumflexKey);
+
+        AddDeadKey(map, 'ë', 'e', s_diaeresisKeys);
+        AddDeadKey(map, 'ï', 'i', s_diaeresisKeys);
+        AddDeadKey(map, 'ü', 'u', s_diaeresisKeys);
+        AddDeadKey(map, 'ÿ', 'y', s_diaeresisKeys);
+
+        return map;
+    }
+
+    private static void AddDeadKey(Dictionary<char, KeyInfo> map, char accented, char baseLetter, KeyInfo deadKey)
+    {
+        KeyInfo letter = map[baseLetter];
+        map[accented] = new KeyInfo(
+            deadKey.Row | letter.Row,
+            deadKey.Finger | letter.Finger,
+            ExtrenalAccent: true);
     }
 }

@@ -49,5 +49,11 @@ public sealed class WordQueryBuilder
         return this;
     }
 
+    public WordQueryBuilder WithAnalyses()
+    {
+        _criteria = _criteria with { IncludeAnalyses = true };
+        return this;
+    }
+
     public WordSearchCriteria Build() => _criteria;
 }

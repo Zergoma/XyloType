@@ -11,6 +11,7 @@ public partial class StatisticViewModel : ObservableObject
 {
     private readonly ITypingExerciseRunService _runService;
     private readonly INavigationService _navigationService;
+    private readonly IUserDialogService _dialogService;
 
     [ObservableProperty]
     public partial Dictionary<char, CharStats> Statistics { get; set; }
@@ -24,12 +25,14 @@ public partial class StatisticViewModel : ObservableObject
         TypingSessionResult result,
         ITypingExerciseRunService runService,
         INavigationService navigationService,
-        IUserTypingPreferenceService typingPreference)
+        IUserTypingPreferenceService typingPreference,
+        IUserDialogService dialogService)
     {
         Statistics = result.CharStats;
         Duration = result.Duration;
         _runService = runService;
         _navigationService = navigationService;
+        _dialogService = dialogService;
 
         ShowSpeed = typingPreference.GetShowSpeedResult();
         ShowResponseTime = typingPreference.GetShowResponseTimeResult();
@@ -57,21 +60,24 @@ public partial class StatisticViewModel : ObservableObject
     [RelayCommand]
     public async Task Retry()
     {
-        Result<IStringsProvider> retryResult = _runService.Retry();
-        if (!retryResult.Success)
-            return;
-
-        await _navigationService.ReplaceWithTypingExerciseAsync(retryResult.GetValue);
+        await StartAsync(_runService.Retry());
     }
 
     [RelayCommand(CanExecute = nameof(HasNext))]
     public async Task Next()
     {
-        Result<IStringsProvider> nextResult = _runService.Next();
-        if (!nextResult.Success)
-            return;
+        await StartAsync(_runService.Next());
+    }
 
-        await _navigationService.ReplaceWithTypingExerciseAsync(nextResult.GetValue);
+    private async Task StartAsync(Result<IStringsProvider> providerResult)
+    {
+        Result<bool> navigationResult =
+            providerResult.Success
+                ? await _navigationService.ReplaceWithTypingExerciseAsync(providerResult.GetValue)
+                : Result<bool>.Fail(providerResult.Error);
+
+        if (!navigationResult.Success)
+            await _dialogService.AlertAsync("Impossible de lancer l'exercice", navigationResult.Error);
     }
 
     [RelayCommand]

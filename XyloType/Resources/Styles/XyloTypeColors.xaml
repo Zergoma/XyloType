@@ -21,6 +21,13 @@
     <Color x:Key="BorderTypingRounded10BorderDark">#2E3440</Color>
     <Color x:Key="BorderTypingRounded10BorderLight">#D8DEE8</Color>
 
+    <!-- Floating bars (results header and actions): slightly different from the cards -->
+    <Color x:Key="FloatingBarBgDark">#2A3140</Color>
+    <Color x:Key="FloatingBarBgLight">#E2E8F3</Color>
+
+    <Color x:Key="FloatingBarStrokeDark">#38404F</Color>
+    <Color x:Key="FloatingBarStrokeLight">#CDD6E4</Color>
+
     <!-- Semi-transparent veil over the typing area when focus is lost -->
     <Color x:Key="OverlayBgDark">#B314161B</Color>
     <Color x:Key="OverlayBgLight">#B3FFFFFF</Color>

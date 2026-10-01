@@ -12,4 +12,13 @@ public class MauiUserDialogService : IUserDialogService
 
         return await page.DisplayAlertAsync(title, message, accept, cancel);
     }
+
+    public async Task AlertAsync(string title, string message)
+    {
+        Page? page = Shell.Current?.CurrentPage ?? Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault()?.Page;
+        if (page is null)
+            return;
+
+        await page.DisplayAlertAsync(title, message, "OK");
+    }
 }

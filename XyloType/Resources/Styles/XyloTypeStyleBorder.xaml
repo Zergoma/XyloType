@@ -37,4 +37,14 @@
     <Style TargetType="Border" Class="BorderBgOverlay">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource OverlayBgLight}, Dark={StaticResource OverlayBgDark}}" />
     </Style>
+    <Style TargetType="Border" Class="BorderFloatingBar">
+        <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource FloatingBarStrokeLight}, Dark={StaticResource FloatingBarStrokeDark}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FloatingBarBgLight}, Dark={StaticResource FloatingBarBgDark}}" />
+        <Setter Property="Shadow">
+            <Shadow Brush="Black" Opacity="0.18" Radius="14" Offset="0,4" />
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

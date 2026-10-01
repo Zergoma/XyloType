@@ -52,6 +52,7 @@ public class DactyloRepository : IDactyloRepository
 
 
         bool needsAnalyses =
+            criteria.IncludeAnalyses ||
             criteria.FingerMask.HasValue ||
             criteria.RowMask.HasValue ||
             criteria.Layout.HasValue ||

@@ -47,7 +47,12 @@ public class TypingViewFactory : ITypingViewFactory
                 _soundSamplePlayer,
                 _typingPreference);
 
-        await typingviewmodel.LoadTextAsync(stringProvider);
+        Result<bool> loadResult = await typingviewmodel.LoadTextAsync(stringProvider);
+        if (!loadResult.Success)
+        {
+            return Result<ContentPage>
+                .Fail(loadResult.Error);
+        }
 
         TypingView typingView =
             new(

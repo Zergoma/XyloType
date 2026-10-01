@@ -19,6 +19,7 @@ public class StatisticViewFactory : IStatisticViewFactory
     private readonly ILogger<StatisticViewModelMauiAdapter> _logger;
     private readonly ITypingExerciseRunService _runService;
     private readonly IUserTypingPreferenceService _typingPreference;
+    private readonly IUserDialogService _dialogService;
 
     public StatisticViewFactory(
         IThemeChangerService themeChangerService,
@@ -26,7 +27,8 @@ public class StatisticViewFactory : IStatisticViewFactory
         IChartErrorProvider chartErrorColorsProvider,
         ILogger<StatisticViewModelMauiAdapter> logger,
         ITypingExerciseRunService runService,
-        IUserTypingPreferenceService typingPreference)
+        IUserTypingPreferenceService typingPreference,
+        IUserDialogService dialogService)
     {
         _themeChangerService = themeChangerService;
         _chartResponseTimeColorsProvider = chartResponseTimeColorsProvider;
@@ -34,6 +36,7 @@ public class StatisticViewFactory : IStatisticViewFactory
         _logger = logger;
         _runService = runService;
         _typingPreference = typingPreference;
+        _dialogService = dialogService;
     }
 
     public async Task<Result<ContentPage>> Create(
@@ -49,7 +52,8 @@ public class StatisticViewFactory : IStatisticViewFactory
                 result,
                 _runService,
                 navigationService,
-                _typingPreference);
+                _typingPreference,
+                _dialogService);
 
         StatisticViewModelMauiAdapter vmadapter =
             new(

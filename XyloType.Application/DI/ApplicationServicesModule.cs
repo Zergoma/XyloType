@@ -31,6 +31,7 @@ internal static class ApplicationServicesModule
         services.AddSingleton<ITypingExerciseLineNumberService, TypingExerciseLineNumberService>();
         services.AddSingleton<ITypingExerciseRunService, TypingExerciseRunService>();
         services.AddTransient<IExercisesEditSession, ExercisesEditSession>();
+        services.AddTransient<IImportedWordsGenerator, ImportedWordsGenerator>();
 
         // TODO
         // need to add qwerty etc keyboard keys locators

@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -206,7 +205,7 @@ public partial class TypingViewModel : ObservableObject
     public void SwitchShowErrorsResult()
         => ShowErrorsResult = !ShowErrorsResult;
 
-    public async Task LoadTextAsync(IStringsProvider stringProvider)
+    public async Task<Result<bool>> LoadTextAsync(IStringsProvider stringProvider)
     {
         Session.Lines.Clear();
         LinesStates.Clear();
@@ -223,7 +222,7 @@ public partial class TypingViewModel : ObservableObject
 
         if (!themeResu.Success)
         {
-            return;
+            return Result<bool>.Fail(themeResu.Error);
         }
 
         Result<IEnumerable<string>> getStringResult =
@@ -231,13 +230,13 @@ public partial class TypingViewModel : ObservableObject
 
         if (!getStringResult.Success)
         {
-            Debug.WriteLine(getStringResult.Error);
-            return;
+            return Result<bool>.Fail(getStringResult.Error);
         }
 
         string[] dataLines = [.. getStringResult.GetValue];
 
-        ArgumentOutOfRangeException.ThrowIfLessThan(dataLines.Length, 1);
+        if (dataLines.Length == 0)
+            return Result<bool>.Fail("L'exercice ne contient aucun texte");
 
         foreach (string line in dataLines)
         {
@@ -249,6 +248,8 @@ public partial class TypingViewModel : ObservableObject
         }
 
         Session.ResetProgression();
+
+        return Result<bool>.Ok(true);
     }
 
     public TypingStatus ProcessInput(char input)

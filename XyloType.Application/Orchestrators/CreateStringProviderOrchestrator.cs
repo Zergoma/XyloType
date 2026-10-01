@@ -1,5 +1,7 @@
 ﻿using XyloType.Application.DTOs;
 using XyloType.Application.Interfaces;
+using XyloType.Application.Mappers;
+using XyloType.Domain.Enums;
 using XyloType.Application.Models.Typing;
 using XyloType.Application.Models.Typing.Exercices;
 using XyloType.Application.ValueObjects;
@@ -12,17 +14,20 @@ public class CreateStringProviderOrchestrator : ICreateStringProviderOrchestrato
     private readonly ITypingExerciseWordNumberService _typingExerciceWordNumberService;
     private readonly ITypingExerciseLineNumberService _typingExerciceLineNumberService;
     private readonly IEditorSplitCharProvider _editorSplitCharProvider;
+    private readonly IImportedWordsGenerator _importedWordsGenerator;
 
     public CreateStringProviderOrchestrator(
         IPseudoWordBatchGenerator pseudoWordBatchGenerator,
         ITypingExerciseWordNumberService typingExerciceWordNumberService,
         ITypingExerciseLineNumberService typingExerciceLineNumberService,
-        IEditorSplitCharProvider editorSplitCharProvider)
+        IEditorSplitCharProvider editorSplitCharProvider,
+        IImportedWordsGenerator importedWordsGenerator)
     {
         _pseudoWordBatchGenerator = pseudoWordBatchGenerator;
         _typingExerciceWordNumberService = typingExerciceWordNumberService;
         _typingExerciceLineNumberService = typingExerciceLineNumberService;
         _editorSplitCharProvider = editorSplitCharProvider;
+        _importedWordsGenerator = importedWordsGenerator;
     }
 
     public Result<IStringsProvider> Create(
@@ -52,20 +57,22 @@ public class CreateStringProviderOrchestrator : ICreateStringProviderOrchestrato
 
             if (itemDynamic.GeneratedTypeSource == GeneratedTypeSource.Words)
             {
-                // TODO
-                // need db access
+                Result<KeyboardLayout> layoutResult = selectedKeyboard.KeyBoardCode.ToDomainEnum();
+                if (!layoutResult.Success)
+                {
+                    return Result<IStringsProvider>
+                        .Fail(layoutResult.Error);
+                }
+
                 return Result<IStringsProvider>
-                    .Fail("not yet implemented");
-
-                //return Result<IStringsProvider>
-                //    .Ok(new TypingExerciceDynamicPseudoWordsProducer(
-                //        dynamicPseudoWordConfiguration,
-                //        _pseudoWordBatchGenerator,
-                //        _typingExerciceWordNumberService
-                //        ));
-
+                    .Ok(new TypingExerciseDynamicWordsProducer(
+                        _importedWordsGenerator,
+                        _typingExerciceWordNumberService,
+                        _typingExerciceLineNumberService,
+                        itemDynamic,
+                        exercice.AllowedCharacters,
+                        layoutResult.GetValue));
             }
-
         }
         return Result<IStringsProvider>
             .Fail("No static or dynamic configuration found");
@@ -159,13 +166,3 @@ public class CreateStringProviderOrchestrator : ICreateStringProviderOrchestrato
         }
     }
 }
-
-
-
-
-//public class TypingExerciceDynamicWords
-//{
-//    public Result<string> GetData { get; set; }
-
-//    // repository à la bdd requit => request la bdd avec les critères
-//}
