@@ -10,6 +10,7 @@ internal static class InfrastructureRepositoriesModule
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         services.AddTransient<IDactyloRepository, DactyloRepository>();
+        services.AddTransient<IImportedSourceRepository, ImportedSourceRepository>();
         return services;
     }
 }

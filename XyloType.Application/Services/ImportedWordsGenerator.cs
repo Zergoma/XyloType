@@ -23,7 +23,8 @@ public class ImportedWordsGenerator : IImportedWordsGenerator
             new WordQueryBuilder()
             .WithLayout(options.Layout)
             .WithMinLength(Math.Min(options.MinLength, options.MaxLength))
-            .WithMaxLength(Math.Max(options.MinLength, options.MaxLength));
+            .WithMaxLength(Math.Max(options.MinLength, options.MaxLength))
+            .WithOnlyLetters(options.AllowedLetters); // excluded words are skipped by default
 
         string[] languages = [.. options.Languages.Where(l => !string.IsNullOrWhiteSpace(l))];
         if (languages.Length > 0)

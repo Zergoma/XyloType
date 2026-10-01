@@ -2,6 +2,7 @@
 
 using XyloType.ViewModels.ExercisesManager;
 using XyloType.ViewModels.Import;
+using XyloType.ViewModels.WordsExplorer;
 using XyloType.ViewModels.TypingLauncher;
 
 
@@ -15,6 +16,7 @@ public static class ViewModelsModule
         services.AddTransient<ImportWordViewModel>();
         services.AddTransient<TypingLauncherViewModel>();
         services.AddTransient<ExercisesManagerViewModel>();
+        services.AddTransient<WordsExplorerViewModel>();
         return services;
     }
 }

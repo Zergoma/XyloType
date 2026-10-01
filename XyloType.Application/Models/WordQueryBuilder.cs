@@ -49,6 +49,36 @@ public sealed class WordQueryBuilder
         return this;
     }
 
+    public WordQueryBuilder WithText(string text)
+    {
+        _criteria = _criteria with { TextContains = text };
+        return this;
+    }
+
+    public WordQueryBuilder WithOnlyLetters(string letters)
+    {
+        _criteria = _criteria with { OnlyLetters = letters };
+        return this;
+    }
+
+    public WordQueryBuilder WithMinOccurrences(int value)
+    {
+        _criteria = _criteria with { MinOccurrences = value };
+        return this;
+    }
+
+    public WordQueryBuilder WithHands(HandFilter hands)
+    {
+        _criteria = _criteria with { Hands = hands };
+        return this;
+    }
+
+    public WordQueryBuilder WithExclusion(WordExclusionFilter exclusion)
+    {
+        _criteria = _criteria with { Exclusion = exclusion };
+        return this;
+    }
+
     public WordQueryBuilder WithAnalyses()
     {
         _criteria = _criteria with { IncludeAnalyses = true };

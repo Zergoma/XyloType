@@ -4,9 +4,17 @@ namespace XyloType.MVVM.Views;
 
 public partial class ImportWordView : ContentPage
 {
+    private readonly VM.ImportWordViewModel _vm;
+
 	public ImportWordView(VM.ImportWordViewModel vm)
 	{
 		InitializeComponent();
-		BindingContext = vm;
+		BindingContext = _vm = vm;
 	}
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _vm.LoadHistoryAsync();
+    }
 }

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.WordsExplorer;assembly=XyloType.ViewModels"
+             xmlns:behaviors="clr-namespace:XyloType.Behaviors"
+             x:Class="XyloType.MVVM.Views.WordsExplorerView"
+             x:DataType="vm:WordsExplorerViewModel"
+             x:Name="RootPage"
+             Title="Mots"
+             Shell.NavBarIsVisible="False"
+             StyleClass="xylotype_page_bg">
+
+    <Grid RowDefinitions="auto,*"
+          ColumnDefinitions="300,*"
+          ColumnSpacing="20"
+          Padding="20,16,20,20">
+
+        <!-- header -->
+        <VerticalStackLayout Grid.ColumnSpan="2" Spacing="2" Margin="0,0,0,16">
+            <Label Text="Mots" StyleClass="label_page_title"/>
+            <Label Text="{Binding DatabaseText}" StyleClass="label_muted"/>
+        </VerticalStackLayout>
+
+        <!-- filters -->
+        <Border Grid.Row="1" Grid.Column="0"
+                StyleClass="BorderTypingRounded10, BorderBgStd"
+                Padding="18,16">
+            <ScrollView>
+                <VerticalStackLayout Spacing="12">
+
+                    <Label Text="Filtres" StyleClass="label_section_title"/>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Contient" StyleClass="label_field"/>
+                        <Entry Text="{Binding SearchText}"
+                               Placeholder="ex. ch"
+                               StyleClass="entry_no_spell_no_prediction"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Uniquement ces lettres" StyleClass="label_field"/>
+                        <Entry Text="{Binding OnlyLetters}"
+                               Placeholder="ex. azertqsdf"
+                               StyleClass="entry_no_spell_no_prediction"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Langue" StyleClass="label_field"/>
+                        <Picker ItemsSource="{Binding LanguageOptions}"
+                                SelectedItem="{Binding LanguageSelected}"
+                                StyleClass="picker_themed"/>
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Longueur min" StyleClass="label_field"/>
+                            <Entry Text="{Binding MinLength}"
+                                   Keyboard="Numeric"
+                                   StyleClass="entry_no_spell_no_prediction">
+                                <Entry.Behaviors>
+                                    <behaviors:DigitsOnlyBehavior />
+                                </Entry.Behaviors>
+                            </Entry>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="4">
+                            <Label Text="max" StyleClass="label_field"/>
+                            <Entry Text="{Binding MaxLength}"
+                                   Keyboard="Numeric"
+                                   StyleClass="entry_no_spell_no_prediction">
+                                <Entry.Behaviors>
+                                    <behaviors:DigitsOnlyBehavior />
+                                </Entry.Behaviors>
+                            </Entry>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Occurrences minimum" StyleClass="label_field"/>
+                        <Entry Text="{Binding MinOccurrences}"
+                               Keyboard="Numeric"
+                               StyleClass="entry_no_spell_no_prediction">
+                            <Entry.Behaviors>
+                                <behaviors:DigitsOnlyBehavior />
+                            </Entry.Behaviors>
+                        </Entry>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Mains" StyleClass="label_field"/>
+                        <Picker ItemsSource="{Binding HandsOptions}"
+                                SelectedItem="{Binding HandsSelected}"
+                                StyleClass="picker_themed"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Afficher" StyleClass="label_field"/>
+                        <Picker ItemsSource="{Binding ExclusionOptions}"
+                                SelectedItem="{Binding ExclusionSelected}"
+                                StyleClass="picker_themed"/>
+                    </VerticalStackLayout>
+
+                    <Button Text="Réinitialiser les filtres"
+                            StyleClass="button_hover"
+                            CornerRadius="10"
+                            Command="{Binding ResetFiltersCommand}"/>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Border>
+
+        <!-- results -->
+        <Border Grid.Row="1" Grid.Column="1"
+                StyleClass="BorderTypingRounded10, BorderBgStd"
+                Padding="18,16">
+
+            <Grid RowDefinitions="auto,auto,auto,*" RowSpacing="10">
+
+                <Grid ColumnDefinitions="*,auto">
+                    <Label Text="{Binding TotalText}"
+                           StyleClass="label_section_title"
+                           VerticalOptions="Center"/>
+                    <ActivityIndicator Grid.Column="1"
+                                       IsRunning="{Binding IsSearching}"
+                                       HeightRequest="20"
+                                       WidthRequest="20"/>
+                </Grid>
+
+                <Label Grid.Row="1"
+                       Text="{Binding ErrorText}"
+                       StyleClass="label_error"/>
+
+                <!-- simple rows only: no FlexLayout inside a CollectionView (it crashes on Windows) -->
+                <!-- column headers: outside the list so they stay visible when scrolling; click to sort -->
+                <Grid Grid.Row="2"
+                      ColumnDefinitions="*,120,110,160,60,100"
+                      ColumnSpacing="10"
+                      Padding="10,0,22,6">
+                    <Label Text="{Binding TextHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Text"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label Grid.Column="1" Text="{Binding OccurrencesHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap" HorizontalTextAlignment="End">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Occurrences"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label Grid.Column="2" Text="{Binding LengthHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap" HorizontalTextAlignment="End">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Length"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label Grid.Column="3" Text="CLAVIER" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap"/>
+                    <Label Grid.Column="4" Text="LANGUE" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap"/>
+                </Grid>
+
+                <CollectionView Grid.Row="3"
+                                ItemsSource="{Binding Items}"
+                                RemainingItemsThreshold="20"
+                                RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:WordItemViewModel">
+                            <Grid ColumnDefinitions="*,120,110,160,60,100"
+                                  ColumnSpacing="10"
+                                  Padding="10,4"
+                                  HeightRequest="40">
+
+                                <Label Text="{Binding Text}"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"
+                                       LineBreakMode="TailTruncation">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsExcluded}" Value="True">
+                                            <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+
+                                <Label Grid.Column="1" Text="{Binding Occurrences, StringFormat='{0:N0}'}"
+                                       HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="{Binding Length}"
+                                       HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                <Label Grid.Column="3" Text="{Binding HandsText}"
+                                       StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                <Label Grid.Column="4" Text="{Binding LanguageCode}"
+                                       StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+
+                                <Button Grid.Column="5"
+                                        Text="{Binding ExcludeActionText}"
+                                        StyleClass="button_hover"
+                                        FontSize="12"
+                                        Padding="10,0"
+                                        HeightRequest="30"
+                                        MinimumHeightRequest="30"
+                                        CornerRadius="15"
+                                        Command="{Binding BindingContext.ToggleExcludedCommand, Source={x:Reference RootPage}, x:DataType=ContentPage}"
+                                        CommandParameter="{Binding .}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

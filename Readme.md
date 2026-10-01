@@ -29,7 +29,9 @@ You will have to select the letters you want, text you want or dynamically gener
 - **Results**: words and letters per minute, duration, accuracy, error count, response time and error rate per key
 - **Chaining**: from the results, retry the exercise (new words for generated exercises), go to the next one, or back home — the last played exercise stays selected
 - **Exercises menu**: create, edit, delete and reorder (drag and drop) the exercises of a keyboard; a fixed text can be generated from pseudo-words or from imported words; changes stay in memory until you save, cancel restores the saved file
-- **Word import**: import a text file (compound words kept, French and Italian elisions such as "l'" dropped), each word is analyzed for the keyboard (rows, fingers, hands, dead keys) and stored in a local SQLite database; dynamic exercises with the "Words" source then pick real words (language, length, allowed letters, frequent words more often)
+- **Word import**: import a text file (compound words kept, French and Italian elisions such as "l'" dropped), each word is analyzed for the keyboard (rows, fingers, hands, dead keys) and stored in a local SQLite database; the import can be cancelled at any time and nothing is written before the end (one transaction); dynamic exercises with the "Words" source then pick real words (language, length, allowed letters, frequent words more often)
+- **Import history**: each import is recorded (title, SHA-256 of the normalized text, counts); importing the same text again or a close title asks for confirmation
+- **Words menu**: explore the imported words (contains, only these letters, language, length, occurrences, hands, excluded), sorted and paged, with the total count; exclude a word (never used in exercises, kept excluded on re-import) or restore it
 - **Themes**: light, dark or system
 
 ---

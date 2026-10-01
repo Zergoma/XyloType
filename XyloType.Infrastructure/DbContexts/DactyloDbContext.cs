@@ -10,6 +10,8 @@ public class DactyloDbContext : DbContext
 
     public DbSet<WordAnalysis> WordAnalyses => Set<WordAnalysis>();
 
+    public DbSet<ImportedSource> ImportedSources => Set<ImportedSource>();
+
     public DactyloDbContext(
         DbContextOptions<DactyloDbContext> options)
         : base(options)
@@ -52,6 +54,7 @@ public class DactyloDbContext : DbContext
             entity.HasIndex(x => x.LanguageCode);
             entity.HasIndex(x => x.Length);
             entity.HasIndex(x => x.OccurrenceCount);
+            entity.HasIndex(x => x.IsExcluded);
         });
     }
 
@@ -110,9 +113,34 @@ public class DactyloDbContext : DbContext
         });
     }
 
+    private static void ConfigureImportedSource(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ImportedSource>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Title)
+                .IsRequired()
+                .HasMaxLength(300);
+
+            entity.Property(x => x.FileName)
+                .HasMaxLength(300);
+
+            entity.Property(x => x.ContentHash)
+                .IsRequired()
+                .HasMaxLength(64);
+
+            entity.Property(x => x.LanguageCode)
+                .HasMaxLength(10);
+
+            entity.HasIndex(x => x.ContentHash);
+        });
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureWord(modelBuilder);
         ConfigureWordAnalysis(modelBuilder);
+        ConfigureImportedSource(modelBuilder);
     }
 }

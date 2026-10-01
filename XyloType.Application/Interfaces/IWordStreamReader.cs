@@ -9,5 +9,9 @@ public interface IWordStreamReader
     /// (elisions, compound words).
     /// </summary>
     /// <param name="progress">Receives the share of the file already read, from 0 to 1</param>
-    IAsyncEnumerable<string> ReadWordsAsync(string filePath, string languageCode, IProgress<double>? progress = null);
+    IAsyncEnumerable<string> ReadWordsAsync(
+        string filePath,
+        string languageCode,
+        IProgress<double>? progress = null,
+        CancellationToken cancellationToken = default);
 }

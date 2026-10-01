@@ -54,7 +54,11 @@ public sealed class WordImportIntegrationTests : IDisposable
             new DactyloRepository(_factory, NullLogger<DactyloRepository>.Instance),
             new WordBatchProcessorOrchestrator(new KeyboardAnalyzerService()),
             new TextFileWordReader(),
+            new NormalizedTextHasher(),
             NullLogger<WordImportOrchestrator>.Instance);
+
+    private DactyloRepository CreateRepository()
+        => new(_factory, NullLogger<DactyloRepository>.Instance);
 
     [Fact]
     public async Task Import_StoresWordsWithTheirAnalysis()
@@ -65,11 +69,12 @@ public sealed class WordImportIntegrationTests : IDisposable
             await CreateOrchestrator().ImportAsync(file, "fr", new AzertyKeysLocator());
 
         result.Success.Should().BeTrue(result.Error);
-        result.GetValue.Should().Be(new WordImportSummary(
-            WordsRead: 7,
-            NewWords: 4,        // le, chat, mange, dort
-            UpdatedWords: 0,
-            IgnoredWords: 1));  // cœur: œ is not on the keyboard
+        WordImportSummary summary = result.GetValue;
+        summary.WordsRead.Should().Be(7);
+        summary.NewWords.Should().Be(4);        // le, chat, mange, dort
+        summary.UpdatedWords.Should().Be(0);
+        summary.IgnoredWords.Should().Be(1);    // cœur: œ is not on the keyboard
+        summary.IgnoredSample.Should().Equal("cœur");
 
         using DactyloDbContext ctx = _factory.CreateDbContext();
         Word chat = await ctx.Words.Include(w => w.Analyses).SingleAsync(w => w.Text == "chat");
@@ -170,14 +175,160 @@ public sealed class WordImportIntegrationTests : IDisposable
         await CreateOrchestrator().ImportAsync(file, "fr", new AzertyKeysLocator(), new SyncProgress<WordImportProgress>(reports.Add));
 
         reports.Should().NotBeEmpty();
-        reports.Select(r => r.Fraction).Should().BeInAscendingOrder();
+        reports.Where(r => r.Phase == WordImportPhase.Reading).Select(r => r.Fraction).Should().BeInAscendingOrder();
         reports[0].Fraction.Should().Be(0);
-        reports[^1].Should().Be(new WordImportProgress(1800, 1));
+        reports.Should().Contain(r => r.Phase == WordImportPhase.Reading);
+        reports.Where(r => r.Phase == WordImportPhase.Saving).Select(r => r.Fraction)
+            .Should().NotBeEmpty().And.BeInAscendingOrder().And.EndWith(1);
+        reports[^1].Should().Be(new WordImportProgress(WordImportPhase.Saving, 1800, 1));
     }
 
     private sealed class SyncProgress<T>(Action<T> report) : IProgress<T>
     {
         public void Report(T value) => report(value);
+    }
+
+    [Fact]
+    public async Task Import_IsRecordedInTheHistory_AndDetectedAsDuplicate()
+    {
+        string file = Path.Combine(_folder, "Les Misérables.txt");
+        File.WriteAllText(file, "le chat dort\r\nsur le tapis");
+        await CreateOrchestrator().ImportAsync(file, "fr", new AzertyKeysLocator());
+
+        ImportDuplicateChecker checker = new(new ImportedSourceRepository(_factory), new NormalizedTextHasher());
+
+        // same text, other encoding and line endings
+        string copy = Path.Combine(_folder, "autre nom.txt");
+        File.WriteAllText(copy, "le chat dort  \nsur le tapis\n\n", new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+        ImportCheckResult sameContent = await checker.CheckAsync(copy);
+
+        // other text, close title
+        string edition = Path.Combine(_folder, "les miserables (1).txt");
+        File.WriteAllText(edition, "une autre histoire");
+        ImportCheckResult closeTitle = await checker.CheckAsync(edition);
+
+        sameContent.SameContent.Should().NotBeNull();
+        sameContent.SameContent!.Title.Should().Be("Les Misérables");
+        sameContent.SameContent.WordsRead.Should().Be(6);
+
+        closeTitle.SameContent.Should().BeNull();
+        closeTitle.CloseTitles.Should().ContainSingle(s => s.Title == "Les Misérables");
+    }
+
+    [Fact]
+    public async Task ExcludedWord_StaysExcludedOnReimport_AndIsNeverGenerated()
+    {
+        string file = WriteText("chat chat chien");
+        await CreateOrchestrator().ImportAsync(file, "fr", new AzertyKeysLocator());
+
+        DactyloRepository repository = CreateRepository();
+        Word chat = (await repository.SearchAsync(new WordQueryBuilder().WithText("chat").Build())).Single();
+        await repository.SetExcludedAsync(chat.Id, true);
+
+        await CreateOrchestrator().ImportAsync(file, "fr", new AzertyKeysLocator());
+
+        using (DactyloDbContext ctx = _factory.CreateDbContext())
+        {
+            Word stored = await ctx.Words.SingleAsync(w => w.Text == "chat");
+            stored.IsExcluded.Should().BeTrue();
+            stored.OccurrenceCount.Should().Be(4);
+        }
+
+        Result<List<string>> generated = await new ImportedWordsGenerator(repository, new SequenceRandom())
+            .GenerateAsync(new ImportedWordsOptions(["fr"], "chaiten", 3, 6, KeyboardLayout.AzertyFr), 10);
+
+        generated.GetValue.Should().OnlyContain(w => w == "chien");
+    }
+
+    [Fact]
+    public async Task SearchPage_FiltersSortsAndCounts()
+    {
+        await CreateOrchestrator().ImportAsync(
+            WriteText("le le le chat chat chien vert caresse fête"), "fr", new AzertyKeysLocator());
+        DactyloRepository repository = CreateRepository();
+
+        WordSearchPage byFrequency = await repository.SearchPageAsync(new WordSearchCriteria(), WordSort.Default, 0, 2);
+        byFrequency.TotalCount.Should().Be(6);
+        byFrequency.Words.Select(w => w.Text).Should().Equal("le", "chat");
+
+        WordSearchPage onlyLetters = await repository.SearchPageAsync(
+            new WordQueryBuilder().WithOnlyLetters("chatien").Build(), new WordSort(WordSortField.Text, false), 0, 50);
+        onlyLetters.Words.Select(w => w.Text).Should().Equal("chat", "chien");
+
+        WordSearchPage contains = await repository.SearchPageAsync(
+            new WordQueryBuilder().WithText("CH").WithMinOccurrences(2).Build(), new WordSort(WordSortField.Text, false), 0, 50);
+        contains.Words.Select(w => w.Text).Should().Equal("chat");
+
+        WordSearchPage longestFirst = await repository.SearchPageAsync(
+            new WordSearchCriteria(), new WordSort(WordSortField.Length, Descending: true), 0, 1);
+        longestFirst.Words.Single().Text.Should().Be("caresse");
+
+        WordSearchPage leftHand = await repository.SearchPageAsync(
+            new WordQueryBuilder().WithLayout(KeyboardLayout.AzertyFr).WithHands(HandFilter.LeftOnly).Build(), new WordSort(WordSortField.Text, false), 0, 50);
+        leftHand.Words.Select(w => w.Text).Should().Equal("caresse", "vert");
+    }
+
+    [Fact]
+    public async Task Import_CancelledWhileReading_WritesNothing()
+    {
+        // big enough to report progress several times
+        string file = WriteText(string.Join(Environment.NewLine,
+            Enumerable.Range(0, 3000).Select(i => $"le chat numéro dort mange joue court saute")));
+        using CancellationTokenSource cancellation = new();
+
+        // cancel as soon as a part of the file has been read
+        SyncProgress<WordImportProgress> progress = new(p =>
+        {
+            if (p.Fraction is > 0.2 and < 1)
+                cancellation.Cancel();
+        });
+
+        Result<WordImportSummary> result =
+            await CreateOrchestrator().ImportAsync(file, "fr", new AzertyKeysLocator(), progress, cancellation.Token);
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("annulé");
+
+        using DactyloDbContext ctx = _factory.CreateDbContext();
+        (await ctx.Words.CountAsync()).Should().Be(0);
+        (await ctx.WordAnalyses.CountAsync()).Should().Be(0);
+        (await ctx.ImportedSources.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Import_SpanningSeveralBatches_CountsEachWordOnce()
+    {
+        // more than one batch of distinct words, each one repeated in every batch
+        IEnumerable<string> words = Enumerable.Range(0, 2500).Select(i => ToLetters(i));
+        string text = string.Join(" ", words);
+        string file = WriteText(text + Environment.NewLine + text);
+
+        Result<WordImportSummary> result =
+            await CreateOrchestrator().ImportAsync(file, "fr", new AzertyKeysLocator());
+
+        result.GetValue.NewWords.Should().Be(2500);
+        result.GetValue.UpdatedWords.Should().Be(0, "a word created by this import stays a new word");
+
+        using DactyloDbContext ctx = _factory.CreateDbContext();
+        (await ctx.Words.CountAsync()).Should().Be(2500);
+        (await ctx.Words.AllAsync(w => w.OccurrenceCount == 2)).Should().BeTrue();
+        (await ctx.ImportedSources.CountAsync()).Should().Be(1);
+    }
+
+    /// <summary>
+    /// Distinct letter-only word for a number: 0 → "aa", 1 → "ab"...
+    /// </summary>
+    private static string ToLetters(int value)
+    {
+        const string letters = "abcdefghijklmnopqrstuvwxyz";
+        string word = "";
+        do
+        {
+            word = letters[value % 26] + word;
+            value /= 26;
+        }
+        while (value > 0);
+        return "w" + word;
     }
 
     [Fact]

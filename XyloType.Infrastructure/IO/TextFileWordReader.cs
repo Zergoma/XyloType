@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using XyloType.Application.Interfaces;
 using XyloType.Domain.Text;
 
@@ -10,7 +12,11 @@ public sealed class TextFileWordReader : IWordStreamReader
 
     public event Action<string>? LineChanged;
 
-    public async IAsyncEnumerable<string> ReadWordsAsync(string filePath, string languageCode, IProgress<double>? progress = null)
+    public async IAsyncEnumerable<string> ReadWordsAsync(
+        string filePath,
+        string languageCode,
+        IProgress<double>? progress = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using StreamReader reader = new(filePath);
 
@@ -19,7 +25,7 @@ public sealed class TextFileWordReader : IWordStreamReader
 
         string? line;
 
-        while ((line = await reader.ReadLineAsync()) is not null)
+        while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
         {
             LineChanged?.Invoke(line);
             foreach (string word in WordTokenizer.Tokenize(line, languageCode))
