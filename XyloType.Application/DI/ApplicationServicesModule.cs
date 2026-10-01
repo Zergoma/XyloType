@@ -33,6 +33,7 @@ internal static class ApplicationServicesModule
         services.AddTransient<IExercisesEditSession, ExercisesEditSession>();
         services.AddTransient<IImportedWordsGenerator, ImportedWordsGenerator>();
         services.AddTransient<IImportDuplicateChecker, ImportDuplicateChecker>();
+        services.AddSingleton<IScoreCatalog, ScoreCatalog>();
 
         // TODO
         // need to add qwerty etc keyboard keys locators

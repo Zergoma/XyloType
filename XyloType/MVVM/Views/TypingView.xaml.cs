@@ -59,12 +59,8 @@ public partial class TypingView : ContentPage
 
         vm.LineChanged += (int lineNumber) =>
         {
-            Dispatcher.DispatchAsync(async () =>
-            {
-                await Task.Delay(50);
-
-                ScrollToCurrentLine(lineNumber);
-            });
+            _targetLine = lineNumber;
+            Dispatcher.Dispatch(() => _ = FollowCurrentLineAsync(vm));
         };
         
         _navigationService = navigationService;
@@ -192,6 +188,85 @@ public partial class TypingView : ContentPage
         RequestTypingFocus();
     }
 
+    // the piece buttons take the focus when clicked: give it back so the typing goes on
+
+    private void SkipScore_Clicked(object? sender, EventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            vm.SkipScoreCommand.Execute(null);
+
+        RequestTypingFocus();
+    }
+
+    private void ExcludeScore_Clicked(object? sender, EventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            vm.ExcludeCurrentScoreCommand.Execute(null);
+
+        RequestTypingFocus();
+    }
+
+    private void ToggleScoreShuffle_Clicked(object? sender, EventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            vm.ToggleScoreShuffleCommand.Execute(null);
+
+        RequestTypingFocus();
+    }
+
+    private void ToggleRandomInstrument_Clicked(object? sender, EventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            vm.ToggleRandomInstrumentCommand.Execute(null);
+
+        RequestTypingFocus();
+    }
+
+    // volume sliders: hear the new volume when the slider is released
+    private void OkVolume_DragCompleted(object? sender, EventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            vm.PreviewOkSoundCommand.Execute(null);
+    }
+
+    private void ErrorVolume_DragCompleted(object? sender, EventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            vm.PreviewErrorSoundCommand.Execute(null);
+    }
+
+    private void PreviousScore_Clicked(object? sender, EventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            vm.PreviousScoreCommand.Execute(null);
+
+        RequestTypingFocus();
+    }
+
+    private void PreviousInstrument_Clicked(object? sender, EventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            vm.PreviousInstrumentCommand.Execute(null);
+
+        RequestTypingFocus();
+    }
+
+    private void ChangeInstrument_Clicked(object? sender, EventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            vm.ChangeInstrumentCommand.Execute(null);
+
+        RequestTypingFocus();
+    }
+
+    private void ExcludeInstrument_Clicked(object? sender, EventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            vm.ExcludeCurrentInstrumentCommand.Execute(null);
+
+        RequestTypingFocus();
+    }
+
     private void TypingArea_Tapped(object sender, TappedEventArgs e)
     {
         // clicking on the text keeps typing
@@ -219,7 +294,68 @@ public partial class TypingView : ContentPage
         }
     }
 
-    public void ScrollToCurrentLine(int index)
+    #region Smooth scrolling between lines
+
+    // time for the layout to measure the lines just added
+    private static readonly TimeSpan s_layoutDelay = TimeSpan.FromMilliseconds(30);
+
+    private int _targetLine;
+    private bool _isFollowingLine;
+
+    /// <summary>
+    /// Scrolls smoothly to the current line, then updates the lines above it
+    /// while keeping the text still on screen.
+    /// When typing fast, the animations do not pile up: they go to the latest line.
+    /// </summary>
+    private async Task FollowCurrentLineAsync(TypingViewModel vm)
+    {
+        if (_isFollowingLine)
+            return;
+
+        _isFollowingLine = true;
+        try
+        {
+            int line;
+            do
+            {
+                line = _targetLine;
+                await Task.Delay(s_layoutDelay);
+
+                // going back: the previous lines come back above, the text must not move
+                int toInsert = vm.TopLinesToInsert(line);
+                if (toInsert > 0)
+                {
+                    double heightBefore = TypingLinesLayout.Height;
+                    vm.InsertTopLines(toInsert);
+                    await Task.Delay(s_layoutDelay);
+                    double added = TypingLinesLayout.Height - heightBefore;
+                    await TypingScrollView.ScrollToAsync(0, TypingScrollView.ScrollY + added, animated: false);
+                }
+
+                await ScrollToLineAsync(vm.VisibleIndexOf(line));
+
+                // the lines that went out of sight above are removed, the text must not move
+                int toRemove = vm.TopLinesToRemove(line);
+                if (toRemove > 0)
+                {
+                    double removed = TypingLinesLayout.Children
+                        .Take(toRemove)
+                        .OfType<View>()
+                        .Sum(child => child.Height);
+
+                    vm.RemoveTopLines(toRemove);
+                    await TypingScrollView.ScrollToAsync(0, Math.Max(0, TypingScrollView.ScrollY - removed), animated: false);
+                }
+            }
+            while (line != _targetLine);
+        }
+        finally
+        {
+            _isFollowingLine = false;
+        }
+    }
+
+    private async Task ScrollToLineAsync(int index)
     {
         if (index < 0 || index >= TypingLinesLayout.Children.Count)
             return;
@@ -227,9 +363,11 @@ public partial class TypingView : ContentPage
         if (TypingLinesLayout.Children[index] is not Element line)
             return;
 
-        _ = TypingScrollView.ScrollToAsync(
+        await TypingScrollView.ScrollToAsync(
             line,
             ScrollToPosition.Start,
             animated: true);
     }
+
+    #endregion
 }

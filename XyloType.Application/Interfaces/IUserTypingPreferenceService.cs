@@ -1,4 +1,6 @@
-﻿namespace XyloType.Application.Interfaces;
+﻿using XyloType.Application.Models;
+
+namespace XyloType.Application.Interfaces;
 
 /// <summary>
 /// User settings of the typing screens, persisted between sessions.
@@ -35,4 +37,31 @@ public interface IUserTypingPreferenceService
 
     bool GetShowErrorsResult();
     void SetShowErrorsResult(bool show);
+
+    OkSoundMode GetOkSoundMode();
+    void SetOkSoundMode(OkSoundMode mode);
+
+    ScoreEndBehavior GetScoreEndBehavior();
+    void SetScoreEndBehavior(ScoreEndBehavior behavior);
+
+    /// <summary>
+    /// True: the next piece is picked at random; false: the pieces follow the catalog order.
+    /// </summary>
+    bool GetScoreShuffle();
+    void SetScoreShuffle(bool shuffle);
+
+    InstrumentChoice GetInstrument();
+    void SetInstrument(InstrumentChoice instrument);
+
+    /// <summary>
+    /// Instruments left out of the random pick.
+    /// </summary>
+    IReadOnlySet<InstrumentChoice> GetDisabledInstruments();
+    void SetDisabledInstruments(IEnumerable<InstrumentChoice> instruments);
+
+    /// <summary>
+    /// Ids of the scores the user does not want to hear.
+    /// </summary>
+    IReadOnlySet<string> GetDisabledScores();
+    void SetDisabledScores(IEnumerable<string> scoreIds);
 }

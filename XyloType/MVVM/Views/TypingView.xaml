@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:XyloType.ViewModels.Typing;assembly=XyloType.ViewModels"
              xmlns:converters="clr-namespace:XyloType.Converters"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:XyloType.MVVM.Controls"
              x:Class="XyloType.MVVM.Views.TypingView"
              x:DataType="vm:TypingViewModel"
              Shell.NavBarIsVisible="False"
@@ -20,7 +21,7 @@
         <ScrollView.GestureRecognizers>
             <TapGestureRecognizer Tapped="Page_Tapped"/>
         </ScrollView.GestureRecognizers>
-    <Grid RowDefinitions="0.1,auto,auto" BackgroundColor="Transparent">
+    <Grid RowDefinitions="0.1,auto,auto,auto" BackgroundColor="Transparent">
 
         <Entry Grid.Row="0"
                x:Name="HiddenInput"
@@ -50,7 +51,7 @@
                         VerticalScrollBarVisibility="Always">
 
                 <VerticalStackLayout x:Name="TypingLinesLayout"
-                                     BindableLayout.ItemsSource="{Binding LinesStates}">
+                                     BindableLayout.ItemsSource="{Binding VisibleLines}">
 
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:TypingLineStateViewModel">
@@ -119,8 +120,100 @@
                     VerticalOptions="Center"/>
         </Border>
 
+        <!-- under the text, on the right: piece being played (title, composer) and instrument,
+             each with previous (left), next and "never again" buttons -->
+        <Grid Grid.Row="2"
+              RowDefinitions="auto,auto"
+              ColumnDefinitions="auto,auto,auto,auto,auto"
+              ColumnSpacing="8"
+              RowSpacing="6"
+              HorizontalOptions="End"
+              Margin="20,-10,22,14">
+
+            <!-- piece -->
+            <controls:IconButton Grid.Column="0"
+                                 IsVisible="{Binding HasCurrentScore}"
+                                 IsActive="{Binding IsScoreShuffle}"
+                                 Icon="{x:Static controls:Icons.Shuffle}"
+                                 ToolTipProperties.Text="Morceaux au hasard (sinon dans l'ordre)"
+                                 VerticalOptions="Center"
+                                 Clicked="ToggleScoreShuffle_Clicked"/>
+
+            <controls:IconButton Grid.Column="1"
+                                 IsVisible="{Binding HasCurrentScore}"
+                                 IsEnabled="{Binding HasPreviousScore}"
+                                 Icon="{x:Static controls:Icons.Previous}"
+                                 ToolTipProperties.Text="Morceau précédent"
+                                 VerticalOptions="Center"
+                                 Clicked="PreviousScore_Clicked"/>
+
+            <VerticalStackLayout Grid.Column="2" IsVisible="{Binding HasCurrentScore}" Spacing="0" VerticalOptions="Center" Margin="4,0">
+                <Label Text="{Binding CurrentScoreTitle, StringFormat='♪ {0}'}"
+                       FontAttributes="Italic"
+                       HorizontalOptions="End"
+                       HorizontalTextAlignment="End"/>
+                <Label Text="{Binding CurrentScoreComposer}"
+                       StyleClass="label_muted"
+                       FontSize="12"
+                       HorizontalOptions="End"
+                       HorizontalTextAlignment="End"/>
+            </VerticalStackLayout>
+
+            <controls:IconButton Grid.Column="3"
+                                 IsVisible="{Binding HasCurrentScore}"
+                                 Icon="{x:Static controls:Icons.Next}"
+                                 ToolTipProperties.Text="Morceau suivant"
+                                 VerticalOptions="Center"
+                                 Clicked="SkipScore_Clicked"/>
+
+            <controls:IconButton Grid.Column="4"
+                                 IsVisible="{Binding HasCurrentScore}"
+                                 Icon="{x:Static controls:Icons.Forbid}"
+                                 ToolTipProperties.Text="Ne plus jouer ce morceau"
+                                 VerticalOptions="Center"
+                                 Clicked="ExcludeScore_Clicked"/>
+
+            <!-- instrument -->
+            <controls:IconButton Grid.Row="1" Grid.Column="0"
+                                 IsActive="{Binding IsRandomInstrument}"
+                                 Icon="{x:Static controls:Icons.Shuffle}"
+                                 ToolTipProperties.Text="Instrument au hasard, change à chaque morceau"
+                                 VerticalOptions="Center"
+                                 Clicked="ToggleRandomInstrument_Clicked"/>
+
+            <controls:IconButton Grid.Row="1" Grid.Column="1"
+                                 IsEnabled="{Binding HasPreviousInstrument}"
+                                 Icon="{x:Static controls:Icons.Previous}"
+                                 ToolTipProperties.Text="Instrument précédent"
+                                 VerticalOptions="Center"
+                                 Clicked="PreviousInstrument_Clicked"/>
+
+            <Label Grid.Row="1" Grid.Column="2"
+                   Text="{Binding CurrentInstrumentLabel, StringFormat='🎵 {0}'}"
+                   StyleClass="label_muted"
+                   HorizontalOptions="End"
+                   HorizontalTextAlignment="End"
+                   VerticalOptions="Center"
+                   Margin="4,0"/>
+
+            <controls:IconButton Grid.Row="1" Grid.Column="3"
+                                 Icon="{x:Static controls:Icons.Next}"
+                                 ToolTipProperties.Text="Changer d'instrument"
+                                 VerticalOptions="Center"
+                                 Clicked="ChangeInstrument_Clicked"/>
+
+            <controls:IconButton Grid.Row="1" Grid.Column="4"
+                                 Icon="{x:Static controls:Icons.Forbid}"
+                                 ToolTipProperties.Text="Ne plus utiliser cet instrument"
+                                 VerticalOptions="Center"
+                                 Clicked="ExcludeInstrument_Clicked"/>
+        </Grid>
+
+
+
+
         <!-- typing flow and sound settings -->
-        <Border Grid.Row="2" StyleClass="BorderTypingRounded10, BorderBgTyping" Padding="20,12" Margin="70,0,70,40">
+        <Border Grid.Row="3" StyleClass="BorderTypingRounded10, BorderBgTyping" Padding="20,12" Margin="70,0,70,40">
             <toolkit:Expander x:Name="SettingsExpander"
                               IsExpanded="False"
                               ExpandedChanged="SettingsExpander_ExpandedChanged">
@@ -237,6 +330,7 @@
                                         Minimum="0"
                                         Maximum="1"
                                         Value="{Binding OkVolume}"
+                                        DragCompleted="OkVolume_DragCompleted"
                                         StyleClass="slider_themed"
                                         VerticalOptions="Center"/>
                                 <Label Grid.Row="0" Grid.Column="2"
@@ -260,6 +354,7 @@
                                         Minimum="0"
                                         Maximum="1"
                                         Value="{Binding ErrorVolume}"
+                                        DragCompleted="ErrorVolume_DragCompleted"
                                         StyleClass="slider_themed"
                                         VerticalOptions="Center"/>
                                 <Label Grid.Row="1" Grid.Column="2"
@@ -276,6 +371,123 @@
                                         CornerRadius="16"
                                         Command="{Binding PreviewErrorSoundCommand}"/>
                             </Grid>
+
+                            <!-- instrument of the correct key notes (standard or piece of music) -->
+                            <Grid ColumnDefinitions="auto,*" ColumnSpacing="10" Margin="0,6,0,0">
+                                <Label Text="Instrument"
+                                       VerticalOptions="Center"/>
+                                <Picker Grid.Column="1"
+                                        ItemsSource="{Binding InstrumentOptions}"
+                                        SelectedItem="{Binding InstrumentSelected}"
+                                        StyleClass="picker_themed"
+                                        HorizontalOptions="Start"
+                                        MinimumWidthRequest="180"/>
+                            </Grid>
+                            <!-- random instrument: which ones can be picked -->
+                            <VerticalStackLayout IsVisible="{Binding IsRandomInstrument}" Spacing="2">
+                                <Label Text="Instruments tirés au hasard"
+                                       StyleClass="label_field"/>
+                                <VerticalStackLayout Spacing="0" BindableLayout.ItemsSource="{Binding InstrumentSwitches}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:InstrumentOptionViewModel">
+                                            <Grid ColumnDefinitions="auto,*" ColumnSpacing="10">
+                                                <Switch IsToggled="{Binding IsEnabled}"
+                                                        VerticalOptions="Center"/>
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding Label}"
+                                                       VerticalOptions="Center"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+
+                            <!-- correct key sound: standard notes or a piece of music -->
+                            <Grid ColumnDefinitions="auto,*" ColumnSpacing="10" Margin="0,6,0,0">
+                                <Label Text="Bonnes frappes"
+                                       VerticalOptions="Center"/>
+                                <Picker Grid.Column="1"
+                                        ItemsSource="{Binding OkSoundModeOptions}"
+                                        SelectedItem="{Binding OkSoundModeSelected}"
+                                        StyleClass="picker_themed"
+                                        HorizontalOptions="Start"
+                                        MinimumWidthRequest="180"/>
+                            </Grid>
+
+                            <VerticalStackLayout Spacing="6" IsVisible="{Binding IsScoreMode}">
+                                <Label Text="{Binding CurrentScoreText}"
+                                       StyleClass="label_muted"
+                                       FontAttributes="Italic"/>
+
+                                <Grid ColumnDefinitions="auto,*" ColumnSpacing="10">
+                                    <Label Text="En fin de morceau"
+                                           VerticalOptions="Center"/>
+                                    <Picker Grid.Column="1"
+                                            ItemsSource="{Binding ScoreEndOptions}"
+                                            SelectedItem="{Binding ScoreEndSelected}"
+                                            StyleClass="picker_themed"
+                                            HorizontalOptions="Start"
+                                            MinimumWidthRequest="220"/>
+                                </Grid>
+
+                                <Label Text="Morceaux joués (un au hasard à chaque exercice)"
+                                       StyleClass="label_field"/>
+
+                                <!-- one folded line per kind of music: switch for the whole group, count, pieces inside -->
+                                <VerticalStackLayout Spacing="4" BindableLayout.ItemsSource="{Binding ScoreCategoryGroups}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ScoreCategoryViewModel">
+                                            <Grid ColumnDefinitions="auto,*" ColumnSpacing="10">
+                                                <Switch IsToggled="{Binding IsEnabled}"
+                                                        VerticalOptions="Start"/>
+
+                                                <toolkit:Expander Grid.Column="1" x:Name="CategoryExpander">
+                                                    <toolkit:Expander.Header>
+                                                        <Grid ColumnDefinitions="auto,*,auto" ColumnSpacing="8" MinimumHeightRequest="38">
+                                                            <Label Text="▸"
+                                                                   VerticalOptions="Center">
+                                                                <Label.Triggers>
+                                                                    <DataTrigger TargetType="Label"
+                                                                                 Binding="{Binding IsExpanded, Source={x:Reference CategoryExpander}, x:DataType=toolkit:Expander}"
+                                                                                 Value="True">
+                                                                        <Setter Property="Text" Value="▾"/>
+                                                                    </DataTrigger>
+                                                                </Label.Triggers>
+                                                            </Label>
+                                                            <Label Grid.Column="1"
+                                                                   Text="{Binding Name}"
+                                                                   FontAttributes="Bold"
+                                                                   VerticalOptions="Center"/>
+                                                            <Label Grid.Column="2"
+                                                                   Text="{Binding CountText}"
+                                                                   StyleClass="label_muted"
+                                                                   VerticalOptions="Center"/>
+                                                        </Grid>
+                                                    </toolkit:Expander.Header>
+
+                                                    <VerticalStackLayout Spacing="2" Padding="0,2,0,6"
+                                                                         BindableLayout.ItemsSource="{Binding Pieces}">
+                                                        <BindableLayout.ItemTemplate>
+                                                            <DataTemplate x:DataType="vm:ScoreOptionViewModel">
+                                                                <Grid ColumnDefinitions="auto,*" ColumnSpacing="10">
+                                                                    <Switch IsToggled="{Binding IsEnabled}"
+                                                                            VerticalOptions="Center"/>
+                                                                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                                                        <Label Text="{Binding Title}"/>
+                                                                        <Label Text="{Binding Composer}"
+                                                                               StyleClass="label_muted"
+                                                                               FontSize="12"/>
+                                                                    </VerticalStackLayout>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </BindableLayout.ItemTemplate>
+                                                    </VerticalStackLayout>
+                                                </toolkit:Expander>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
                         </VerticalStackLayout>
                     </VerticalStackLayout>
                 </toolkit:Expander.Content>
