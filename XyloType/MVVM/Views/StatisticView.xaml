@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm ="clr-namespace:XyloType.MVVM.ViewModels"
              xmlns:micro="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui"
+             xmlns:views="clr-namespace:XyloType.MVVM.Views"
              x:DataType="vm:StatisticViewModelMauiAdapter"
              Title="StatisticView"
              Shell.NavBarIsVisible="False"
@@ -15,13 +16,16 @@
         </Style>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="auto,*,auto">
+    <!-- the results scroll under the floating header and actions bar -->
+    <Grid>
 
-        <!-- header: stays on top, like the actions bar at the bottom -->
-        <Border Grid.Row="0"
-                StyleClass="BorderBgStd"
-                StrokeThickness="0"
-                Padding="30,16">
+        <!-- header: floating card on top -->
+        <Border x:Name="HeaderBar"
+                StyleClass="BorderFloatingBar"
+                VerticalOptions="Start"
+                Margin="{x:Static views:StatisticView.BarMargin}"
+                Padding="24,14"
+                ZIndex="1">
             <VerticalStackLayout Spacing="2">
                 <Label Text="Résultats"
                        StyleClass="label_page_title"/>
@@ -32,8 +36,9 @@
             </VerticalStackLayout>
         </Border>
 
-        <ScrollView Grid.Row="1">
-            <VerticalStackLayout Padding="30,24,30,30" Spacing="24">
+        <ScrollView>
+            <!-- top and bottom padding follow the floating bars size (code-behind) -->
+            <VerticalStackLayout x:Name="ResultsContent" Padding="30,120,30,100" Spacing="24">
 
                 <!-- everything hidden -->
                 <Border IsVisible="{Binding Core.IsEverythingHidden}"
@@ -158,11 +163,13 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- actions -->
-        <Border Grid.Row="2"
-                StyleClass="BorderBgStd"
-                StrokeThickness="0"
-                Padding="30,14">
+        <!-- actions: floating card at the bottom -->
+        <Border x:Name="ActionsBar"
+                StyleClass="BorderFloatingBar"
+                VerticalOptions="End"
+                Margin="{x:Static views:StatisticView.BarMargin}"
+                Padding="20,12"
+                ZIndex="1">
 
             <Grid ColumnDefinitions="auto,*,auto,auto" ColumnSpacing="12">
 

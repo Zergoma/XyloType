@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\XyloType.Application\XyloType.Application.csproj" />
     <ProjectReference Include="..\XyloType.ViewModels\XyloType.ViewModels.csproj" />
+    <ProjectReference Include="..\XyloType.Infrastructure\XyloType.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

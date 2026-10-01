@@ -30,16 +30,15 @@ public sealed class KeyboardAnalyzerService : IKeyboardAnalyzerService
             rowMask |= info.Row;
             fingerMask |= info.Finger;
 
-            externalAccent = info.ExtrenalAccent;
+            // one dead key in the word is enough
+            externalAccent |= info.ExtrenalAccent;
 
-            if (IsLeftFinger(info.Finger))
-            {
+            // a character can need both hands (e.g. Shift + dead key + letter)
+            if ((info.Finger & LeftHand) != 0)
                 leftCount++;
-            }
-            else
-            {
+
+            if ((info.Finger & RightHand) != 0)
                 rightCount++;
-            }
         }
 
         return Result<UnitTextAnalysis>.Ok(new ()
@@ -52,12 +51,9 @@ public sealed class KeyboardAnalyzerService : IKeyboardAnalyzerService
         });
     }
 
-    private static bool IsLeftFinger(Finger finger)
-    {
-        return finger is
-            Finger.LeftPinky or
-            Finger.LeftRing or
-            Finger.LeftMiddle or
-            Finger.LeftIndex;
-    }
+    private const Finger LeftHand =
+        Finger.LeftPinky | Finger.LeftRing | Finger.LeftMiddle | Finger.LeftIndex | Finger.LeftThumb;
+
+    private const Finger RightHand =
+        Finger.RightPinky | Finger.RightRing | Finger.RightMiddle | Finger.RightIndex | Finger.RightThumb;
 }

@@ -8,10 +8,12 @@ using XyloType.Application.DTOs;
 using XyloType.Application.Interfaces;
 using XyloType.Application.Interfaces.Typing;
 using XyloType.Application.Mappers;
+using XyloType.Application.Models;
 using XyloType.Application.Models.Typing;
 using XyloType.Application.Models.Typing.Exercices;
 using XyloType.Application.ValueObjects;
 using XyloType.Domain.Typing;
+using XyloType.Domain.Enums;
 
 namespace XyloType.ViewModels.ExercisesManager;
 
@@ -23,6 +25,8 @@ public partial class ExercisesManagerViewModel : ObservableObject
 {
     private readonly IExercisesEditSession _session;
     private readonly IPseudoWordBatchGenerator _pseudoWordBatchGenerator;
+    private readonly IImportedWordsGenerator _importedWordsGenerator;
+    private readonly IEditorSplitCharProvider _editorSplitCharProvider;
     private readonly IUserDialogService _dialogService;
     private readonly IUserKeyboardLayoutPreferenceService _keyboardPreference;
 
@@ -39,6 +43,8 @@ public partial class ExercisesManagerViewModel : ObservableObject
     public ExercisesManagerViewModel(
         IExercisesEditSession session,
         IPseudoWordBatchGenerator pseudoWordBatchGenerator,
+        IImportedWordsGenerator importedWordsGenerator,
+        IEditorSplitCharProvider editorSplitCharProvider,
         IUserDialogService dialogService,
         IUserKeyboardLayoutPreferenceService keyboardPreference,
         IKeyBoardLayoutAvailableService keyboardLayoutAvailableService,
@@ -47,6 +53,8 @@ public partial class ExercisesManagerViewModel : ObservableObject
     {
         _session = session;
         _pseudoWordBatchGenerator = pseudoWordBatchGenerator;
+        _importedWordsGenerator = importedWordsGenerator;
+        _editorSplitCharProvider = editorSplitCharProvider;
         _dialogService = dialogService;
         _keyboardPreference = keyboardPreference;
 
@@ -330,7 +338,10 @@ public partial class ExercisesManagerViewModel : ObservableObject
     public partial string GeneratedText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    public partial int NumberWords { get; set; } = 10;
+    public partial int LineCount { get; set; } = 3;
+
+    [ObservableProperty]
+    public partial int WordsPerLine { get; set; } = 8;
 
     [ObservableProperty]
     public partial int MinLengthWord { get; set; } = 3;
@@ -377,15 +388,18 @@ public partial class ExercisesManagerViewModel : ObservableObject
         => IsStatic = !IsStatic;
 
     [RelayCommand]
-    public void GenerateWords()
+    public async Task GenerateWords()
     {
+        int lineCount = Math.Clamp(LineCount, 1, 50);
+        int wordsPerLine = Math.Clamp(WordsPerLine, 1, 50);
+        int count = lineCount * wordsPerLine;
+        int minLength = Math.Min(MinLengthWord, MaxLengthWord);
+        int maxLength = Math.Max(MinLengthWord, MaxLengthWord);
+
         Result<List<string>> result =
-            _pseudoWordBatchGenerator.Generate(
-                Math.Clamp(NumberWords, 1, 100),
-                new PseudoWordOptions(
-                    AllowedChars,
-                    Math.Min(MinLengthWord, MaxLengthWord),
-                    Math.Max(MinLengthWord, MaxLengthWord)));
+            GenerationTypeSourceSelected == GeneratedTypeSourceDto.Words
+                ? await GenerateImportedWordsAsync(count, minLength, maxLength)
+                : _pseudoWordBatchGenerator.Generate(count, new PseudoWordOptions(AllowedChars, minLength, maxLength));
 
         if (!result.Success)
         {
@@ -393,8 +407,33 @@ public partial class ExercisesManagerViewModel : ObservableObject
             return;
         }
 
-        GeneratedText = string.Join(" ", result.GetValue);
+        // real line breaks (the editor ones), not ↵: a ↵ is a key to type and stays up to the user
+        GeneratedText = string.Join(
+            _editorSplitCharProvider.GetSplitCharacter(),
+            result.GetValue.Chunk(wordsPerLine).Select(line => string.Join(' ', line)));
         SetStatus(string.Empty);
+    }
+
+    /// <summary>
+    /// Real words of the selected language, among the imported ones, typable with the allowed letters.
+    /// </summary>
+    private async Task<Result<List<string>>> GenerateImportedWordsAsync(int count, int minLength, int maxLength)
+    {
+        if (KeyboardLayoutSelected is null)
+            return Result<List<string>>.Fail("Aucun clavier sélectionné");
+
+        Result<KeyboardLayout> layoutResult = KeyboardLayoutSelected.KeyBoardCode.ToDomainEnum();
+        if (!layoutResult.Success)
+            return Result<List<string>>.Fail(layoutResult.Error);
+
+        return await _importedWordsGenerator.GenerateAsync(
+            new ImportedWordsOptions(
+                LanguageSelected is null ? [] : [LanguageSelected],
+                AllowedChars,
+                minLength,
+                maxLength,
+                layoutResult.GetValue),
+            count);
     }
 
     private void LoadEditor(TypingExercise? exercise)

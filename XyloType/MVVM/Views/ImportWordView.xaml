@@ -67,6 +67,16 @@
                         IsEnabled="{Binding IsFileSelected}"
                         Command="{Binding ImportWordsFromFileCommand}"/>
 
+                <VerticalStackLayout Spacing="6" IsVisible="{Binding IsImporting}">
+                    <ProgressBar Progress="{Binding ProgressValue}"
+                                 HeightRequest="8"
+                                 ProgressColor="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}"/>
+                    <Label Text="{Binding ProgressText}" StyleClass="label_muted"/>
+                </VerticalStackLayout>
+
+                <Label Text="{Binding SuccessImport}"
+                       StyleClass="label_success"/>
+
                 <Label Text="{Binding ErrorImport}"
                        StyleClass="label_error"/>
             </VerticalStackLayout>

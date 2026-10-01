@@ -204,7 +204,7 @@
                         </Grid>
 
                         <!-- word length (generation and dynamic exercises) -->
-                        <Grid ColumnDefinitions="auto,80,auto,80,auto,80" ColumnSpacing="10">
+                        <Grid ColumnDefinitions="auto,70,auto,70" ColumnSpacing="10" RowDefinitions="auto,auto" RowSpacing="8">
                             <Label Text="Longueur min" StyleClass="label_field" VerticalOptions="Center"/>
                             <Entry Grid.Column="1"
                                    Keyboard="Numeric"
@@ -225,20 +225,32 @@
                                 </Entry.Behaviors>
                             </Entry>
 
-                            <Label Grid.Column="4" Text="Nombre de mots" StyleClass="label_field" VerticalOptions="Center" IsVisible="{Binding IsStatic}"/>
-                            <Entry Grid.Column="5"
+                            <!-- generated text size (fixed text only) -->
+                            <Label Grid.Row="1" Text="Lignes" StyleClass="label_field" VerticalOptions="Center" IsVisible="{Binding IsStatic}"/>
+                            <Entry Grid.Row="1" Grid.Column="1"
                                    Keyboard="Numeric"
                                    IsVisible="{Binding IsStatic}"
                                    StyleClass="entry_no_spell_no_prediction, entry_small"
-                                   Text="{Binding NumberWords}">
+                                   Text="{Binding LineCount}">
+                                <Entry.Behaviors>
+                                    <behaviors:DigitsOnlyBehavior />
+                                </Entry.Behaviors>
+                            </Entry>
+
+                            <Label Grid.Row="1" Grid.Column="2" Text="Mots par ligne" StyleClass="label_field" VerticalOptions="Center" IsVisible="{Binding IsStatic}"/>
+                            <Entry Grid.Row="1" Grid.Column="3"
+                                   Keyboard="Numeric"
+                                   IsVisible="{Binding IsStatic}"
+                                   StyleClass="entry_no_spell_no_prediction, entry_small"
+                                   Text="{Binding WordsPerLine}">
                                 <Entry.Behaviors>
                                     <behaviors:DigitsOnlyBehavior />
                                 </Entry.Behaviors>
                             </Entry>
                         </Grid>
 
-                        <!-- dynamic settings -->
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12" IsVisible="{Binding IsDynamic}">
+                        <!-- word source: drawn at each game (dynamic) or used by "Générer" (fixed text) -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                             <VerticalStackLayout Spacing="6">
                                 <Label Text="Langue" StyleClass="label_field"/>
                                 <Picker ItemsSource="{Binding LanguageAvailable}"
@@ -252,6 +264,10 @@
                                         StyleClass="picker_themed"/>
                             </VerticalStackLayout>
                         </Grid>
+
+                        <Label Text="PseudoWords : mots inventés à partir des lettres. Words : vrais mots importés (menu Import) de la langue choisie."
+                               StyleClass="label_muted"
+                               FontSize="12"/>
 
                         <!-- static text -->
                         <VerticalStackLayout Spacing="6" IsVisible="{Binding IsStatic}">

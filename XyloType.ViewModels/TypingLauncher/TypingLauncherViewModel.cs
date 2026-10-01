@@ -24,6 +24,7 @@ public partial class TypingLauncherViewModel : ObservableObject
     private readonly ITypingExercicesStorage _typingExerciceStorage;
     private readonly INavigationService _navigation;
     private readonly ITypingExerciseRunService _runService;
+    private readonly IUserDialogService _dialogService;
     private readonly IThemeChangerService _themeChangerService;
     private readonly IThemeIconeCodeProvider _themeIconeProvider;
     private TypingExercices? _loadedExercises;
@@ -42,6 +43,7 @@ public partial class TypingLauncherViewModel : ObservableObject
         ITypingExercicesStorage typingExerciceStorage,
         INavigationService navigation,
         ITypingExerciseRunService runService,
+        IUserDialogService dialogService,
         IKeyBoardLayoutAvailableService keyboardLayoutAvailableService,
         IThemeChangerService themeChangerService,
         IThemeIconeCodeProvider themeIconeProvider,
@@ -52,6 +54,7 @@ public partial class TypingLauncherViewModel : ObservableObject
         _typingExerciceStorage = typingExerciceStorage;
         _navigation = navigation;
         _runService = runService;
+        _dialogService = dialogService;
         _keyboardLayoutAvailableElem = keyboardLayoutAvailableService.GetKeyBoardAvailable();
 
         _themeChangerService = themeChangerService;
@@ -235,6 +238,7 @@ public partial class TypingLauncherViewModel : ObservableObject
         if (!stringProviderResult.Success)
         {
             _logger.LogWarning("Unable to start exercise: {Error}", stringProviderResult.Error);
+            await _dialogService.AlertAsync("Impossible de lancer l'exercice", stringProviderResult.Error);
             return;
         }
 
@@ -243,7 +247,11 @@ public partial class TypingLauncherViewModel : ObservableObject
             ExerciceSelected.Guid,
             ExerciceSelected.Name);
 
-        await _navigation.NavigateToTypingExerciseAsync(stringProviderResult.GetValue);
+        Result<bool> navigationResult = await _navigation.NavigateToTypingExerciseAsync(stringProviderResult.GetValue);
+        if (!navigationResult.Success)
+        {
+            await _dialogService.AlertAsync("Impossible de lancer l'exercice", navigationResult.Error);
+        }
     }
 
 

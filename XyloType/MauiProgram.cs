@@ -101,17 +101,8 @@ public static class MauiProgram
         Log.Logger.Information("Fun {chat}", "sympa");
 
         // INFRASTRUCTURE
-        // DB
-        try
-        {
-            // Infrastructure operation : init or upgrade db according to migration state
-            InfrastructureDbInitModule.InitUpgradeInfrastructure(app.Services);
-
-        }
-        catch (Exception)
-        {
-
-        }
+        // DB: init or upgrade according to the migration state (errors are logged)
+        InfrastructureDbInitModule.InitUpgradeInfrastructure(app.Services);
 
         return app;
     }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 
-using XyloType.Application;
 using XyloType.Application.Interfaces;
 using XyloType.Application.Models;
 using XyloType.Application.ValueObjects;
@@ -29,27 +28,55 @@ public class WordImportOrchestrator : IWordImportOrchestrator
         _logger = logger;
     }
 
-    public async Task<Result<bool>> ImportAsync(
+    public async Task<Result<WordImportSummary>> ImportAsync(
         string filePath,
         string languageCode,
-        IKeyboardKeysLocator layout)
+        IKeyboardKeysLocator layout,
+        IProgress<WordImportProgress>? progress = null)
     {
-        Dictionary<string, int> batch = new(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            return await ImportCoreAsync(filePath, languageCode, layout, progress);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Word import failed for {FilePath}", filePath);
+            return Result<WordImportSummary>
+                .Fail($"L'import a échoué : {ex.Message}");
+        }
+    }
 
-        HashSet<string> NoMapWords = [];
+    private async Task<Result<WordImportSummary>> ImportCoreAsync(
+        string filePath,
+        string languageCode,
+        IKeyboardKeysLocator layout,
+        IProgress<WordImportProgress>? progress)
+    {
+        ImportState state = new();
 
+        // existing words, with their analyses: needed to know if the layout is already analyzed
         WordSearchCriteria searchCriteria =
             new WordQueryBuilder()
             .WithLanguages(languageCode)
+            .WithAnalyses()
             .Build();
 
-        Dictionary<string, Word> existingWords =
-            (await _repository.SearchAsync(searchCriteria))
-            .ToDictionary(w => w.Text);
+        foreach (Word existing in await _repository.SearchAsync(searchCriteria))
+            state.ExistingWords[existing.Text] = existing;
 
-        await foreach (string word in _wordStreamingService.ReadWordsAsync(filePath))
+        Dictionary<string, int> batch = new(StringComparer.OrdinalIgnoreCase);
+
+        progress?.Report(new WordImportProgress(0, 0));
+
+        // the reader reports the share of the file read: forward it with the word count
+        InlineProgress<double> fileProgress =
+            new(fraction => progress?.Report(new WordImportProgress(state.WordsRead, fraction)));
+
+        await foreach (string word in _wordStreamingService.ReadWordsAsync(filePath, languageCode, fileProgress))
         {
-            if (NoMapWords.Contains(word))
+            state.WordsRead++;
+
+            if (state.NoMapWords.Contains(word))
                 continue;
 
             if (!batch.TryAdd(word, 1))
@@ -57,34 +84,43 @@ public class WordImportOrchestrator : IWordImportOrchestrator
 
             if (batch.Count >= BatchSize)
             {
-                var resuProcess = await FlushBatch(batch, existingWords, languageCode, layout, NoMapWords);
+                Result<bool> flushResult = await FlushBatch(batch, languageCode, layout, state);
                 batch.Clear();
-                if(!resuProcess.Success)
-                {
-                    return Result<bool>
-                        .Fail(resuProcess.Error);
-                }
+                if (!flushResult.Success)
+                    return Result<WordImportSummary>.Fail(flushResult.Error);
             }
         }
 
         if (batch.Count > 0)
         {
-            await FlushBatch(batch, existingWords, languageCode, layout, NoMapWords);
+            Result<bool> flushResult = await FlushBatch(batch, languageCode, layout, state);
+            if (!flushResult.Success)
+                return Result<WordImportSummary>.Fail(flushResult.Error);
         }
 
-        return Result<bool>
-            .Ok(true);
+        progress?.Report(new WordImportProgress(state.WordsRead, 1));
+
+        WordImportSummary summary = new(
+            WordsRead: state.WordsRead,
+            NewWords: state.NewWordTexts.Count,
+            UpdatedWords: state.UpdatedWordTexts.Count,
+            IgnoredWords: state.NoMapWords.Count);
+
+        _logger.LogInformation(
+            "Word import done for {FilePath}: {WordsRead} read, {NewWords} new, {UpdatedWords} updated, {IgnoredWords} ignored",
+            filePath, summary.WordsRead, summary.NewWords, summary.UpdatedWords, summary.IgnoredWords);
+
+        return Result<WordImportSummary>.Ok(summary);
     }
 
     private async Task<Result<bool>> FlushBatch(
         Dictionary<string, int> batch,
-        Dictionary<string, Word> existingWords,
         string languageCode,
         IKeyboardKeysLocator layout,
-        HashSet<string> NoMapWords)
+        ImportState state)
     {
         Result<WordProcessResult> resultProcess =
-            _wordBatchProcessorOrchestrator.Process(batch, existingWords, languageCode, layout);
+            _wordBatchProcessorOrchestrator.Process(batch, state.ExistingWords, languageCode, layout);
 
         if (!resultProcess.Success)
         {
@@ -94,33 +130,57 @@ public class WordImportOrchestrator : IWordImportOrchestrator
 
         WordProcessResult result = resultProcess.Value!;
 
-        // add the newly added words to the dictionnary
-        foreach (Word w in result.NewWords)
-        {
-            existingWords[w.Text] = w;
-        }
-        _logger.LogInformation(
-            "Add {NewWordsCount} new word(s)",
-            result.NewWords.Length);
-
-        // Keep in-memory txt that failed
-        foreach (string txt in result.NoMapWords)
-        {
-            NoMapWords.Add(txt);
-            _logger.LogWarning(
-                "Analysis failed for text {FailedTxt} on layout {Layout}",
-                txt,
-                layout);
-        }
-
         // enforce via parameter name because same type
         await _repository.PersistWordsAsync(
             newWords: result.NewWords,
             updatedWords: result.UpdatedWords);
 
+        // the new words are known from now on (with their database id)
+        foreach (Word w in result.NewWords)
+        {
+            state.ExistingWords[w.Text] = w;
+            state.NewWordTexts.Add(w.Text);
+        }
+
+        foreach (Word w in result.UpdatedWords)
+        {
+            if (!state.NewWordTexts.Contains(w.Text))
+                state.UpdatedWordTexts.Add(w.Text);
+        }
+
+        // Keep in-memory txt that failed
+        foreach (string txt in result.NoMapWords)
+        {
+            state.NoMapWords.Add(txt);
+            _logger.LogDebug(
+                "Analysis failed for text {FailedTxt} on layout {Layout}",
+                txt,
+                layout.GetKeyboardType);
+        }
+
+        _logger.LogInformation(
+            "Batch persisted: {NewWordsCount} new, {UpdatedWordsCount} updated word(s)",
+            result.NewWords.Length,
+            result.UpdatedWords.Length);
+
         return Result<bool>
             .Ok(true);
     }
+
+    /// <summary>
+    /// Calls back synchronously (unlike <see cref="Progress{T}"/>, no thread switch).
+    /// </summary>
+    private sealed class InlineProgress<T>(Action<T> report) : IProgress<T>
+    {
+        public void Report(T value) => report(value);
+    }
+
+    private sealed class ImportState
+    {
+        public Dictionary<string, Word> ExistingWords { get; } = [];
+        public HashSet<string> NoMapWords { get; } = [];
+        public HashSet<string> NewWordTexts { get; } = [];
+        public HashSet<string> UpdatedWordTexts { get; } = [];
+        public int WordsRead { get; set; }
+    }
 }
-
-

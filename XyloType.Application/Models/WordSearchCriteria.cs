@@ -18,4 +18,9 @@ public struct WordSearchCriteria
     public int? MinLength { get; set; }
 
     public int? MaxLength { get; set; }
+
+    /// <summary>
+    /// Loads the keyboard analyses of each word.
+    /// </summary>
+    public bool IncludeAnalyses { get; set; }
 }

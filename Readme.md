@@ -28,7 +28,8 @@ You will have to select the letters you want, text you want or dynamically gener
 - **Settings** (collapsible panel grouped by theme, saved between sessions): typing (back return, stop on error), results (speed, response time per key, errors), sounds (volume per sound)
 - **Results**: words and letters per minute, duration, accuracy, error count, response time and error rate per key
 - **Chaining**: from the results, retry the exercise (new words for generated exercises), go to the next one, or back home — the last played exercise stays selected
-- **Exercises menu**: create, edit, delete and reorder (drag and drop) the exercises of a keyboard; changes stay in memory until you save, cancel restores the saved file
+- **Exercises menu**: create, edit, delete and reorder (drag and drop) the exercises of a keyboard; a fixed text can be generated from pseudo-words or from imported words; changes stay in memory until you save, cancel restores the saved file
+- **Word import**: import a text file (compound words kept, French and Italian elisions such as "l'" dropped), each word is analyzed for the keyboard (rows, fingers, hands, dead keys) and stored in a local SQLite database; dynamic exercises with the "Words" source then pick real words (language, length, allowed letters, frequent words more often)
 - **Themes**: light, dark or system
 
 ---
