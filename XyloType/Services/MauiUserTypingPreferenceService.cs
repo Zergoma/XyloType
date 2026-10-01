@@ -1,4 +1,5 @@
 ﻿using XyloType.Application.Interfaces;
+using XyloType.Application.Models;
 
 namespace XyloType.Services;
 
@@ -13,6 +14,12 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
     private const string ShowSpeedResultKey = "result_show_speed";
     private const string ShowResponseTimeResultKey = "result_show_response_time";
     private const string ShowErrorsResultKey = "result_show_errors";
+    private const string OkSoundModeKey = "sound_ok_mode";
+    private const string DisabledScoresKey = "sound_disabled_scores";
+    private const string ScoreEndBehaviorKey = "sound_score_end";
+    private const string ScoreShuffleKey = "sound_score_shuffle";
+    private const string InstrumentKey = "sound_instrument";
+    private const string DisabledInstrumentsKey = "sound_disabled_instruments";
 
     private const double DefaultOkVolume = .3;
     private const double DefaultErrorVolume = .4;
@@ -75,4 +82,52 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
 
     public void SetShowErrorsResult(bool show)
         => Preferences.Default.Set(ShowErrorsResultKey, show);
+
+    public OkSoundMode GetOkSoundMode()
+        => Enum.TryParse(Preferences.Default.Get(OkSoundModeKey, nameof(OkSoundMode.Standard)), out OkSoundMode mode)
+            ? mode
+            : OkSoundMode.Standard;
+
+    public void SetOkSoundMode(OkSoundMode mode)
+        => Preferences.Default.Set(OkSoundModeKey, mode.ToString());
+
+    public ScoreEndBehavior GetScoreEndBehavior()
+        => Enum.TryParse(Preferences.Default.Get(ScoreEndBehaviorKey, nameof(ScoreEndBehavior.Loop)), out ScoreEndBehavior behavior)
+            ? behavior
+            : ScoreEndBehavior.Loop;
+
+    public void SetScoreEndBehavior(ScoreEndBehavior behavior)
+        => Preferences.Default.Set(ScoreEndBehaviorKey, behavior.ToString());
+
+    public bool GetScoreShuffle()
+        => Preferences.Default.Get(ScoreShuffleKey, true);
+
+    public void SetScoreShuffle(bool shuffle)
+        => Preferences.Default.Set(ScoreShuffleKey, shuffle);
+
+    public InstrumentChoice GetInstrument()
+        => Enum.TryParse(Preferences.Default.Get(InstrumentKey, nameof(InstrumentChoice.Xylophone)), out InstrumentChoice instrument)
+            ? instrument
+            : InstrumentChoice.Xylophone;
+
+    public void SetInstrument(InstrumentChoice instrument)
+        => Preferences.Default.Set(InstrumentKey, instrument.ToString());
+
+    public IReadOnlySet<InstrumentChoice> GetDisabledInstruments()
+        => Preferences.Default.Get(DisabledInstrumentsKey, string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(name => Enum.TryParse(name, out InstrumentChoice instrument) ? instrument : (InstrumentChoice?)null)
+            .OfType<InstrumentChoice>()
+            .ToHashSet();
+
+    public void SetDisabledInstruments(IEnumerable<InstrumentChoice> instruments)
+        => Preferences.Default.Set(DisabledInstrumentsKey, string.Join(',', instruments));
+
+    public IReadOnlySet<string> GetDisabledScores()
+        => Preferences.Default.Get(DisabledScoresKey, string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .ToHashSet();
+
+    public void SetDisabledScores(IEnumerable<string> scoreIds)
+        => Preferences.Default.Set(DisabledScoresKey, string.Join(',', scoreIds));
 }

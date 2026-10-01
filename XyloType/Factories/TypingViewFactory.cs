@@ -16,6 +16,7 @@ public class TypingViewFactory : ITypingViewFactory
     private readonly IThemeChangerService _themeChangerService;
     private readonly IPlaySoundSample _soundSamplePlayer;
     private readonly IUserTypingPreferenceService _typingPreference;
+    private readonly IScoreCatalog _scoreCatalog;
 
 
 
@@ -26,13 +27,15 @@ public class TypingViewFactory : ITypingViewFactory
         IThemeChangerService themeChangerService,
         ILogger<TypingView> logger,
         IPlaySoundSample soundSamplePlayer,
-        IUserTypingPreferenceService typingPreference)
+        IUserTypingPreferenceService typingPreference,
+        IScoreCatalog scoreCatalog)
     {
         _typingThemeProvider = typingThemeProvider;
         _charMapper = charMapper;
         _themeChangerService = themeChangerService;
         _soundSamplePlayer = soundSamplePlayer;
         _typingPreference = typingPreference;
+        _scoreCatalog = scoreCatalog;
     }
 
     public async Task<Result<ContentPage>> CreateTypingViewAsync(
@@ -45,7 +48,8 @@ public class TypingViewFactory : ITypingViewFactory
                 _typingThemeProvider,
                 _themeChangerService,
                 _soundSamplePlayer,
-                _typingPreference);
+                _typingPreference,
+                _scoreCatalog);
 
         Result<bool> loadResult = await typingviewmodel.LoadTextAsync(stringProvider);
         if (!loadResult.Success)

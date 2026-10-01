@@ -24,7 +24,7 @@ You will have to select the letters you want, text you want or dynamically gener
 ## Features
 
 - **Typing screen**: live coloring of each character (pending, current, correct, corrected, wrong)
-- **Sound feedback**: short wooden "tock" on a correct key, deeper note on an error, with a volume per sound
+- **Sound feedback**: on a correct key, a note played on a synthesized xylophone or on real recordings (University of Iowa Musical Instrument Samples: xylophone, piano, marimba, vibraphone, glockenspiel), or a random instrument at each exercise: a random note, or the next note of one of 48 pieces in the public domain, grouped by kind (classical, traditional, ragtime, Christmas, American folk). Pieces follow the catalog order or a random one, and a random instrument can change with each piece. The piece and the instrument are shown under the text, with buttons for the previous, next, random, and to never use them again. On an error, a low "fat" note of the same instrument. A volume per sound
 - **Settings** (collapsible panel grouped by theme, saved between sessions): typing (back return, stop on error), results (speed, response time per key, errors), sounds (volume per sound)
 - **Results**: words and letters per minute, duration, accuracy, error count, response time and error rate per key
 - **Chaining**: from the results, retry the exercise (new words for generated exercises), go to the next one, or back home — the last played exercise stays selected

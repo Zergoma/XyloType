@@ -15,7 +15,7 @@
                WidthRequest="200"
                HorizontalOptions="Center"
                VerticalOptions="Center"
-               FontSize="Medium"
+               FontSize="22.667"
                Padding="10"/>
         </DataTemplate>
     </Shell.ItemTemplate>
