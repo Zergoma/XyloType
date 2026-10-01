@@ -89,7 +89,7 @@ public partial class TypingView : ContentPage
         });
     }
 
-    private void OnTextChanged(object sender, TextChangedEventArgs e)
+    private void OnTextChanged(object? sender, TextChangedEventArgs e)
     {
         if (BindingContext is not TypingViewModel vm)
         {
@@ -178,7 +178,7 @@ public partial class TypingView : ContentPage
             HiddenInput.Unfocus();
     }
 
-    private void TakeFocusButton_Clicked(object sender, EventArgs e)
+    private void TakeFocusButton_Clicked(object? sender, EventArgs e)
     {
         // mark the request first: folding the settings must not pause the typing
         _lastFocusRequestUtc = DateTime.UtcNow;
@@ -267,7 +267,7 @@ public partial class TypingView : ContentPage
         RequestTypingFocus();
     }
 
-    private void TypingArea_Tapped(object sender, TappedEventArgs e)
+    private void TypingArea_Tapped(object? sender, TappedEventArgs e)
     {
         // clicking on the text keeps typing
         RequestTypingFocus();

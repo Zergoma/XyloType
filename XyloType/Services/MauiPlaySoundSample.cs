@@ -2,7 +2,6 @@
 
 using Microsoft.Extensions.Logging;
 
-using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
@@ -25,7 +24,7 @@ public sealed class MauiPlaySoundSample : IPlaySoundSample, IDisposable
     private readonly ILogger<MauiPlaySoundSample> _logger;
     private readonly ConcurrentDictionary<string, Lazy<Task<float[]>>> _sounds = new();
     private readonly Lazy<MixingSampleProvider?> _mixer;
-    private WasapiOut? _output;
+    private WasapiPlayer? _output;
 
     public MauiPlaySoundSample(ILogger<MauiPlaySoundSample> logger)
     {
@@ -68,7 +67,11 @@ public sealed class MauiPlaySoundSample : IPlaySoundSample, IDisposable
                 ReadFully = true
             };
 
-            _output = new WasapiOut(AudioClientShareMode.Shared, useEventSync: true, OutputLatencyMs);
+            _output = new WasapiPlayerBuilder()
+                .WithSharedMode()
+                .WithEventSync()
+                .WithLatency(OutputLatencyMs)
+                .Build();
             _output.Init(mixer);
             _output.Play();
             return mixer;
