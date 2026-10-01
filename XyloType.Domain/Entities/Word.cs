@@ -21,6 +21,11 @@ public class Word
     /// </summary>
     public int OccurrenceCount { get; set; }
 
+    /// <summary>
+    /// Excluded by the user: never used in exercises, kept excluded when imported again.
+    /// </summary>
+    public bool IsExcluded { get; set; }
+
     public ICollection<WordAnalysis> Analyses { get; set; }
         = [];
 

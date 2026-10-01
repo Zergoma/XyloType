@@ -10,6 +10,7 @@ public static class ViewsModule
         services.AddTransient<ImportBookView>();
         services.AddTransient<TypingLauncherView>();
         services.AddTransient<ExercisesManagerView>();
+        services.AddTransient<WordsExplorerView>();
 
         return services;
     }

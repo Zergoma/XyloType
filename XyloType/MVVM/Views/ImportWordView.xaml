@@ -9,12 +9,10 @@
              StyleClass="xylotype_page_bg">
 
     <ScrollView>
+      <VerticalStackLayout Padding="30" Spacing="20" HorizontalOptions="Center" VerticalOptions="Center">
         <Border StyleClass="BorderTypingRounded10, BorderBgStd"
                 Padding="30,24"
-                Margin="30"
-                MaximumWidthRequest="560"
-                HorizontalOptions="Center"
-                VerticalOptions="Center">
+                WidthRequest="560">
 
             <VerticalStackLayout Spacing="16">
 
@@ -71,7 +69,17 @@
                     <ProgressBar Progress="{Binding ProgressValue}"
                                  HeightRequest="8"
                                  ProgressColor="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}"/>
-                    <Label Text="{Binding ProgressText}" StyleClass="label_muted"/>
+                    <Grid ColumnDefinitions="*,auto" ColumnSpacing="12">
+                        <Label Text="{Binding ProgressText}" StyleClass="label_muted" VerticalOptions="Center"/>
+                        <Button Grid.Column="1"
+                                Text="Annuler l'import"
+                                StyleClass="button_hover"
+                                Padding="16,0"
+                                HeightRequest="32"
+                                MinimumHeightRequest="32"
+                                CornerRadius="16"
+                                Command="{Binding ImportWordsFromFileCancelCommand}"/>
+                    </Grid>
                 </VerticalStackLayout>
 
                 <Label Text="{Binding SuccessImport}"
@@ -81,6 +89,27 @@
                        StyleClass="label_error"/>
             </VerticalStackLayout>
         </Border>
+
+        <!-- import history -->
+        <Border StyleClass="BorderTypingRounded10, BorderBgStd"
+                Padding="30,20"
+                WidthRequest="560"
+                IsVisible="{Binding HasHistory}">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Historique des imports" StyleClass="label_section_title"/>
+                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding History}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ImportedSourceItem">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="{Binding Title}" FontAttributes="Bold" LineBreakMode="TailTruncation"/>
+                                <Label Text="{Binding Details}" StyleClass="label_muted" FontSize="12"/>
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+      </VerticalStackLayout>
     </ScrollView>
 
 </ContentPage>

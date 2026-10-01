@@ -34,6 +34,12 @@
                       ContentTemplate="{DataTemplate views:ExercisesManagerView}"/>
     </FlyoutItem>
 
+    <FlyoutItem Title="Mots">
+        <ShellContent Title="Mots"
+                      Route="WordsExplorerView"
+                      ContentTemplate="{DataTemplate views:WordsExplorerView}"/>
+    </FlyoutItem>
+
     <FlyoutItem Title="Import">
         <Tab Title="Sélectionnez l'import">
             <ShellContent Title="Import mots"
