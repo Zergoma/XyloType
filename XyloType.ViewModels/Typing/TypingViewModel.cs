@@ -16,7 +16,11 @@ namespace XyloType.ViewModels.Typing;
 
 public partial class TypingViewModel : ObservableObject
 {
-    private const string KeyOkSound = "key_ok.wav";
+    // xylophone notes of the same scale (G6, E6, D6, C6, A5): one is picked at each correct key
+    private static readonly string[] s_keyOkSounds =
+        ["key_ok.wav", "key_ok_2.wav", "key_ok_3.wav", "key_ok_4.wav", "key_ok_5.wav"];
+
+    private int _lastOkSoundIndex = -1;
     private const string KeyErrorSound = "key_error.wav";
 
     public event Action<int>? LineChanged;
@@ -59,11 +63,33 @@ public partial class TypingViewModel : ObservableObject
         Session.StopOnError = typingPreference.GetStopOnError();
     }
 
+    /// <summary>
+    /// A random "correct key" sound, never the same twice in a row so the variation is heard.
+    /// </summary>
+    private string NextOkSound()
+    {
+        int index;
+        if (_lastOkSoundIndex < 0)
+        {
+            index = Random.Shared.Next(s_keyOkSounds.Length);
+        }
+        else
+        {
+            // draw among the other sounds: skip the last one
+            index = Random.Shared.Next(s_keyOkSounds.Length - 1);
+            if (index >= _lastOkSoundIndex)
+                index++;
+        }
+
+        _lastOkSoundIndex = index;
+        return s_keyOkSounds[index];
+    }
+
     private void Session_HitKeyStatusChanged(HitKeyStatus hitKeyStatus)
     {
         if (hitKeyStatus == HitKeyStatus.Success)
         {
-            _soundSamplePlayer.PlaySound(KeyOkSound, OkVolume);
+            _soundSamplePlayer.PlaySound(NextOkSound(), OkVolume);
         }
         else
         {
@@ -105,7 +131,7 @@ public partial class TypingViewModel : ObservableObject
 
     [RelayCommand]
     public void PreviewOkSound()
-        => _soundSamplePlayer.PlaySound(KeyOkSound, OkVolume);
+        => _soundSamplePlayer.PlaySound(NextOkSound(), OkVolume);
 
     [RelayCommand]
     public void PreviewErrorSound()
@@ -210,7 +236,7 @@ public partial class TypingViewModel : ObservableObject
         Session.Lines.Clear();
         LinesStates.Clear();
 
-        await _soundSamplePlayer.PreloadAsync(KeyOkSound, KeyErrorSound);
+        await _soundSamplePlayer.PreloadAsync([.. s_keyOkSounds, KeyErrorSound]);
 
         // Get current theme apply
         ThemeState themeState = _themeChangerService.GetTheme();
