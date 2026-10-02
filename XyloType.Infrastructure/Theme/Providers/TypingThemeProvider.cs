@@ -12,6 +12,7 @@ public class TypingThemeProvider : ITypingThemeProvider
     private readonly AssetThemesLoader _assetThemesLoader;
     private readonly UserThemesLoader _userThemesLoader;
     private readonly Dictionary<string, ITypingTheme> _themes = [];
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, ThemeFileModel> _files = new();
     public TypingThemeProvider(
         AssetThemesLoader themeLoader,
         UserThemesLoader userThemesLoader)
@@ -26,41 +27,32 @@ public class TypingThemeProvider : ITypingThemeProvider
 
     public async Task<Result<ITypingTheme>> GetThemeAsync(string name, ThemeState themeState, CancellationToken cancellationToken = default)
     {
-        // TODO
-        // add force or remove it completelt ?
-        //if (_themes.TryGetValue(name, out ITypingTheme? theme))
-        //{
-        //    return Result<ITypingTheme>
-        //        .Ok(theme);
-        //}
+        // the theme file is read once (a user theme first, else the one of the app);
+        // only its light or dark version is made again
+        if (!_files.TryGetValue(name, out ThemeFileModel? file))
+        {
+            Result<ThemeFileModel> loaded = await LoadFileAsync(name);
+            if (!loaded.Success)
+                return Result<ITypingTheme>.Fail(loaded.Error);
 
+            file = loaded.GetValue;
+            _files[name] = file;
+        }
 
-        Result<ThemeFileModel> userResult =
-            await _userThemesLoader.LoadAsync(name);
+        ITypingTheme theme = file.ToTheme(themeState);
+        _themes[name] = theme;
+        return Result<ITypingTheme>.Ok(theme);
+    }
 
+    private async Task<Result<ThemeFileModel>> LoadFileAsync(string name)
+    {
+        Result<ThemeFileModel> userResult = await _userThemesLoader.LoadAsync(name);
         if (userResult.Success)
-        {
-            ITypingTheme userTheme = userResult.GetValue.ToTheme(themeState);
-            _themes[name] = userTheme;
-            return Result<ITypingTheme>
-                .Ok(userTheme);
-        }
+            return userResult;
 
-
-
-        Result<ThemeFileModel> assetResult =
-                await _assetThemesLoader.LoadAsync(name);
-
-        if (!assetResult.Success)
-        {
-            return Result<ITypingTheme>
-                .Fail($"Theme: {name} doesn't exist");
-        }
-
-        ITypingTheme assetTheme = assetResult.GetValue.ToTheme(themeState);
-        _themes[name] = assetTheme;
-        return Result<ITypingTheme>
-            .Ok(assetTheme);
-
+        Result<ThemeFileModel> assetResult = await _assetThemesLoader.LoadAsync(name);
+        return assetResult.Success
+            ? assetResult
+            : Result<ThemeFileModel>.Fail($"Theme: {name} doesn't exist");
     }
 }

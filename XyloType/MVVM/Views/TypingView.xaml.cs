@@ -69,7 +69,8 @@ public partial class TypingView : ContentView, IViewLifecycle
         {
             if (e.PropertyName is nameof(TypingViewModel.TypingProgress)
                 or nameof(TypingViewModel.ShowTypingProgress)
-                or nameof(TypingViewModel.ShowLiveSpeed))
+                or nameof(TypingViewModel.ShowLiveSpeed)
+                or nameof(TypingViewModel.ScoreChangeLetter))
                 Dispatcher.Dispatch(() => PlaceCaretInfo(animated: true));
         };
         TypingLinesLayout.SizeChanged += (_, _) => PlaceCaretInfo(animated: false);
@@ -423,6 +424,31 @@ public partial class TypingView : ContentView, IViewLifecycle
 
     #endregion
 
+    /// <summary>
+    /// The mark of the letter where the piece of music changes, over its top left corner.
+    /// </summary>
+    private void PlaceScoreChangeMark()
+    {
+        ScoreChangeMark.Opacity = 0;
+
+        if (BindingContext is not TypingViewModel vm || vm.ScoreChangeLetter is not var (lineNumber, column))
+            return;
+
+        int lineIndex = vm.VisibleIndexOf(lineNumber);
+        if (lineIndex < 0 || lineIndex >= TypingLinesLayout.Children.Count
+            || TypingLinesLayout.Children[lineIndex] is not Layout line || column >= line.Children.Count
+            || line.Children[column] is not View letter || letter.Width <= 0)
+            return;
+
+        double y = line.Frame.Y + letter.Frame.Y - TypingScrollView.ScrollY;
+        if (y < 0 || y > TypingScrollView.Height - letter.Height)
+            return;
+
+        ScoreChangeMark.TranslationX = line.Frame.X + letter.Frame.X;
+        ScoreChangeMark.TranslationY = y;
+        ScoreChangeMark.Opacity = 0.75;
+    }
+
     #region Speed and progress under the current letter
 
     private void TypingScrollView_Scrolled(object? sender, ScrolledEventArgs e)
@@ -434,6 +460,8 @@ public partial class TypingView : ContentView, IViewLifecycle
     /// </summary>
     private void PlaceCaretInfo(bool animated)
     {
+        PlaceScoreChangeMark();
+
         if (BindingContext is not TypingViewModel vm || !(vm.ShowTypingProgress || vm.ShowLiveSpeed))
         {
             CaretInfo.Opacity = 0;

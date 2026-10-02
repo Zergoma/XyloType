@@ -85,16 +85,6 @@
                                                          WidthRequest="20"
                                                          BackgroundColor="{Binding BorderColor, Converter={StaticResource stringToColor}}" />
 
-                                                <!-- the piece of music changes on this letter -->
-                                                <Label IsVisible="{Binding IsScoreChange}"
-                                                       Text="♪"
-                                                       FontSize="12"
-                                                       Opacity="0.75"
-                                                       TextColor="{DynamicResource Accent}"
-                                                       HorizontalOptions="Start"
-                                                       VerticalOptions="Start"
-                                                       InputTransparent="True"/>
-
                                             </Grid>
                                         </Border>
 
@@ -106,6 +96,16 @@
 
                 </VerticalStackLayout>
             </ScrollView>
+
+            <!-- the piece of music changes on this letter: a single mark, placed over it by the code behind -->
+            <Label x:Name="ScoreChangeMark"
+                   Text="♪"
+                   FontSize="12"
+                   Opacity="0"
+                   TextColor="{DynamicResource Accent}"
+                   HorizontalOptions="Start"
+                   VerticalOptions="Start"
+                   InputTransparent="True"/>
 
             <!-- follows the letter being typed, just under it, where the eyes are:
                  live speed above a small progress bar of the text (placed by the code behind) -->

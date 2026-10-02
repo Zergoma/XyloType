@@ -22,7 +22,7 @@ public sealed class MauiPlaySoundSample : IPlaySoundSample, IDisposable
     private const int OutputLatencyMs = 40;
 
     private readonly ILogger<MauiPlaySoundSample> _logger;
-    private readonly ConcurrentDictionary<string, Lazy<Task<float[]>>> _sounds = new();
+    private readonly ConcurrentDictionary<string, Lazy<Task<short[]>>> _sounds = new();
     private readonly Lazy<MixingSampleProvider?> _mixer;
     private WasapiPlayer? _output;
 
@@ -34,7 +34,8 @@ public sealed class MauiPlaySoundSample : IPlaySoundSample, IDisposable
 
     public async Task PreloadAsync(params string[] sounds)
     {
-        _ = _mixer.Value;
+        // opening the audio device takes about half a second: never on the UI thread
+        await Task.Run(() => _mixer.Value);
         await Task.WhenAll(sounds.Select(GetSoundAsync));
     }
 
@@ -43,7 +44,7 @@ public sealed class MauiPlaySoundSample : IPlaySoundSample, IDisposable
         if (volume <= 0 || _mixer.Value is not MixingSampleProvider mixer)
             return;
 
-        Task<float[]> samples = GetSoundAsync(sound);
+        Task<short[]> samples = GetSoundAsync(sound);
         if (!samples.IsCompletedSuccessfully)
             return;
 
@@ -85,18 +86,18 @@ public sealed class MauiPlaySoundSample : IPlaySoundSample, IDisposable
         }
     }
 
-    private Task<float[]> GetSoundAsync(string sound)
+    private Task<short[]> GetSoundAsync(string sound)
     {
-        Lazy<Task<float[]>> entry = _sounds.GetOrAdd(sound, s => new Lazy<Task<float[]>>(() => LoadAsync(s)));
+        Lazy<Task<short[]>> entry = _sounds.GetOrAdd(sound, s => new Lazy<Task<short[]>>(() => LoadAsync(s)));
 
         // Allow a later retry if loading failed
         if (entry.Value.IsFaulted)
-            _sounds.TryRemove(new KeyValuePair<string, Lazy<Task<float[]>>>(sound, entry));
+            _sounds.TryRemove(new KeyValuePair<string, Lazy<Task<short[]>>>(sound, entry));
 
         return entry.Value;
     }
 
-    private async Task<float[]> LoadAsync(string sound)
+    private async Task<short[]> LoadAsync(string sound)
     {
         try
         {
@@ -107,8 +108,12 @@ public sealed class MauiPlaySoundSample : IPlaySoundSample, IDisposable
             }
             buffer.Position = 0;
 
-            using WaveFileReader reader = new(buffer);
-            return ToMixerFormat(reader.ToSampleProvider());
+            // decoding and resampling take a while: not on the UI thread
+            return await Task.Run(() =>
+            {
+                using WaveFileReader reader = new(buffer);
+                return ToMixerFormat(reader.ToSampleProvider());
+            });
         }
         catch (Exception ex)
         {
@@ -118,44 +123,55 @@ public sealed class MauiPlaySoundSample : IPlaySoundSample, IDisposable
     }
 
     /// <summary>
-    /// Decodes the whole sound once, converted to the mixer sample rate and channel count.
+    /// Decodes the whole sound once, at the mixer sample rate, kept in mono 16 bits:
+    /// 4 times less memory than stereo floats (every note of every instrument may end up cached).
     /// </summary>
-    private static float[] ToMixerFormat(ISampleProvider source)
+    private static short[] ToMixerFormat(ISampleProvider source)
     {
         if (source.WaveFormat.SampleRate != MixerSampleRate)
             source = new WdlResamplingSampleProvider(source, MixerSampleRate);
 
-        if (source.WaveFormat.Channels == 1)
-            source = new MonoToStereoSampleProvider(source);
+        if (source.WaveFormat.Channels == 2)
+            source = new StereoToMonoSampleProvider(source);
 
-        List<float> samples = [];
-        float[] chunk = new float[MixerSampleRate * MixerChannels];
+        List<short> samples = [];
+        float[] chunk = new float[MixerSampleRate];
         int read;
         while ((read = source.Read(chunk)) > 0)
-            samples.AddRange(chunk.AsSpan(0, read));
+        {
+            foreach (float sample in chunk.AsSpan(0, read))
+                samples.Add((short)Math.Clamp(sample * short.MaxValue, short.MinValue, short.MaxValue));
+        }
 
         return [.. samples];
     }
 
     /// <summary>
-    /// Reads a decoded sound once, then ends (the mixer removes it automatically).
+    /// Reads a decoded sound once, then ends (the mixer removes it automatically):
+    /// the mono 16 bits samples are played on both channels, at the volume asked.
     /// </summary>
-    private sealed class CachedSoundSampleProvider(float[] samples, float volume, WaveFormat format) : ISampleProvider
+    private sealed class CachedSoundSampleProvider(short[] samples, float volume, WaveFormat format) : ISampleProvider
     {
+        private const float Scale = 1f / short.MaxValue;
+
         private int _position;
 
         public WaveFormat WaveFormat { get; } = format;
 
         public int Read(Span<float> buffer)
         {
-            int count = Math.Min(buffer.Length, samples.Length - _position);
-            ReadOnlySpan<float> source = samples.AsSpan(_position, count);
+            int frames = Math.Min(buffer.Length / MixerChannels, samples.Length - _position);
+            float gain = volume * Scale;
 
-            for (int i = 0; i < count; i++)
-                buffer[i] = source[i] * volume;
+            for (int i = 0; i < frames; i++)
+            {
+                float value = samples[_position + i] * gain;
+                buffer[2 * i] = value;
+                buffer[2 * i + 1] = value;
+            }
 
-            _position += count;
-            return count;
+            _position += frames;
+            return frames * MixerChannels;
         }
     }
 }
