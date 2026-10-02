@@ -22,7 +22,11 @@ public partial class ExerciceItemViewModel : ObservableObject
 
     public int Idx => _idx;
 
-    [ObservableProperty] public partial bool IsSelected { get; set; }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsNotSelected))]
+    public partial bool IsSelected { get; set; }
+
+    public bool IsNotSelected => !IsSelected;
 
     public string Name => _exercice.Name;
 

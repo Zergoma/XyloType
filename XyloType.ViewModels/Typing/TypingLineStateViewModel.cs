@@ -10,7 +10,7 @@ namespace XyloType.ViewModels.Typing;
 public partial class TypingLineStateViewModel : ObservableObject
 {
     public TypingLine Model { get; }
-    private readonly ITypingTheme _theme;
+    private ITypingTheme _theme;
     public ObservableCollection<TypingCharStateViewModel> Characters { get; } = [];
 
     public TypingLineStateViewModel(
@@ -21,6 +21,13 @@ public partial class TypingLineStateViewModel : ObservableObject
         Model = model;
 
         Build();
+    }
+
+    public void ApplyTheme(ITypingTheme theme)
+    {
+        _theme = theme;
+        foreach (TypingCharStateViewModel character in Characters)
+            character.ApplyTheme(theme);
     }
 
     private void Build()

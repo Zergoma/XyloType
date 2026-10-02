@@ -3,11 +3,45 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:XyloType.ViewModels.WordsExplorer;assembly=XyloType.ViewModels"
              xmlns:behaviors="clr-namespace:XyloType.Behaviors"
+             xmlns:controls="clr-namespace:XyloType.MVVM.Controls"
              x:Class="XyloType.MVVM.Views.WordsExplorerView"
              x:DataType="vm:WordsExplorerViewModel"
              x:Name="RootPage">
 
-    <Grid RowDefinitions="auto,*"
+    <ContentView.Resources>
+        <!-- column widths shared by the header and the rows (see the code behind) -->
+        <controls:WordsTableColumns x:Key="TableColumns"/>
+
+        <!-- headers of the table: small capitals, one line -->
+        <Style TargetType="Label" Class="words_header">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontAttributes" Value="Bold"/>
+            <Setter Property="CharacterSpacing" Value="0.6"/>
+            <Setter Property="LineBreakMode" Value="TailTruncation"/>
+            <Setter Property="VerticalOptions" Value="Center"/>
+            <Setter Property="TextColor" Value="{DynamicResource AccentOnSurface}"/>
+        </Style>
+
+        <!-- hands and language of a word, as small pills -->
+        <Style TargetType="Border" Class="words_pill">
+            <Setter Property="StrokeShape" Value="RoundRectangle 10"/>
+            <Setter Property="StrokeThickness" Value="0"/>
+            <Setter Property="Padding" Value="7,2,7,3"/>
+            <Setter Property="HorizontalOptions" Value="Center"/>
+            <Setter Property="VerticalOptions" Value="Center"/>
+            <Setter Property="BackgroundColor" Value="{DynamicResource AccentSurface}"/>
+        </Style>
+
+        <Style TargetType="Label" Class="words_pill_text">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="LineBreakMode" Value="TailTruncation"/>
+            <Setter Property="MaxLines" Value="1"/>
+            <Setter Property="TextColor" Value="{DynamicResource AccentOnSurface}"/>
+        </Style>
+    </ContentView.Resources>
+
+    <Grid x:Name="RootGrid"
+          RowDefinitions="auto,*"
           ColumnDefinitions="300,*"
           ColumnSpacing="20"
           Padding="20,16,20,20">
@@ -138,42 +172,58 @@
                        StyleClass="label_error"/>
 
                 <!-- simple rows only: no FlexLayout inside a CollectionView (it crashes on Windows) -->
+                <!-- columns in proportions: the word always shows, without taking half the table on a wide window;
+                     the word on the left, every other column centered -->
                 <!-- column headers: outside the list so they stay visible when scrolling; click to sort -->
-                <Grid Grid.Row="2"
-                      ColumnDefinitions="*,100,120,110,160,80"
-                      ColumnSpacing="10"
-                      Padding="12,0,24,6">
-                    <Label Text="{Binding TextHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Text"/>
-                        </Label.GestureRecognizers>
-                    </Label>
-                    <Label Grid.Column="1" Text="{Binding ExcludedHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap" HorizontalTextAlignment="Center">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Excluded"/>
-                        </Label.GestureRecognizers>
-                    </Label>
-                    <Label Grid.Column="2" Text="{Binding OccurrencesHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap" HorizontalTextAlignment="End">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Occurrences"/>
-                        </Label.GestureRecognizers>
-                    </Label>
-                    <Label Grid.Column="3" Text="{Binding LengthHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap" HorizontalTextAlignment="End">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Length"/>
-                        </Label.GestureRecognizers>
-                    </Label>
-                    <Label Grid.Column="4" Text="{Binding HandsHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Hands"/>
-                        </Label.GestureRecognizers>
-                    </Label>
-                    <Label Grid.Column="5" Text="{Binding LanguageHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Language"/>
-                        </Label.GestureRecognizers>
-                    </Label>
-                </Grid>
+                <Border Grid.Row="2"
+                        x:Name="TableHeader"
+                        SizeChanged="TableHeader_SizeChanged"
+                        Margin="0,0,14,6"
+                        Padding="12,8"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="0"
+                        BackgroundColor="{DynamicResource AccentSurface}">
+                    <Grid  ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding Word, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                            <ColumnDefinition Width="{Binding Exclude, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                            <ColumnDefinition Width="{Binding Occurrences, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                            <ColumnDefinition Width="{Binding Length, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                            <ColumnDefinition Width="{Binding Hands, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                            <ColumnDefinition Width="{Binding Language, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Text="{Binding TextHeader}" StyleClass="words_header">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Text"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label Grid.Column="1" Text="{Binding ExcludedHeader}" StyleClass="words_header" HorizontalTextAlignment="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Excluded"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label Grid.Column="2" Text="{Binding OccurrencesHeader}" StyleClass="words_header" HorizontalTextAlignment="Center" ToolTipProperties.Text="Occurrences : nombre de fois où le mot a été lu">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Occurrences"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label Grid.Column="3" Text="{Binding LengthHeader}" StyleClass="words_header" HorizontalTextAlignment="Center" ToolTipProperties.Text="Longueur du mot">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Length"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label Grid.Column="4" Text="{Binding HandsHeader}" StyleClass="words_header" HorizontalTextAlignment="Center" ToolTipProperties.Text="Main(s) nécessaires pour taper le mot">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Hands"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label Grid.Column="5" Text="{Binding LanguageHeader}" StyleClass="words_header" HorizontalTextAlignment="Center" ToolTipProperties.Text="Langue">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Language"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+                </Border>
 
                 <CollectionView Grid.Row="3"
                                 ItemsSource="{Binding Items}"
@@ -182,10 +232,13 @@
 
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="vm:WordItemViewModel">
+                            <!-- room on the right: the scrollbar must not cover the rows
+                                 (padding of a wrapper: the margin of the template root was not always applied) -->
+                            <Grid Padding="0,0,14,0">
                             <!-- the border always takes its stroke room: the hover outline does not move the text -->
                             <Border StrokeThickness="2"
                                     Stroke="Transparent"
-                                    StrokeShape="RoundRectangle 6"
+                                    StrokeShape="RoundRectangle 8"
                                     BackgroundColor="Transparent"
                                     Padding="0">
                                 <Border.Triggers>
@@ -197,16 +250,28 @@
                                     <PointerGestureRecognizer PointerEntered="Row_PointerEntered" PointerExited="Row_PointerExited"/>
                                 </Border.GestureRecognizers>
 
-                                <Grid ColumnDefinitions="*,100,120,110,160,80"
+                                <Grid 
                                       ColumnSpacing="10"
                                       Padding="10,4"
-                                      HeightRequest="40">
+                                      HeightRequest="42">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding Word, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                            <ColumnDefinition Width="{Binding Exclude, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                            <ColumnDefinition Width="{Binding Occurrences, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                            <ColumnDefinition Width="{Binding Length, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                            <ColumnDefinition Width="{Binding Hands, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                            <ColumnDefinition Width="{Binding Language, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
+                        </Grid.ColumnDefinitions>
 
                                     <Label Text="{Binding Text}"
                                            FontSize="16"
                                            FontAttributes="Bold"
                                            VerticalOptions="Center"
                                            LineBreakMode="TailTruncation">
+                                        <!-- a cut word shows in full when hovered (see the code behind) -->
+                                        <Label.GestureRecognizers>
+                                            <PointerGestureRecognizer PointerEntered="WordLabel_PointerEntered" PointerExited="WordLabel_PointerExited"/>
+                                        </Label.GestureRecognizers>
                                         <Label.Triggers>
                                             <DataTrigger TargetType="Label" Binding="{Binding IsExcluded}" Value="True">
                                                 <Setter Property="TextDecorations" Value="Strikethrough"/>
@@ -220,39 +285,50 @@
                                             Text="Exclure"
                                             IsVisible="{Binding IsActive}"
                                             StyleClass="button_row_exclude"
-                                            PropertyChanged="RowButton_PropertyChanged"
-                                            BindingContextChanged="RowButton_BindingContextChanged"
+                                            PropertyChanged="ExcludeButton_PropertyChanged"
+                                            BindingContextChanged="ExcludeButton_BindingContextChanged"
+                                            HorizontalOptions="Center"
                                             FontSize="12"
-                                            Padding="10,0"
-                                            HeightRequest="30"
-                                            MinimumHeightRequest="30"
-                                            CornerRadius="15"
+                                            Padding="12,0"
+                                            HeightRequest="28"
+                                            MinimumHeightRequest="28"
+                                            CornerRadius="14"
                                             Command="{Binding BindingContext.ToggleExcludedCommand, Source={x:Reference RootPage}, x:DataType=ContentView}"
-                                            CommandParameter="{Binding .}"/>
+                                            CommandParameter="{Binding .}">
+                                        <Button.GestureRecognizers>
+                                            <PointerGestureRecognizer PointerEntered="ExcludeButton_PointerEntered" PointerExited="ExcludeButton_PointerExited"/>
+                                        </Button.GestureRecognizers>
+                                    </Button>
                                     <Button Grid.Column="1"
                                             Text="Restaurer"
                                             IsVisible="{Binding IsExcluded}"
                                             StyleClass="ButtonHoverLaunch"
                                             PropertyChanged="RowButton_PropertyChanged"
                                             BindingContextChanged="RowButton_BindingContextChanged"
+                                            HorizontalOptions="Center"
                                             FontSize="12"
-                                            Padding="10,0"
-                                            HeightRequest="30"
-                                            MinimumHeightRequest="30"
-                                            CornerRadius="15"
+                                            Padding="12,0"
+                                            HeightRequest="28"
+                                            MinimumHeightRequest="28"
+                                            CornerRadius="14"
                                             Command="{Binding BindingContext.ToggleExcludedCommand, Source={x:Reference RootPage}, x:DataType=ContentView}"
                                             CommandParameter="{Binding .}"/>
 
                                     <Label Grid.Column="2" Text="{Binding Occurrences, StringFormat='{0:N0}'}"
-                                           HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                           HorizontalTextAlignment="Center" VerticalOptions="Center"/>
                                     <Label Grid.Column="3" Text="{Binding Length}"
-                                           HorizontalTextAlignment="End" VerticalOptions="Center"/>
-                                    <Label Grid.Column="4" Text="{Binding HandsText}"
-                                           StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
-                                    <Label Grid.Column="5" Text="{Binding LanguageCode}"
-                                           StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                           HorizontalTextAlignment="Center" VerticalOptions="Center"/>
+
+                                    <!-- hands and language: small pills -->
+                                    <Border Grid.Column="4" StyleClass="words_pill" IsVisible="{Binding HasHands}" ToolTipProperties.Text="{Binding HandsTooltip}">
+                                        <Label Text="{Binding HandsText}" StyleClass="words_pill_text"/>
+                                    </Border>
+                                    <Border Grid.Column="5" StyleClass="words_pill">
+                                        <Label Text="{Binding LanguageLabel}" StyleClass="words_pill_text" FontAttributes="Bold"/>
+                                    </Border>
                                 </Grid>
                             </Border>
+                            </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
@@ -263,7 +339,6 @@
         <Border Grid.Row="1" Grid.Column="1"
                 x:Name="LoadingOverlay"
                 IsVisible="{Binding IsLoading}"
-                PropertyChanged="LoadingOverlay_PropertyChanged"
                 StyleClass="BorderTypingRounded10, BorderBgOverlay"
                 StrokeThickness="0">
 
@@ -277,26 +352,45 @@
                     <Shadow Brush="Black" Offset="0,6" Radius="18" Opacity="0.2"/>
                 </Border.Shadow>
 
-                <VerticalStackLayout Spacing="14">
+                <HorizontalStackLayout Spacing="14">
+                    <!-- spinning: shows the app is working, not frozen -->
+                    <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                       Color="{DynamicResource Accent}"
+                                       WidthRequest="28"
+                                       HeightRequest="28"
+                                       VerticalOptions="Center"/>
                     <Label Text="Chargement des mots…"
                            StyleClass="label_section_title"
-                           HorizontalOptions="Center"/>
-
-                    <!-- indeterminate progress bar: a segment sliding along the track (see code behind) -->
-                    <Border x:Name="LoadingTrack"
-                            WidthRequest="240"
-                            HeightRequest="6"
-                            StrokeShape="RoundRectangle 3"
-                            StrokeThickness="0"
-                            BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgDescriptionLight}, Dark={StaticResource BorderBgDescriptionDark}}">
-                        <BoxView x:Name="LoadingSegment"
-                                 WidthRequest="80"
-                                 HorizontalOptions="Start"
-                                 CornerRadius="3"
-                                 Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
-                    </Border>
-                </VerticalStackLayout>
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
             </Border>
+        </Border>
+
+        <!-- full word of a cut one, shown at once over its row: same outline as the hovered row
+             (left, top, bottom), the text where the word is (height and padding set by the code behind) -->
+        <Border x:Name="WordTooltip"
+                Grid.RowSpan="2"
+                Grid.ColumnSpan="2"
+                IsVisible="False"
+                HorizontalOptions="Start"
+                VerticalOptions="Start"
+                StrokeShape="RoundRectangle 8"
+                StrokeThickness="2"
+                Stroke="{DynamicResource Accent}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgStdLight}, Dark={StaticResource FloatingBarBgDark}}"
+                ZIndex="10">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,4" Radius="12" Opacity="0.25"/>
+            </Border.Shadow>
+            <Border.GestureRecognizers>
+                <PointerGestureRecognizer PointerMoved="WordTooltip_PointerMoved" PointerExited="WordTooltip_PointerExited"/>
+            </Border.GestureRecognizers>
+            <!-- the pointer goes through: the word under it stays hovered -->
+            <Label x:Name="WordTooltipText"
+                   InputTransparent="True"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   VerticalOptions="Center"/>
         </Border>
     </Grid>
 </ContentView>

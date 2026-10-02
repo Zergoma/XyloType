@@ -322,6 +322,8 @@ public partial class ExercisesManagerViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDynamic))]
+    [NotifyPropertyChangedFor(nameof(IsRealWords))]
+    [NotifyPropertyChangedFor(nameof(BadgeText))]
     [NotifyPropertyChangedFor(nameof(StaticDynamicText))]
     public partial bool IsStatic { get; set; } = true;
 
@@ -360,6 +362,14 @@ public partial class ExercisesManagerViewModel : ObservableObject
     /// </summary>
     public bool IsLanguageUsed => GenerationTypeSourceSelected == GeneratedTypeSourceDto.Words;
 
+    /// <summary>
+    /// Badge of a generated exercise, as on the home page: words drawn again at each game,
+    /// real ones (imported) or invented.
+    /// </summary>
+    public bool IsRealWords => IsDynamic && IsLanguageUsed;
+
+    public string BadgeText => IsRealWords ? "Vrais mots" : "Mots inventés";
+
     partial void OnExerciseNameChanged(string value) => ApplyEditor();
     partial void OnDescriptionChanged(string value) => ApplyEditor();
     partial void OnAllowedCharsChanged(string value) => ApplyEditor();
@@ -370,6 +380,8 @@ public partial class ExercisesManagerViewModel : ObservableObject
     partial void OnGenerationTypeSourceSelectedChanged(GeneratedTypeSourceDto? value)
     {
         OnPropertyChanged(nameof(IsLanguageUsed));
+        OnPropertyChanged(nameof(IsRealWords));
+        OnPropertyChanged(nameof(BadgeText));
         ApplyEditor();
     }
 

@@ -125,12 +125,24 @@ public partial class WordsExplorerViewModel : ObservableObject
 
     partial void OnSortChanged(WordSort value) => ScheduleSearch();
 
-    public string TextHeader => Header("MOT", WordSortField.Text);
-    public string OccurrencesHeader => Header("OCCURRENCES", WordSortField.Occurrences);
-    public string LengthHeader => Header("LONGUEUR", WordSortField.Length);
-    public string HandsHeader => Header("MAIN(S)", WordSortField.Hands);
-    public string LanguageHeader => Header("LANGUE", WordSortField.Language);
-    public string ExcludedHeader => Header("EXCLU", WordSortField.Excluded);
+    public string TextHeader => Header("MOT", "MOT", WordSortField.Text);
+    public string OccurrencesHeader => Header("OCCURRENCES", "OCC.", WordSortField.Occurrences);
+    public string LengthHeader => Header("LONGUEUR", "LONG.", WordSortField.Length);
+    public string HandsHeader => Header("MAIN(S)", "MAINS", WordSortField.Hands);
+    public string LanguageHeader => Header("LANGUE", "LANG.", WordSortField.Language);
+    public string ExcludedHeader => Header("EXCLU", "EXCLU", WordSortField.Excluded);
+
+    /// <summary>
+    /// Narrow table (small window): short headers, so they are not cut.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TextHeader))]
+    [NotifyPropertyChangedFor(nameof(OccurrencesHeader))]
+    [NotifyPropertyChangedFor(nameof(LengthHeader))]
+    [NotifyPropertyChangedFor(nameof(HandsHeader))]
+    [NotifyPropertyChangedFor(nameof(LanguageHeader))]
+    [NotifyPropertyChangedFor(nameof(ExcludedHeader))]
+    public partial bool IsCompactTable { get; set; }
 
     /// <summary>
     /// Usual table behavior: a click sorts by the column, a second click reverses the order.
@@ -163,14 +175,19 @@ public partial class WordsExplorerViewModel : ObservableObject
     /// <summary>
     /// Sorted column: its direction. Other sortable columns: an icon showing a click sorts them.
     /// </summary>
-    private string Header(string label, WordSortField field)
+    private string Header(string label, string shortLabel, WordSortField field)
     {
+        if (IsCompactTable)
+            label = shortLabel;
+
         if (!IsSortable(field))
             return label;
 
-        return Sort.Field == field
-            ? $"{label} {(Sort.Descending ? "▼" : "▲")}"
-            : $"{label} ↕";
+        if (Sort.Field == field)
+            return $"{label} {(Sort.Descending ? "▼" : "▲")}";
+
+        // narrow table: no room for the sort hint
+        return IsCompactTable ? label : $"{label} ↕";
     }
 
     private void OnColumnFilterChanged()

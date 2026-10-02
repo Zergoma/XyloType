@@ -91,8 +91,8 @@
     </Style>
 
     <Style TargetType="Button" Class="ButtonHoverAddExercice">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryTextLight}, Dark={StaticResource ButtonPrimaryTextDark}}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
+        <Setter Property="TextColor" Value="{DynamicResource AccentForeground}" />
 
         <Setter Property="VisualStateManager.VisualStateGroups">
 
@@ -102,22 +102,22 @@
 
                     <VisualState Name="Normal">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}" />
-                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryTextLight}, Dark={StaticResource ButtonPrimaryTextDark}}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
+                            <Setter Property="TextColor" Value="{DynamicResource AccentForeground}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="PointerOver">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgHoverLight}, Dark={StaticResource ButtonPrimaryBgHoverDark}}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentHover}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgPressedLight}, Dark={StaticResource ButtonPrimaryBgPressedDark}}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentPressed}" />
                             <Setter Property="Scale" Value="0.98" />
-                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryTextPressedLight}, Dark={StaticResource ButtonPrimaryTextPressedDark}}" />
+                            <Setter Property="TextColor" Value="{DynamicResource AccentForeground}" />
                         </VisualState.Setters>
                     </VisualState>
 
@@ -135,8 +135,31 @@
         </Setter>
     </Style>
 
+    <!-- selected exercise tile, in the main color (shade on hover) -->
+    <Style TargetType="Border" Class="tile_selected">
+        <Setter Property="BackgroundColor" Value="{DynamicResource AccentSoft}"/>
+        <Setter Property="Stroke" Value="{DynamicResource Accent}"/>
+        <Setter Property="StrokeThickness" Value="2"/>
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup Name="CommonStates">
+                    <VisualState Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentSoft}"/>
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState Name="PointerOver">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentSoftHover}"/>
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
     <Style TargetType="Border" Class="BorderHoverLaunch">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileBgLight}, Dark={StaticResource TileBgDark}}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource AccentTile}" />
 
 
         <Setter Property="VisualStateManager.VisualStateGroups">
@@ -147,19 +170,19 @@
 
                     <VisualState Name="Normal">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileBgLight}, Dark={StaticResource TileBgDark}}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentTile}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="PointerOver">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileBgHoverLight}, Dark={StaticResource TileBgHoverDark}}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentTileHover}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileBgPressedLight}, Dark={StaticResource TileBgPressedDark}}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentTilePressed}" />
                             <Setter Property="Scale" Value="0.98" />
                         </VisualState.Setters>
                     </VisualState>
@@ -171,37 +194,11 @@
         </Setter>
     </Style>
 
-    <!-- row action "Exclure": neutral, turns red when hovered so it stands out on the highlighted row -->
+    <!-- row action "Exclure": neutral; red on hover, set by the view (see WordsExplorerView):
+         the visual state kept a stale hover on the rows created while scrolling -->
     <Style TargetType="Button" Class="button_row_exclude">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonNeutralBgLight}, Dark={StaticResource ButtonNeutralBgDark}}"/>
         <Setter Property="TextColor" Value="White"/>
-
-        <Setter Property="VisualStateManager.VisualStateGroups">
-            <VisualStateGroupList>
-                <VisualStateGroup Name="CommonStates">
-
-                    <VisualState Name="Normal">
-                        <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonNeutralBgLight}, Dark={StaticResource ButtonNeutralBgDark}}"/>
-                        </VisualState.Setters>
-                    </VisualState>
-
-                    <VisualState Name="PointerOver">
-                        <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonDangerBgHoverLight}, Dark={StaticResource ButtonDangerBgHoverDark}}"/>
-                        </VisualState.Setters>
-                    </VisualState>
-
-                    <VisualState Name="Pressed">
-                        <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonDangerBgPressedLight}, Dark={StaticResource ButtonDangerBgPressedDark}}"/>
-                            <Setter Property="Scale" Value="0.98"/>
-                        </VisualState.Setters>
-                    </VisualState>
-
-                </VisualStateGroup>
-            </VisualStateGroupList>
-        </Setter>
     </Style>
 
 </ResourceDictionary>

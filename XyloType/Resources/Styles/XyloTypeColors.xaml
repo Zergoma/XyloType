@@ -2,9 +2,25 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <!-- Main color (accent): defaults, replaced at start and when the user picks another color
+         (see MauiAccentColorService), adapted to the theme -->
+    <Color x:Key="Accent">#2F6FEB</Color>
+    <Color x:Key="AccentHover">#1D5BD8</Color>
+    <Color x:Key="AccentPressed">#1849B8</Color>
+    <Color x:Key="AccentSoft">#E3ECFE</Color>
+    <Color x:Key="AccentSoftHover">#D6E3FD</Color>
+    <Color x:Key="AccentText">#2F6FEB</Color>
+    <Color x:Key="AccentGradientEnd">#7C3AED</Color>
+    <Color x:Key="AccentSurface">#EAF0FD</Color>
+    <Color x:Key="AccentOnSurface">#1E3A8A</Color>
+    <Color x:Key="AccentForeground">#FFFFFF</Color>
+    <Color x:Key="AccentPageBg">#EEF1F6</Color>
+    <Color x:Key="AccentTile">#F3F6FB</Color>
+    <Color x:Key="AccentTileHover">#E7EDF8</Color>
+    <Color x:Key="AccentTilePressed">#DCE4F3</Color>
+    <Color x:Key="AccentTileStroke">#D8DEE8</Color>
+
     <!-- Surfaces -->
-    <Color x:Key="PageBgDark">#14161B</Color>
-    <Color x:Key="PageBgLight">#EEF1F6</Color>
 
     <Color x:Key="BorderBgStdDark">#1E2229</Color>
     <Color x:Key="BorderBgStdLight">#FFFFFF</Color>
@@ -34,8 +50,6 @@
     <Color x:Key="OverlayBgLight">#B3FFFFFF</Color>
 
     <!-- Text -->
-    <Color x:Key="TextOnDescriptionDark">#C7D2FE</Color>
-    <Color x:Key="TextOnDescriptionLight">#1E3A8A</Color>
 
 
     <Color x:Key="TextMutedDark">#9AA3B2</Color>
@@ -43,9 +57,6 @@
 
     <Color x:Key="TextTitleDark">#F3F4F6</Color>
     <Color x:Key="TextTitleLight">#111827</Color>
-
-    <Color x:Key="TextAccentDark">#7C9CFF</Color>
-    <Color x:Key="TextAccentLight">#2F6FEB</Color>
 
     <Color x:Key="TextErrorDark">#F87171</Color>
     <Color x:Key="TextErrorLight">#DC2626</Color>
@@ -60,41 +71,12 @@
     <Color x:Key="PickerTextDark">#E5E7EB</Color>
     <Color x:Key="PickerTextLight">#1F2937</Color>
 
-    <!-- Exercise tiles: cards following the theme, the selected one outlined with the accent -->
-    <Color x:Key="TileBgDark">#262C38</Color>
-    <Color x:Key="TileBgLight">#F3F6FB</Color>
-
-    <Color x:Key="TileBgHoverDark">#2E3646</Color>
-    <Color x:Key="TileBgHoverLight">#E7EDF8</Color>
-
-    <Color x:Key="TileBgPressedDark">#343D50</Color>
-    <Color x:Key="TileBgPressedLight">#DCE4F3</Color>
-
-    <Color x:Key="TileStrokeDark">#343C4B</Color>
-    <Color x:Key="TileStrokeLight">#D8DEE8</Color>
-
-    <Color x:Key="TileSelectedBgDark">#283A63</Color>
-    <Color x:Key="TileSelectedBgLight">#E3ECFE</Color>
-
-    <Color x:Key="TileSelectedBgHoverDark">#2F4473</Color>
-    <Color x:Key="TileSelectedBgHoverLight">#D6E3FD</Color>
-
-    <Color x:Key="TileSelectedStrokeDark">#5B8DEF</Color>
-    <Color x:Key="TileSelectedStrokeLight">#2F6FEB</Color>
-
     <!-- Badges of the generated exercises -->
     <Color x:Key="BadgePseudoWordsBgDark">#8B5CF6</Color>
     <Color x:Key="BadgePseudoWordsBgLight">#7C3AED</Color>
 
     <Color x:Key="BadgeRealWordsBgDark">#14B8A6</Color>
     <Color x:Key="BadgeRealWordsBgLight">#0D9488</Color>
-
-    <!-- Launch button: accent gradient, blue to violet -->
-    <Color x:Key="LaunchStartDark">#5B8DEF</Color>
-    <Color x:Key="LaunchStartLight">#2F6FEB</Color>
-
-    <Color x:Key="LaunchEndDark">#8B5CF6</Color>
-    <Color x:Key="LaunchEndLight">#7C3AED</Color>
 
     <!-- Disabled buttons -->
     <Color x:Key="ButtonDisabledBgDark">#2A303B</Color>
@@ -123,28 +105,16 @@
     <Color x:Key="ButtonLaunchBgPressedDark">#188146</Color>
     <Color x:Key="ButtonLaunchBgPressedLight">#166534</Color>
 
-    <!-- Primary button (ButtonHoverAddExercice) -->
-    <Color x:Key="ButtonPrimaryBgDark">#3B6FE0</Color>
-    <Color x:Key="ButtonPrimaryBgLight">#2F6FEB</Color>
-
-    <Color x:Key="ButtonPrimaryBgHoverDark">#5584EA</Color>
-    <Color x:Key="ButtonPrimaryBgHoverLight">#1D5BD8</Color>
-
-    <Color x:Key="ButtonPrimaryBgPressedDark">#2F5BC0</Color>
-    <Color x:Key="ButtonPrimaryBgPressedLight">#1849B8</Color>
-
-    <Color x:Key="ButtonPrimaryTextDark">#FFFFFF</Color>
-    <Color x:Key="ButtonPrimaryTextLight">#FFFFFF</Color>
-
-    <Color x:Key="ButtonPrimaryTextPressedDark">#FFFFFF</Color>
-    <Color x:Key="ButtonPrimaryTextPressedLight">#FFFFFF</Color>
-
     <!-- Danger button hover (button_row_exclude) -->
     <Color x:Key="ButtonDangerBgHoverDark">#DC2626</Color>
     <Color x:Key="ButtonDangerBgHoverLight">#DC2626</Color>
 
     <Color x:Key="ButtonDangerBgPressedDark">#B91C1C</Color>
     <Color x:Key="ButtonDangerBgPressedLight">#B91C1C</Color>
+
+    <!-- Brands of the status bar (Zergoma, Xylocopa), in violet -->
+    <Color x:Key="BrandVioletDark">#A78BFA</Color>
+    <Color x:Key="BrandVioletLight">#7C3AED</Color>
 
     <!-- Table rows (words explorer) -->
     <Color x:Key="RowExcludedBgDark">#3A2328</Color>

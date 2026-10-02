@@ -24,6 +24,18 @@ public partial class ExercisesManagerView : ContentView, IViewLifecycle, INaviga
     {
         InitializeComponent();
         BindingContext = _vm = vm;
+
+#if WINDOWS
+        // fixed height texts: their scrollbar shows when the text is longer
+        foreach (Editor editor in new[] { EditorGeneratedText, EditorDescription })
+        {
+            editor.HandlerChanged += (_, _) =>
+            {
+                if (editor.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.TextBox textBox)
+                    Microsoft.UI.Xaml.Controls.ScrollViewer.SetVerticalScrollBarVisibility(textBox, Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Auto);
+            };
+        }
+#endif
     }
 
     public async void OnAppearing()

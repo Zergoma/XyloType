@@ -9,7 +9,6 @@ using XyloType.Application;
 using XyloType.Application.DTOs;
 using XyloType.Application.Interfaces;
 using XyloType.Application.Interfaces.Typing;
-using XyloType.Application.Models.Themes;
 using XyloType.Application.Models.Typing.Engine;
 using XyloType.Application.Models.Typing.Exercices;
 
@@ -25,7 +24,6 @@ public partial class TypingLauncherViewModel : ObservableObject
     private readonly INavigationService _navigation;
     private readonly ITypingExerciseRunService _runService;
     private readonly IUserDialogService _dialogService;
-    private readonly IThemeChangerService _themeChangerService;
     private TypingExercices? _loadedExercises;
     private Guid? _lastSeenRunExerciseId;
     private ILogger<TypingLauncherViewModel> _logger;
@@ -43,7 +41,6 @@ public partial class TypingLauncherViewModel : ObservableObject
         ITypingExerciseRunService runService,
         IUserDialogService dialogService,
         IKeyBoardLayoutAvailableService keyboardLayoutAvailableService,
-        IThemeChangerService themeChangerService,
         ILogger<TypingLauncherViewModel> logger,
         ITypingExerciseWordNumberService typingExerciceWordNumberService,
         ITypingExerciseLineNumberService typingExerciceLineNumberService)
@@ -54,7 +51,6 @@ public partial class TypingLauncherViewModel : ObservableObject
         _dialogService = dialogService;
         _keyboardLayoutAvailableElem = keyboardLayoutAvailableService.GetKeyBoardAvailable();
 
-        _themeChangerService = themeChangerService;
         _logger = logger;
         _typingExerciceWordNumberService = typingExerciceWordNumberService;
         _typingExerciceLineNumberService = typingExerciceLineNumberService;
@@ -70,7 +66,6 @@ public partial class TypingLauncherViewModel : ObservableObject
             OnPropertyChanged(nameof(HasNoExercice));
         };
 
-        Theme = _themeChangerService.ApplyUserSelectedTheme();
         NbLine = _typingExerciceLineNumberService.LineNumber;
         NbWordPerLine = _typingExerciceWordNumberService.ItemNumber;
     }
@@ -256,37 +251,4 @@ public partial class TypingLauncherViewModel : ObservableObject
             await _dialogService.AlertAsync("Impossible de lancer l'exercice", navigationResult.Error);
         }
     }
-
-
-
-    #region Theme
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsThemeLight))]
-    [NotifyPropertyChangedFor(nameof(IsThemeDark))]
-    [NotifyPropertyChangedFor(nameof(IsThemeSystem))]
-    public partial ThemeStateConfiguration Theme { get; set; }
-
-    public bool IsThemeLight => Theme == ThemeStateConfiguration.Light;
-    public bool IsThemeDark => Theme == ThemeStateConfiguration.Dark;
-    public bool IsThemeSystem => Theme == ThemeStateConfiguration.System;
-
-    /// <summary>
-    /// Light, dark, or following the Windows setting.
-    /// </summary>
-    [RelayCommand]
-    public void SetTheme(ThemeStateConfiguration theme)
-    {
-        switch (theme)
-        {
-            case ThemeStateConfiguration.Dark: _themeChangerService.SetDark(); break;
-            case ThemeStateConfiguration.Light: _themeChangerService.SetLight(); break;
-            case ThemeStateConfiguration.System: _themeChangerService.SetToSystem(); break;
-            default: throw new NotImplementedException();
-        }
-
-        Theme = theme;
-    }
-
-    #endregion
 }

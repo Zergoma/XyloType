@@ -11,6 +11,8 @@ public static class UiServicesModule
         services.AddTransient<INavigationService, MauiNavigationService>();
         services.AddSingleton<IPlaySoundSample, MauiPlaySoundSample>();
         services.AddTransient<IUserDialogService, MauiUserDialogService>();
+        services.AddSingleton<MauiAccentColorService>();
+        services.AddSingleton<IAccentColorService>(provider => provider.GetRequiredService<MauiAccentColorService>());
 
         return services;
     }

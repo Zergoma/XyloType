@@ -4,7 +4,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="XyloType.MVVM.Views.TypingLauncherView"
              xmlns:vm="clr-namespace:XyloType.ViewModels.TypingLauncher;assembly=XyloType.ViewModels"
-             xmlns:themes="clr-namespace:XyloType.Application.Models.Themes;assembly=XyloType.Application"
              xmlns:controls="clr-namespace:XyloType.MVVM.Controls"
              x:DataType="vm:TypingLauncherViewModel"
              xmlns:behaviors="clr-namespace:XyloType.Behaviors"
@@ -13,8 +12,8 @@
     <ContentView.Resources>
         <!-- launch button and its halo: accent gradient, blue to violet -->
         <LinearGradientBrush x:Key="LaunchBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Offset="0" Color="{AppThemeBinding Light={StaticResource LaunchStartLight}, Dark={StaticResource LaunchStartDark}}"/>
-            <GradientStop Offset="1" Color="{AppThemeBinding Light={StaticResource LaunchEndLight}, Dark={StaticResource LaunchEndDark}}"/>
+            <GradientStop Offset="0" Color="{DynamicResource Accent}"/>
+            <GradientStop Offset="1" Color="{DynamicResource AccentGradientEnd}"/>
         </LinearGradientBrush>
     </ContentView.Resources>
 
@@ -25,33 +24,6 @@
         Margin="10,5"
         Padding="5"
         RowSpacing="5">
-
-        <!-- theme: light, dark or following Windows -->
-        <Border Grid.Row="0" Grid.Column="1"
-                HorizontalOptions="End"
-                StyleClass="BorderBgStd"
-                StrokeShape="RoundRectangle 20"
-                StrokeThickness="1"
-                Stroke="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"
-                Padding="4">
-            <HorizontalStackLayout Spacing="4">
-                <controls:IconButton Icon="{x:Static controls:Icons.Sun}"
-                                     IsActive="{Binding IsThemeLight}"
-                                     ToolTipProperties.Text="Thème clair"
-                                     Command="{Binding SetThemeCommand}"
-                                     CommandParameter="{x:Static themes:ThemeStateConfiguration.Light}"/>
-                <controls:IconButton Icon="{x:Static controls:Icons.Moon}"
-                                     IsActive="{Binding IsThemeDark}"
-                                     ToolTipProperties.Text="Thème sombre"
-                                     Command="{Binding SetThemeCommand}"
-                                     CommandParameter="{x:Static themes:ThemeStateConfiguration.Dark}"/>
-                <controls:IconButton Icon="{x:Static controls:Icons.Monitor}"
-                                     IsActive="{Binding IsThemeSystem}"
-                                     ToolTipProperties.Text="Thème du système"
-                                     Command="{Binding SetThemeCommand}"
-                                     CommandParameter="{x:Static themes:ThemeStateConfiguration.System}"/>
-            </HorizontalStackLayout>
-        </Border>
 
         <!--Selected exercice description-->
         <Border Grid.Row="1" Grid.Column="1"
@@ -218,13 +190,13 @@
                                          InputTransparent="True"/>
                                 <HorizontalStackLayout Spacing="10" VerticalOptions="Center" HorizontalOptions="Center">
                                     <Path Data="{x:Static controls:Icons.Play}"
-                                          Fill="White"
+                                          Fill="{DynamicResource AccentForeground}"
                                           Aspect="Uniform"
                                           WidthRequest="22"
                                           HeightRequest="22"
                                           VerticalOptions="Center"/>
                                     <Label Text="Lancer"
-                                           TextColor="White"
+                                           TextColor="{DynamicResource AccentForeground}"
                                            FontSize="20"
                                            FontAttributes="Bold"
                                            VerticalOptions="Center"/>
@@ -249,7 +221,7 @@
                 <Grid RowDefinitions="auto,auto" RowSpacing="12" Margin="0,0,0,10">
 
                     <Label Grid.Row="0"
-                       Text="Exercices"
+                       Text="Choisir un exercice"
                        StyleClass="label_page_title"
                        VerticalOptions="Center"/>
 
@@ -304,57 +276,33 @@
                                             </DataTrigger>
                                         </Grid.Triggers>
 
+                                        <!-- tile background, normal or selected: two layers, as a trigger setting the (dynamic) main color was not undone -->
                                         <Border StyleClass="BorderRounded10,BorderHoverLaunch"
+                                                IsVisible="{Binding IsNotSelected}"
                                                 StrokeThickness="1"
-                                                Stroke="{AppThemeBinding Light={StaticResource TileStrokeLight}, Dark={StaticResource TileStrokeDark}}"
-                                                Padding="10,12">
+                                                Stroke="{DynamicResource AccentTileStroke}"/>
+                                        <Border StyleClass="BorderRounded10,tile_selected"
+                                                IsVisible="{Binding IsSelected}"/>
 
-                                            <Border.Triggers>
-                                                <DataTrigger TargetType="Border"
-                                                             Binding="{Binding IsSelected}"
-                                                             Value="True">
-                                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgLight}, Dark={StaticResource TileSelectedBgDark}}"/>
-                                                    <Setter Property="StrokeThickness" Value="2" />
-                                                    <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource TileSelectedStrokeLight}, Dark={StaticResource TileSelectedStrokeDark}}" />
+                                        <!-- the pointer goes through, to the background (hover) -->
+                                        <Grid RowDefinitions="auto,*" Padding="10,12" InputTransparent="True">
 
-                                                    <Setter Property="VisualStateManager.VisualStateGroups">
-                                                        <VisualStateGroupList>
-                                                            <VisualStateGroup Name="CommonStates">
-                                                                <VisualState Name="Normal">
-                                                                    <VisualState.Setters>
-                                                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgLight}, Dark={StaticResource TileSelectedBgDark}}" />
-                                                                    </VisualState.Setters>
-                                                                </VisualState>
-                                                                <VisualState Name="PointerOver">
-                                                                    <VisualState.Setters>
-                                                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgHoverLight}, Dark={StaticResource TileSelectedBgHoverDark}}" />
-                                                                    </VisualState.Setters>
-                                                                </VisualState>
-                                                            </VisualStateGroup>
-                                                        </VisualStateGroupList>
-                                                    </Setter>
-                                                </DataTrigger>
-                                            </Border.Triggers>
+                                            <Label Grid.Row="0" Text="{Binding Name}"
+                                                   StyleClass="label_on_tile"
+                                                   FontAttributes="Bold"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"
+                                                   FontSize="17"
+                                                   LineBreakMode="TailTruncation"
+                                                   Margin="0,4,0,8"/>
 
-                                            <Grid RowDefinitions="auto,*">
-
-                                                <Label Grid.Row="0" Text="{Binding Name}"
-                                                       StyleClass="label_on_tile"
-                                                       FontAttributes="Bold"
-                                                       HorizontalOptions="Center"
-                                                       VerticalOptions="Center"
-                                                       FontSize="17"
-                                                       LineBreakMode="TailTruncation"
-                                                       Margin="0,4,0,8"/>
-
-                                                <Label Grid.Row="1" Text="{Binding Letters}"
-                                                       StyleClass="label_on_tile_secondary"
-                                                       FontSize="11"
-                                                       LineBreakMode="WordWrap"
-                                                       MaxLines="4"
-                                                       Margin="0"/>
-                                            </Grid>
-                                        </Border>
+                                            <Label Grid.Row="1" Text="{Binding Letters}"
+                                                   StyleClass="label_on_tile_secondary"
+                                                   FontSize="11"
+                                                   LineBreakMode="WordWrap"
+                                                   MaxLines="4"
+                                                   Margin="0"/>
+                                        </Grid>
 
                                         <!-- generated exercises: new words at each game, invented or real -->
                                         <Border IsVisible="{Binding IsDynamic}"

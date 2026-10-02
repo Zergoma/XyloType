@@ -90,7 +90,7 @@
                                                        Text="♪"
                                                        FontSize="12"
                                                        Opacity="0.75"
-                                                       TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                                       TextColor="{DynamicResource Accent}"
                                                        HorizontalOptions="Start"
                                                        VerticalOptions="Start"
                                                        InputTransparent="True"/>
@@ -128,7 +128,7 @@
                         StrokeShape="RoundRectangle 1.5"
                         StrokeThickness="0"
                         BackgroundColor="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}">
-                    <BoxView Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    <BoxView Color="{DynamicResource Accent}"
                              Opacity="0.6"
                              AnchorX="0"
                              ScaleX="{Binding TypingProgress}"/>
@@ -198,7 +198,7 @@
                     ToolTipProperties.Text="{Binding CurrentScoreDetails}">
                 <Grid>
                     <BoxView IsVisible="{Binding ShowScoreProgress}"
-                             Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                             Color="{DynamicResource Accent}"
                              Opacity="0.22"
                              AnchorX="0"
                              ScaleX="{Binding ScoreProgress}"/>

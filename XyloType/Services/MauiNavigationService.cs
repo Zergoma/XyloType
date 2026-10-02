@@ -26,16 +26,16 @@ public class MauiNavigationService : INavigationService
     }
 
     public async Task<Result<bool>> NavigateToTypingExerciseAsync(IStringsProvider stringProvider)
-        => await ShowAsync(_typingViewFactory.CreateTypingViewAsync(stringProvider, this), _navigator.ShowExercise);
+        => await ShowAsync(() => _typingViewFactory.CreateTypingViewAsync(stringProvider, this), _navigator.ShowExercise);
 
     public async Task<Result<bool>> ReplaceWithTypingExerciseAsync(IStringsProvider stringProvider)
-        => await ShowAsync(_typingViewFactory.CreateTypingViewAsync(stringProvider, this), _navigator.ShowExercise);
+        => await ShowAsync(() => _typingViewFactory.CreateTypingViewAsync(stringProvider, this), _navigator.ShowExercise);
 
     public async Task<Result<bool>> NavigateToStatisticAsync(TypingSessionResult result)
-        => await ShowAsync(_statisticViewFactory.Create(result, this), _navigator.ShowExercise);
+        => await ShowAsync(() => _statisticViewFactory.Create(result, this), _navigator.ShowExercise);
 
     public async Task<Result<bool>> ReplaceWithStatisticAsync(TypingSessionResult result)
-        => await ShowAsync(_statisticViewFactory.Create(result, this), _navigator.ShowExercise);
+        => await ShowAsync(() => _statisticViewFactory.Create(result, this), _navigator.ShowExercise);
 
     public Task PopBackAsync()
     {
@@ -49,13 +49,17 @@ public class MauiNavigationService : INavigationService
         return Task.CompletedTask;
     }
 
-    private static async Task<Result<bool>> ShowAsync(Task<Result<ContentView>> creation, Action<View> show)
-    {
-        Result<ContentView> view = await creation;
-        if (!view.Success)
-            return Result<bool>.Fail(view.Error);
+    /// <summary>
+    /// Creating the typing or results view takes a while: the loading veil is shown meanwhile.
+    /// </summary>
+    private Task<Result<bool>> ShowAsync(Func<Task<Result<ContentView>>> create, Action<View> show)
+        => _navigator.RunBusyAsync(async () =>
+        {
+            Result<ContentView> view = await create();
+            if (!view.Success)
+                return Result<bool>.Fail(view.Error);
 
-        show(view.GetValue);
-        return Result<bool>.Ok(true);
-    }
+            show(view.GetValue);
+            return Result<bool>.Ok(true);
+        });
 }
