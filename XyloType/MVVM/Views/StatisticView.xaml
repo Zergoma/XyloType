@@ -2,7 +2,8 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm ="clr-namespace:XyloType.MVVM.ViewModels"
-             xmlns:micro="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui"
+             xmlns:stat="clr-namespace:XyloType.ViewModels.Statistic;assembly=XyloType.ViewModels"
+             xmlns:converters="clr-namespace:XyloType.Converters"
              xmlns:views="clr-namespace:XyloType.MVVM.Views"
              x:DataType="vm:StatisticViewModelMauiAdapter"
              Title="StatisticView"
@@ -11,9 +12,43 @@
              StyleClass="xylotype_page_bg">
 
     <ContentPage.Resources>
+        <converters:StringToColorConverter x:Key="stringToColor"/>
+
         <Style TargetType="Border" Class="kpi_card">
             <Setter Property="Padding" Value="20,16" />
         </Style>
+
+        <!-- folding chevron of a section title -->
+        <Style TargetType="Label" Class="section_chevron">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="WidthRequest" Value="18" />
+        </Style>
+
+        <!-- one row of a horizontal bar chart: key(s), bar, value -->
+        <DataTemplate x:Key="BarRowTemplate" x:DataType="stat:StatBarItem">
+            <Grid ColumnDefinitions="120,*,130" ColumnSpacing="12" MinimumHeightRequest="26">
+                <Label Text="{Binding Label}"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       LineBreakMode="WordWrap"/>
+                <Border Grid.Column="1"
+                        HeightRequest="14"
+                        VerticalOptions="Center"
+                        StrokeShape="RoundRectangle 7"
+                        StrokeThickness="0"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgDescriptionLight}, Dark={StaticResource BorderBgDescriptionDark}}">
+                    <BoxView Color="{Binding ColorHex, Converter={StaticResource stringToColor}}"
+                             AnchorX="0"
+                             ScaleX="{Binding Ratio}"/>
+                </Border>
+                <Label Grid.Column="2"
+                       Text="{Binding ValueText}"
+                       StyleClass="label_muted"
+                       VerticalOptions="Center"/>
+            </Grid>
+        </DataTemplate>
     </ContentPage.Resources>
 
     <!-- the results scroll under the floating header and actions bar -->
@@ -40,19 +75,21 @@
             <!-- top and bottom padding follow the floating bars size (code-behind) -->
             <VerticalStackLayout x:Name="ResultsContent" Padding="30,120,30,100" Spacing="24">
 
-                <!-- everything hidden -->
-                <Border IsVisible="{Binding Core.IsEverythingHidden}"
-                        StyleClass="BorderTypingRounded10, BorderBgTyping"
-                        Padding="24,20">
-                    <Label Text="Les résultats sont masqués. Tu peux les réafficher dans les réglages de l'écran de frappe."
-                           StyleClass="label_muted"
-                           HorizontalTextAlignment="Center"/>
-                </Border>
-
-                <!-- speed -->
-                <VerticalStackLayout IsVisible="{Binding ShowSpeedSection}" Spacing="12">
-
-                    <Label Text="Vitesse" StyleClass="label_section_title"/>
+                <!-- speed: click the title to fold or unfold (remembered) -->
+                <VerticalStackLayout Spacing="12">
+                    <HorizontalStackLayout Spacing="8">
+                        <HorizontalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Core.ToggleSpeedCommand}"/>
+                        </HorizontalStackLayout.GestureRecognizers>
+                        <Label Text="▸" StyleClass="section_chevron">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding Core.ShowSpeed}" Value="True">
+                                    <Setter Property="Text" Value="▾"/>
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                        <Label Text="Vitesse" StyleClass="label_section_title"/>
+                    </HorizontalStackLayout>
 
                     <Grid ColumnDefinitions="*,*,*" ColumnSpacing="16" IsVisible="{Binding Core.ShowSpeed}">
 
@@ -89,83 +126,139 @@
                             </VerticalStackLayout>
                         </Border>
                     </Grid>
+                </VerticalStackLayout>
+
+                <!-- response time per key -->
+                <VerticalStackLayout Spacing="12">
+                    <HorizontalStackLayout Spacing="8">
+                        <HorizontalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Core.ToggleResponseTimeCommand}"/>
+                        </HorizontalStackLayout.GestureRecognizers>
+                        <Label Text="▸" StyleClass="section_chevron">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding Core.ShowResponseTime}" Value="True">
+                                    <Setter Property="Text" Value="▾"/>
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                        <Label Text="Temps de réponse par touche" StyleClass="label_section_title"/>
+                    </HorizontalStackLayout>
 
                     <Border StyleClass="BorderTypingRounded10, BorderBgTyping"
                             Padding="20,16,20,20"
                             IsVisible="{Binding Core.ShowResponseTime}">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Temps de réponse par touche (s)"
-                                   FontSize="16"
-                                   FontAttributes="Bold"/>
-                            <Label Text="Plus c'est bas, mieux c'est"
-                                   StyleClass="label_muted"
-                                   Margin="0,0,0,10"/>
-                            <micro:ChartView Chart="{Binding TimeResponseChart}"
-                                             HeightRequest="200"/>
+                        <VerticalStackLayout Spacing="6">
+                            <Grid ColumnDefinitions="*,auto,auto" ColumnSpacing="10" Margin="0,0,0,10">
+                                <Label Text="Plus c'est court, mieux c'est"
+                                       StyleClass="label_muted"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="1"
+                                       Text="Regrouper les valeurs proches"
+                                       VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="GroupResponseTimes_Tapped"/>
+                                    </Label.GestureRecognizers>
+                                </Label>
+                                <Switch Grid.Column="2"
+                                        IsToggled="{Binding Core.GroupResponseTimes}"
+                                        VerticalOptions="Center"/>
+                            </Grid>
+
+                            <VerticalStackLayout Spacing="6"
+                                                 BindableLayout.ItemsSource="{Binding ResponseTimeBars}"
+                                                 BindableLayout.ItemTemplate="{StaticResource BarRowTemplate}"/>
                         </VerticalStackLayout>
                     </Border>
                 </VerticalStackLayout>
 
                 <!-- errors -->
-                <VerticalStackLayout IsVisible="{Binding Core.ShowErrors}" Spacing="12">
+                <VerticalStackLayout Spacing="12">
+                    <HorizontalStackLayout Spacing="8">
+                        <HorizontalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Core.ToggleErrorsCommand}"/>
+                        </HorizontalStackLayout.GestureRecognizers>
+                        <Label Text="▸" StyleClass="section_chevron">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding Core.ShowErrors}" Value="True">
+                                    <Setter Property="Text" Value="▾"/>
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                        <Label Text="Erreurs" StyleClass="label_section_title"/>
+                    </HorizontalStackLayout>
 
-                    <Label Text="Erreurs" StyleClass="label_section_title"/>
+                    <VerticalStackLayout Spacing="12" IsVisible="{Binding Core.ShowErrors}">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
 
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                            <Border Grid.Column="0" StyleClass="BorderTypingRounded10, BorderBgTyping, kpi_card">
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                                    <Label Text="{Binding AccuracyText}"
+                                           StyleClass="label_stat_value"
+                                           HorizontalOptions="Center"/>
+                                    <Label Text="précision"
+                                           StyleClass="label_muted"
+                                           HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
 
-                        <Border Grid.Column="0" StyleClass="BorderTypingRounded10, BorderBgTyping, kpi_card">
-                            <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
-                                <Label Text="{Binding AccuracyText}"
-                                       StyleClass="label_stat_value"
-                                       HorizontalOptions="Center"/>
-                                <Label Text="précision"
-                                       StyleClass="label_muted"
-                                       HorizontalOptions="Center"/>
-                            </VerticalStackLayout>
-                        </Border>
+                            <Border Grid.Column="1" StyleClass="BorderTypingRounded10, BorderBgTyping, kpi_card">
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                                    <Label Text="{Binding TotalErrorsText}"
+                                           StyleClass="label_stat_value"
+                                           HorizontalOptions="Center"/>
+                                    <Label Text="erreurs"
+                                           StyleClass="label_muted"
+                                           HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
 
-                        <Border Grid.Column="1" StyleClass="BorderTypingRounded10, BorderBgTyping, kpi_card">
-                            <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
-                                <Label Text="{Binding TotalErrorsText}"
-                                       StyleClass="label_stat_value"
-                                       HorizontalOptions="Center"/>
-                                <Label Text="erreurs"
-                                       StyleClass="label_muted"
-                                       HorizontalOptions="Center"/>
-                            </VerticalStackLayout>
-                        </Border>
-                    </Grid>
-
-                    <Border IsVisible="{Binding ShowNoErrorMessage}"
-                            StyleClass="BorderTypingRounded10, BorderBgTyping"
-                            Padding="24,20">
-                        <Label Text="Aucune erreur, bravo !"
-                               StyleClass="label_success"
-                               FontSize="18"
-                               FontAttributes="Bold"
-                               HorizontalTextAlignment="Center"/>
-                    </Border>
-
-                    <Border IsVisible="{Binding ShowErrorsChart}"
-                            StyleClass="BorderTypingRounded10, BorderBgTyping"
-                            Padding="20,16,20,20">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Taux d'erreur par touche"
-                                   FontSize="16"
+                        <Border IsVisible="{Binding ShowNoErrorMessage}"
+                                StyleClass="BorderTypingRounded10, BorderBgTyping"
+                                Padding="24,20">
+                            <Label Text="Aucune erreur, bravo !"
+                                   StyleClass="label_success"
+                                   FontSize="18"
                                    FontAttributes="Bold"
-                                   Margin="0,0,0,10"/>
-                            <micro:ChartView Chart="{Binding ErrorsChart}"
-                                             HeightRequest="350"/>
-                        </VerticalStackLayout>
-                    </Border>
+                                   HorizontalTextAlignment="Center"/>
+                        </Border>
+
+                        <Border IsVisible="{Binding ShowErrorsChart}"
+                                StyleClass="BorderTypingRounded10, BorderBgTyping"
+                                Padding="20,16,20,20">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,auto,auto" ColumnSpacing="10" Margin="0,0,0,10">
+                                    <Label Text="Taux d'erreur par touche (fautes / fois tapée)"
+                                           StyleClass="label_muted"
+                                           VerticalOptions="Center"/>
+                                    <Label Grid.Column="1"
+                                           Text="Regrouper les valeurs proches"
+                                           VerticalOptions="Center">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="GroupErrors_Tapped"/>
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                    <Switch Grid.Column="2"
+                                            IsToggled="{Binding Core.GroupErrors}"
+                                            VerticalOptions="Center"/>
+                                </Grid>
+
+                                <VerticalStackLayout Spacing="6"
+                                                     BindableLayout.ItemsSource="{Binding ErrorBars}"
+                                                     BindableLayout.ItemTemplate="{StaticResource BarRowTemplate}"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
 
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- actions: floating card at the bottom -->
+        <!-- actions: floating card at the bottom, see-through; the buttons stay solid -->
         <Border x:Name="ActionsBar"
                 StyleClass="BorderFloatingBar"
+                BackgroundColor="{AppThemeBinding Light={StaticResource FloatingBarTranslucentBgLight}, Dark={StaticResource FloatingBarTranslucentBgDark}}"
+                Shadow="{x:Null}"
                 VerticalOptions="End"
                 Margin="{x:Static views:StatisticView.BarMargin}"
                 Padding="20,12"

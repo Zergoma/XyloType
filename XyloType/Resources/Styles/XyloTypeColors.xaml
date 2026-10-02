@@ -25,6 +25,10 @@
     <Color x:Key="FloatingBarStrokeDark">#38404F</Color>
     <Color x:Key="FloatingBarStrokeLight">#CDD6E4</Color>
 
+    <!-- actions bar at the bottom of the results: the results show through, the buttons stay solid -->
+    <Color x:Key="FloatingBarTranslucentBgDark">#802A3140</Color>
+    <Color x:Key="FloatingBarTranslucentBgLight">#80E2E8F3</Color>
+
     <!-- Semi-transparent veil over the typing area when focus is lost -->
     <Color x:Key="OverlayBgDark">#B314161B</Color>
     <Color x:Key="OverlayBgLight">#B3FFFFFF</Color>

@@ -12,6 +12,7 @@ public partial class StatisticViewModel : ObservableObject
     private readonly ITypingExerciseRunService _runService;
     private readonly INavigationService _navigationService;
     private readonly IUserDialogService _dialogService;
+    private readonly IUserTypingPreferenceService _typingPreference;
 
     [ObservableProperty]
     public partial Dictionary<char, CharStats> Statistics { get; set; }
@@ -33,10 +34,13 @@ public partial class StatisticViewModel : ObservableObject
         _runService = runService;
         _navigationService = navigationService;
         _dialogService = dialogService;
+        _typingPreference = typingPreference;
 
         ShowSpeed = typingPreference.GetShowSpeedResult();
         ShowResponseTime = typingPreference.GetShowResponseTimeResult();
         ShowErrors = typingPreference.GetShowErrorsResult();
+        GroupResponseTimes = typingPreference.GetGroupResponseTimes();
+        GroupErrors = typingPreference.GetGroupErrors();
     }
 
     public string ExerciseName
@@ -45,14 +49,44 @@ public partial class StatisticViewModel : ObservableObject
     public bool HasExerciseName
         => !string.IsNullOrWhiteSpace(ExerciseName);
 
-    public bool ShowSpeed { get; }
+    #region Sections: each one can be folded (remembered, same settings as on the typing page)
 
-    public bool ShowResponseTime { get; }
+    [ObservableProperty]
+    public partial bool ShowSpeed { get; set; }
 
-    public bool ShowErrors { get; }
+    [ObservableProperty]
+    public partial bool ShowResponseTime { get; set; }
 
-    public bool IsEverythingHidden
-        => !ShowSpeed && !ShowResponseTime && !ShowErrors;
+    [ObservableProperty]
+    public partial bool ShowErrors { get; set; }
+
+    partial void OnShowSpeedChanged(bool value) => _typingPreference.SetShowSpeedResult(value);
+    partial void OnShowResponseTimeChanged(bool value) => _typingPreference.SetShowResponseTimeResult(value);
+    partial void OnShowErrorsChanged(bool value) => _typingPreference.SetShowErrorsResult(value);
+
+    [RelayCommand]
+    public void ToggleSpeed() => ShowSpeed = !ShowSpeed;
+
+    [RelayCommand]
+    public void ToggleResponseTime() => ShowResponseTime = !ShowResponseTime;
+
+    [RelayCommand]
+    public void ToggleErrors() => ShowErrors = !ShowErrors;
+
+    #endregion
+
+    #region Grouping of the keys with close values (remembered)
+
+    [ObservableProperty]
+    public partial bool GroupResponseTimes { get; set; }
+
+    [ObservableProperty]
+    public partial bool GroupErrors { get; set; }
+
+    partial void OnGroupResponseTimesChanged(bool value) => _typingPreference.SetGroupResponseTimes(value);
+    partial void OnGroupErrorsChanged(bool value) => _typingPreference.SetGroupErrors(value);
+
+    #endregion
 
     public bool HasNext
         => _runService.HasNext;

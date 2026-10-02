@@ -24,6 +24,8 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
     private const string ShowLiveSpeedKey = "display_live_speed";
     private const string ShowScoreProgressKey = "display_score_progress";
     private const string ShowScoreChangeMarkerKey = "display_score_change_marker";
+    private const string GroupResponseTimesKey = "result_group_response_times";
+    private const string GroupErrorsKey = "result_group_errors";
 
     private const double DefaultOkVolume = .3;
     private const double DefaultErrorVolume = .4;
@@ -86,6 +88,18 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
 
     public void SetShowErrorsResult(bool show)
         => Preferences.Default.Set(ShowErrorsResultKey, show);
+
+    public bool GetGroupResponseTimes()
+        => Preferences.Default.Get(GroupResponseTimesKey, false);
+
+    public void SetGroupResponseTimes(bool group)
+        => Preferences.Default.Set(GroupResponseTimesKey, group);
+
+    public bool GetGroupErrors()
+        => Preferences.Default.Get(GroupErrorsKey, false);
+
+    public void SetGroupErrors(bool group)
+        => Preferences.Default.Set(GroupErrorsKey, group);
 
     public OkSoundMode GetOkSoundMode()
     {

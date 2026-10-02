@@ -38,6 +38,18 @@ public interface IUserTypingPreferenceService
     bool GetShowErrorsResult();
     void SetShowErrorsResult(bool show);
 
+    /// <summary>
+    /// Results: keys with close response times shown on a single row.
+    /// </summary>
+    bool GetGroupResponseTimes();
+    void SetGroupResponseTimes(bool group);
+
+    /// <summary>
+    /// Results: keys with close error rates shown on a single row.
+    /// </summary>
+    bool GetGroupErrors();
+    void SetGroupErrors(bool group);
+
     OkSoundMode GetOkSoundMode();
     void SetOkSoundMode(OkSoundMode mode);
 
