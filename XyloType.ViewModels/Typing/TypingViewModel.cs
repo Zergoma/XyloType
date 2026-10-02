@@ -91,13 +91,7 @@ public partial class TypingViewModel : ObservableObject
         foreach (Score score in scoreCatalog.GetAll())
             ScoreOptions.Add(new ScoreOptionViewModel(score, !disabled.Contains(score.Id), OnScoreEnabledChanged));
 
-        // settings: one folded group per kind of music, in display order
-        foreach (string category in ScoreCategories.DisplayOrder)
-        {
-            ScoreOptionViewModel[] pieces = [.. ScoreOptions.Where(o => o.Score.Category == category)];
-            if (pieces.Length > 0)
-                ScoreCategoryGroups.Add(new ScoreCategoryViewModel(category, pieces));
-        }
+        RebuildScoreGroups();
 
         Session.BackReturnEnable = typingPreference.GetBackReturnEnable();
         Session.StopOnError = typingPreference.GetStopOnError();
@@ -140,8 +134,9 @@ public partial class TypingViewModel : ObservableObject
 
     public IReadOnlyList<PickerOption<OkSoundMode>> OkSoundModeOptions { get; } =
     [
-        new("Notes standard", OkSoundMode.Standard),
-        new("Partition", OkSoundMode.Score),
+        new("Notes", OkSoundMode.Standard),
+        new("Instrumental", OkSoundMode.Instrumental),
+        new("Chanson", OkSoundMode.Song),
     ];
 
     public PickerOption<OkSoundMode> OkSoundModeSelected
@@ -155,7 +150,8 @@ public partial class TypingViewModel : ObservableObject
             _okSoundMode = value.Value;
             _typingPreference.SetOkSoundMode(_okSoundMode);
 
-            if (_okSoundMode == OkSoundMode.Score)
+            RebuildScoreGroups();
+            if (IsScoreMode)
                 PickScore();
             else
                 _melody = null;
@@ -166,7 +162,16 @@ public partial class TypingViewModel : ObservableObject
         }
     }
 
-    public bool IsScoreMode => _okSoundMode == OkSoundMode.Score;
+    public bool IsScoreMode => _okSoundMode is OkSoundMode.Instrumental or OkSoundMode.Song;
+
+    /// <summary>
+    /// Pieces of the current mode: songs, or instrumental pieces.
+    /// </summary>
+    private bool IsOfMode(Score score)
+        => score.IsSong == (_okSoundMode == OkSoundMode.Song);
+
+    private bool IsPlayable(ScoreOptionViewModel option)
+        => option.IsEnabled && IsOfMode(option.Score);
 
     // every playable instrument, in display order
     private static readonly (InstrumentChoice Value, string Label, string Folder, string Prefix)[] s_instruments =
@@ -382,6 +387,14 @@ public partial class TypingViewModel : ObservableObject
     public string CurrentScoreTitle => _melody?.Score.Title ?? string.Empty;
     public string CurrentScoreComposer => _melody?.Score.Composer ?? string.Empty;
 
+    /// <summary>
+    /// Tooltip of the piece: song or instrumental, and its composer.
+    /// </summary>
+    public string CurrentScoreDetails
+        => _melody is null ? string.Empty : $"{(_melody.Score.IsSong ? "Chanson" : "Instrumental")} · {_melody.Score.Composer}";
+
+    public bool IsCurrentScoreSong => _melody?.Score.IsSong ?? false;
+
     public IReadOnlyList<PickerOption<ScoreEndBehavior>> ScoreEndOptions { get; } =
     [
         new("Recommencer le morceau", ScoreEndBehavior.Loop),
@@ -412,6 +425,23 @@ public partial class TypingViewModel : ObservableObject
     /// </summary>
     public ObservableCollection<ScoreCategoryViewModel> ScoreCategoryGroups { get; } = [];
 
+    /// <summary>
+    /// Settings: one folded group per kind of music, in display order, with the pieces of the current mode only.
+    /// </summary>
+    private void RebuildScoreGroups()
+    {
+        foreach (ScoreCategoryViewModel group in ScoreCategoryGroups)
+            group.Detach();
+        ScoreCategoryGroups.Clear();
+
+        foreach (string category in ScoreCategories.DisplayOrder)
+        {
+            ScoreOptionViewModel[] pieces = [.. ScoreOptions.Where(o => o.Score.Category == category && IsOfMode(o.Score))];
+            if (pieces.Length > 0)
+                ScoreCategoryGroups.Add(new ScoreCategoryViewModel(category, pieces));
+        }
+    }
+
     public string CurrentScoreText
         => _melody is null
             ? "Aucun morceau activé : notes standard"
@@ -435,7 +465,7 @@ public partial class TypingViewModel : ObservableObject
 
     private Score? RandomScore()
     {
-        ScoreOptionViewModel[] enabled = [.. ScoreOptions.Where(o => o.IsEnabled)];
+        ScoreOptionViewModel[] enabled = [.. ScoreOptions.Where(IsPlayable)];
         if (enabled.Length > 1 && _melody is not null)
             enabled = [.. enabled.Where(o => o.Score.Id != _melody.Score.Id)];
 
@@ -455,7 +485,7 @@ public partial class TypingViewModel : ObservableObject
         return Enumerable
             .Range(1, count)
             .Select(step => ScoreOptions[(current + step + count) % count])
-            .FirstOrDefault(o => o.IsEnabled)
+            .FirstOrDefault(IsPlayable)
             ?.Score;
     }
 
@@ -503,7 +533,7 @@ public partial class TypingViewModel : ObservableObject
     public bool HasPreviousScore => _scoreHistory.Any(IsScoreEnabled);
 
     private bool IsScoreEnabled(Score score)
-        => ScoreOptions.Any(o => o.Score.Id == score.Id && o.IsEnabled);
+        => ScoreOptions.Any(o => o.Score.Id == score.Id && IsPlayable(o));
 
     /// <summary>
     /// Goes back to the piece played before (from its beginning).
@@ -540,11 +570,15 @@ public partial class TypingViewModel : ObservableObject
 
     private void OnScoreChanged()
     {
+        UpdateScoreChangeMarker();
+        OnPropertyChanged(nameof(ScoreProgress));
         OnPropertyChanged(nameof(IsScoreMode));
         OnPropertyChanged(nameof(CurrentScoreText));
         OnPropertyChanged(nameof(HasCurrentScore));
         OnPropertyChanged(nameof(CurrentScoreTitle));
         OnPropertyChanged(nameof(CurrentScoreComposer));
+        OnPropertyChanged(nameof(CurrentScoreDetails));
+        OnPropertyChanged(nameof(IsCurrentScoreSong));
     }
 
     private string NextOkSoundFile()
@@ -594,6 +628,9 @@ public partial class TypingViewModel : ObservableObject
         if (hitKeyStatus == HitKeyStatus.Success)
         {
             _soundSamplePlayer.PlaySound(NextOkSoundFile(), OkVolume);
+            OnPropertyChanged(nameof(ScoreProgress));
+            _speedMeter.Record(Session.Duration);
+            RefreshLiveSpeed();
         }
         else
         {
@@ -746,7 +783,7 @@ public partial class TypingViewModel : ObservableObject
         // "Au hasard": a new instrument for each exercise
         PickInstrument();
 
-        if (_okSoundMode == OkSoundMode.Score)
+        if (IsScoreMode)
             PickScore();
 
         await PreloadOkSoundsAsync();
@@ -786,9 +823,12 @@ public partial class TypingViewModel : ObservableObject
             LinesStates.Add(typingLineState);
         }
 
+        _speedMeter.Reset();
+        OnPropertyChanged(nameof(TypingProgress));
         Session.ResetProgression();
         UpdateVisibleLines(Session.CurrentLineIndex);
         SettleVisibleLines(Session.CurrentLineIndex);
+        UpdateScoreChangeMarker();
 
         return Result<bool>.Ok(true);
     }
@@ -884,7 +924,24 @@ public partial class TypingViewModel : ObservableObject
             : -1;
 
     public TypingStatus ProcessInput(char input)
-        => Session.ProcessInput(input, _charMapper.Map);
+    {
+        TypingStatus status = Session.ProcessInput(input, _charMapper.Map);
+        OnPropertyChanged(nameof(TypingProgress));
+        UpdateScoreChangeMarker();
+        return status;
+    }
+
+    /// <summary>
+    /// Back to the start of the text (F5).
+    /// </summary>
+    public void ResetProgression()
+    {
+        Session.ResetProgression();
+        _speedMeter.Reset();
+        OnPropertyChanged(nameof(TypingProgress));
+        UpdateScoreChangeMarker();
+        RefreshLiveSpeed();
+    }
 
     public void PauseTyping()
         => Session.Pause();
@@ -895,4 +952,179 @@ public partial class TypingViewModel : ObservableObject
 
     public TypingSessionResult GetResult()
         => Session.GetResult();
+
+    #region Progress and live speed
+
+    private readonly TypingSpeedMeter _speedMeter = new(TimeSpan.FromSeconds(10));
+
+    /// <summary>
+    /// Part of the text already typed, from 0 to 1.
+    /// </summary>
+    public double TypingProgress => Session.Progress;
+
+    /// <summary>
+    /// Part of the piece of music played, from 0 to 1.
+    /// </summary>
+    public double ScoreProgress => _melody?.Progress ?? 0;
+
+    [ObservableProperty]
+    public partial string LiveSpeedText { get; set; } = NoSpeedText;
+
+    private const string NoSpeedText = "— mots/min";
+
+    /// <summary>
+    /// Words per minute over the last 10 seconds. Called after each key and regularly by the view,
+    /// so the speed falls when the typing stops.
+    /// </summary>
+    public void RefreshLiveSpeed()
+    {
+        double? wordsPerMinute = _speedMeter.WordsPerMinute(Session.Duration);
+        LiveSpeedText = wordsPerMinute is double speed ? $"{speed:0} mots/min" : NoSpeedText;
+    }
+
+    public bool ShowTypingProgress
+    {
+        get => _typingPreference.GetShowTypingProgress();
+        set
+        {
+            if (ShowTypingProgress == value)
+                return;
+
+            _typingPreference.SetShowTypingProgress(value);
+            OnPropertyChanged(nameof(ShowTypingProgress));
+        }
+    }
+
+    public bool ShowLiveSpeed
+    {
+        get => _typingPreference.GetShowLiveSpeed();
+        set
+        {
+            if (ShowLiveSpeed == value)
+                return;
+
+            _typingPreference.SetShowLiveSpeed(value);
+            OnPropertyChanged(nameof(ShowLiveSpeed));
+        }
+    }
+
+    public bool ShowScoreProgress
+    {
+        get => _typingPreference.GetShowScoreProgress();
+        set
+        {
+            if (ShowScoreProgress == value)
+                return;
+
+            _typingPreference.SetShowScoreProgress(value);
+            OnPropertyChanged(nameof(ShowScoreProgress));
+        }
+    }
+
+    [RelayCommand]
+    public void SwitchShowTypingProgress()
+        => ShowTypingProgress = !ShowTypingProgress;
+
+    [RelayCommand]
+    public void SwitchShowLiveSpeed()
+        => ShowLiveSpeed = !ShowLiveSpeed;
+
+    [RelayCommand]
+    public void SwitchShowScoreProgress()
+        => ShowScoreProgress = !ShowScoreProgress;
+
+    public bool ShowScoreChangeMarker
+    {
+        get => _typingPreference.GetShowScoreChangeMarker();
+        set
+        {
+            if (ShowScoreChangeMarker == value)
+                return;
+
+            _typingPreference.SetShowScoreChangeMarker(value);
+            OnPropertyChanged(nameof(ShowScoreChangeMarker));
+            UpdateScoreChangeMarker();
+        }
+    }
+
+    [RelayCommand]
+    public void SwitchShowScoreChangeMarker()
+        => ShowScoreChangeMarker = !ShowScoreChangeMarker;
+
+    private TypingCharStateViewModel? _scoreChangeLetter;
+
+    /// <summary>
+    /// Marks the letter where the piece of music changes (or starts again), when every key is right:
+    /// as many letters ahead as notes left in the melody.
+    /// </summary>
+    private void UpdateScoreChangeMarker()
+    {
+        TypingCharStateViewModel? letter = null;
+
+        if (ShowScoreChangeMarker && _melody is not null && LinesStates.Count > 0)
+        {
+            int line = Session.CurrentLineIndex;
+            int column = Session.CurrentCharacterIndex + _melody.RemainingNotes;
+
+            while (line < LinesStates.Count && column >= LinesStates[line].Characters.Count)
+            {
+                column -= LinesStates[line].Characters.Count;
+                line++;
+            }
+
+            if (line < LinesStates.Count)
+                letter = LinesStates[line].Characters[column];
+        }
+
+        if (letter == _scoreChangeLetter)
+            return;
+
+        _scoreChangeLetter?.IsScoreChange = false;
+        _scoreChangeLetter = letter;
+        _scoreChangeLetter?.IsScoreChange = true;
+    }
+
+    #endregion
+
+    #region Settings sections
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsTypingSection))]
+    [NotifyPropertyChangedFor(nameof(IsDisplaySection))]
+    [NotifyPropertyChangedFor(nameof(IsSoundSection))]
+    [NotifyPropertyChangedFor(nameof(SettingsSectionOption))]
+    public partial SettingsSection SettingsSectionSelected { get; set; } = SettingsSection.Typing;
+
+    public bool IsTypingSection => SettingsSectionSelected == SettingsSection.Typing;
+    public bool IsDisplaySection => SettingsSectionSelected == SettingsSection.Display;
+    public bool IsSoundSection => SettingsSectionSelected == SettingsSection.Sound;
+
+    public IReadOnlyList<PickerOption<SettingsSection>> SettingsSectionOptions { get; } =
+    [
+        new("Frappe", SettingsSection.Typing),
+        new("Affichage", SettingsSection.Display),
+        new("Sons et musique", SettingsSection.Sound),
+    ];
+
+    public PickerOption<SettingsSection> SettingsSectionOption
+    {
+        get => SettingsSectionOptions.First(o => o.Value == SettingsSectionSelected);
+        set
+        {
+            if (value is not null)
+                SettingsSectionSelected = value.Value;
+        }
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// The settings are shown one section at a time.
+/// </summary>
+public enum SettingsSection
+{
+    Typing,
+    Display,
+    Sound
 }

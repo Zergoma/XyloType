@@ -36,11 +36,28 @@ public class Melody
     /// </summary>
     public bool IsAtStart => _next == 0;
 
+    private int _played;
+
+    /// <summary>
+    /// Part of the melody played in the current pass, from 0 to 1 (full right after the last note).
+    /// </summary>
+    public double Progress => _notes.Length == 0 ? 0 : (double)_played / _notes.Length;
+
+    /// <summary>
+    /// Notes left before the end of the current pass (0: the next note starts the melody again).
+    /// </summary>
+    public int RemainingNotes => _notes.Length - _played;
+
     /// <summary>
     /// The next note of the melody, looping at the end.
     /// </summary>
     public int NextNote()
     {
+        // a new pass begins after the last note
+        if (_played == _notes.Length)
+            _played = 0;
+        _played++;
+
         int note = _notes[_next];
         _next = (_next + 1) % _notes.Length;
         return note;

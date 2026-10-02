@@ -211,6 +211,35 @@ public partial class WordsExplorerViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsSearching { get; set; }
 
+    /// <summary>
+    /// A new list is being loaded (not the next page while scrolling): shown over the results
+    /// only when it takes a while, so quick searches do not flash.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsLoading { get; set; }
+
+    private static readonly TimeSpan s_loadingDelay = TimeSpan.FromMilliseconds(200);
+    private int _loadingVersion;
+
+    private void BeginLoading()
+    {
+        int version = ++_loadingVersion;
+        _ = ShowLoadingLaterAsync(version);
+    }
+
+    private async Task ShowLoadingLaterAsync(int version)
+    {
+        await Task.Delay(s_loadingDelay);
+        if (version == _loadingVersion)
+            IsLoading = true;
+    }
+
+    private void EndLoading()
+    {
+        _loadingVersion++;
+        IsLoading = false;
+    }
+
     [ObservableProperty]
     public partial string ErrorText { get; set; } = string.Empty;
 
@@ -231,8 +260,16 @@ public partial class WordsExplorerViewModel : ObservableObject
                 _layout = layoutResult.GetValue;
         }
 
-        await RefreshDatabaseTextAsync();
-        await SearchAsync();
+        BeginLoading();
+        try
+        {
+            await RefreshDatabaseTextAsync();
+            await SearchAsync();
+        }
+        finally
+        {
+            EndLoading();
+        }
     }
 
     private void ScheduleSearch()
@@ -258,6 +295,7 @@ public partial class WordsExplorerViewModel : ObservableObject
         _currentSort = Sort;
 
         IsSearching = true;
+        BeginLoading();
         ErrorText = string.Empty;
         try
         {
@@ -277,6 +315,7 @@ public partial class WordsExplorerViewModel : ObservableObject
         finally
         {
             IsSearching = false;
+            EndLoading();
         }
     }
 

@@ -8,7 +8,13 @@
 /// <param name="Composer">Its composer, or its origin for a traditional song</param>
 /// <param name="Notes">The melody, one note per correct key</param>
 /// <param name="Category">Kind of music (classical, traditional, Christmas...)</param>
-public record Score(string Id, string Title, string Composer, IReadOnlyList<int> Notes, string Category = ScoreCategories.Classical);
+public record Score(string Id, string Title, string Composer, IReadOnlyList<int> Notes, string Category = ScoreCategories.Classical)
+{
+    /// <summary>
+    /// A song, with lyrics (otherwise an instrumental piece).
+    /// </summary>
+    public bool IsSong { get; init; }
+}
 
 /// <summary>
 /// Kinds of music of the catalog, in display order.

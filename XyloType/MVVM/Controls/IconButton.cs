@@ -20,6 +20,12 @@ public class IconButton : ContentView
         nameof(IsActive), typeof(bool), typeof(IconButton), false,
         propertyChanged: (bindable, _, _) => ((IconButton)bindable).ApplyBackground());
 
+    public static readonly BindableProperty CommandProperty = BindableProperty.Create(
+        nameof(Command), typeof(System.Windows.Input.ICommand), typeof(IconButton));
+
+    public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(
+        nameof(CommandParameter), typeof(object), typeof(IconButton));
+
     public event EventHandler? Clicked;
 
     private const double Size = 32;
@@ -52,8 +58,12 @@ public class IconButton : ContentView
         TapGestureRecognizer tap = new();
         tap.Tapped += (_, _) =>
         {
-            if (IsEnabled)
-                Clicked?.Invoke(this, EventArgs.Empty);
+            if (!IsEnabled)
+                return;
+
+            Clicked?.Invoke(this, EventArgs.Empty);
+            if (Command?.CanExecute(CommandParameter) == true)
+                Command.Execute(CommandParameter);
         };
         _circle.GestureRecognizers.Add(tap);
 
@@ -78,6 +88,18 @@ public class IconButton : ContentView
     {
         get => (bool)GetValue(IsActiveProperty);
         set => SetValue(IsActiveProperty, value);
+    }
+
+    public System.Windows.Input.ICommand? Command
+    {
+        get => (System.Windows.Input.ICommand?)GetValue(CommandProperty);
+        set => SetValue(CommandProperty, value);
+    }
+
+    public object? CommandParameter
+    {
+        get => GetValue(CommandParameterProperty);
+        set => SetValue(CommandParameterProperty, value);
     }
 
     protected override void OnPropertyChanged(string? propertyName = null)

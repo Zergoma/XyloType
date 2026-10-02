@@ -32,7 +32,6 @@
                CursorPosition="0"
                TextChanged="OnTextChanged"/>
 
-
         <Border Grid.Row="1"
                 Margin="20"
                 StyleClass="BorderTypingRounded10, BorderBgTyping"
@@ -42,13 +41,15 @@
                 <TapGestureRecognizer Tapped="TypingArea_Tapped"/>
             </Border.GestureRecognizers>
 
+            <Grid>
             <!-- ScrollView + BindableLayout instead of CollectionView:
                  CollectionView recycles its containers on Windows, which detaches
                  FlexLayouts while they are still being arranged and crashes on resize. -->
             <ScrollView x:Name="TypingScrollView"
                         HeightRequest="350"
                         VerticalOptions="Fill"
-                        VerticalScrollBarVisibility="Always">
+                        VerticalScrollBarVisibility="Always"
+                        Scrolled="TypingScrollView_Scrolled">
 
                 <VerticalStackLayout x:Name="TypingLinesLayout"
                                      BindableLayout.ItemsSource="{Binding VisibleLines}">
@@ -87,6 +88,16 @@
                                                          WidthRequest="20"
                                                          BackgroundColor="{Binding BorderColor, Converter={StaticResource stringToColor}}" />
 
+                                                <!-- the piece of music changes on this letter -->
+                                                <Label IsVisible="{Binding IsScoreChange}"
+                                                       Text="♪"
+                                                       FontSize="12"
+                                                       Opacity="0.75"
+                                                       TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                                       HorizontalOptions="Start"
+                                                       VerticalOptions="Start"
+                                                       InputTransparent="True"/>
+
                                             </Grid>
                                         </Border>
 
@@ -98,6 +109,35 @@
 
                 </VerticalStackLayout>
             </ScrollView>
+
+            <!-- follows the letter being typed, just under it, where the eyes are:
+                 live speed above a small progress bar of the text (placed by the code behind) -->
+            <VerticalStackLayout x:Name="CaretInfo"
+                                 WidthRequest="90"
+                                 HorizontalOptions="Start"
+                                 VerticalOptions="Start"
+                                 InputTransparent="True"
+                                 Spacing="2"
+                                 Opacity="0">
+                <Label IsVisible="{Binding ShowLiveSpeed}"
+                       Text="{Binding LiveSpeedText}"
+                       StyleClass="label_muted"
+                       FontSize="10"
+                       HorizontalOptions="Center"/>
+                <Border IsVisible="{Binding ShowTypingProgress}"
+                        WidthRequest="44"
+                        HeightRequest="3"
+                        HorizontalOptions="Center"
+                        StrokeShape="RoundRectangle 1.5"
+                        StrokeThickness="0"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}">
+                    <BoxView Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                             Opacity="0.6"
+                             AnchorX="0"
+                             ScaleX="{Binding TypingProgress}"/>
+                </Border>
+            </VerticalStackLayout>
+            </Grid>
         </Border>
 
         <!-- shown over the typing area when the keyboard focus is lost -->
@@ -147,17 +187,33 @@
                                  VerticalOptions="Center"
                                  Clicked="PreviousScore_Clicked"/>
 
-            <VerticalStackLayout Grid.Column="2" IsVisible="{Binding HasCurrentScore}" Spacing="0" VerticalOptions="Center" Margin="4,0">
-                <Label Text="{Binding CurrentScoreTitle, StringFormat='♪ {0}'}"
-                       FontAttributes="Italic"
-                       HorizontalOptions="End"
-                       HorizontalTextAlignment="End"/>
-                <Label Text="{Binding CurrentScoreComposer}"
-                       StyleClass="label_muted"
-                       FontSize="12"
-                       HorizontalOptions="End"
-                       HorizontalTextAlignment="End"/>
-            </VerticalStackLayout>
+            <!-- piece title inside a discreet bar showing where the melody is (composer in the tooltip) -->
+            <Border Grid.Column="2"
+                    IsVisible="{Binding HasCurrentScore}"
+                    WidthRequest="280"
+                    HeightRequest="30"
+                    VerticalOptions="Center"
+                    Margin="4,0"
+                    StrokeShape="RoundRectangle 15"
+                    StrokeThickness="1"
+                    Stroke="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgTypingLight}, Dark={StaticResource BorderBgTypingDark}}"
+                    ToolTipProperties.Text="{Binding CurrentScoreDetails}">
+                <Grid>
+                    <BoxView IsVisible="{Binding ShowScoreProgress}"
+                             Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                             Opacity="0.22"
+                             AnchorX="0"
+                             ScaleX="{Binding ScoreProgress}"/>
+                    <Label Text="{Binding CurrentScoreTitle, StringFormat='♪ {0}'}"
+                           FontAttributes="Italic"
+                           FontSize="13"
+                           LineBreakMode="TailTruncation"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           Margin="12,0"/>
+                </Grid>
+            </Border>
 
             <controls:IconButton Grid.Column="3"
                                  IsVisible="{Binding HasCurrentScore}"
@@ -191,8 +247,8 @@
             <Label Grid.Row="1" Grid.Column="2"
                    Text="{Binding CurrentInstrumentLabel, StringFormat='🎵 {0}'}"
                    StyleClass="label_muted"
-                   HorizontalOptions="End"
-                   HorizontalTextAlignment="End"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
                    VerticalOptions="Center"
                    Margin="4,0"/>
 
@@ -243,9 +299,13 @@
                 <toolkit:Expander.Content>
                     <VerticalStackLayout Spacing="14" Padding="0,12,0,0">
 
+                        <!-- one section at a time: typing, display, sound and music -->
+                        <controls:SegmentedControl ItemsSource="{Binding SettingsSectionOptions}"
+                                                   SelectedItem="{Binding SettingsSectionOption}"/>
+
                         <!-- typing -->
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="SAISIE" StyleClass="label_field" FontAttributes="Bold"/>
+                        <VerticalStackLayout Spacing="6" IsVisible="{Binding IsTypingSection}">
+                            <Label Text="CORRECTIONS ET ERREURS" StyleClass="label_field" FontAttributes="Bold"/>
 
                             <Grid RowDefinitions="auto,auto" ColumnDefinitions="auto,*" ColumnSpacing="10" RowSpacing="4">
                                 <Switch Grid.Row="0" Grid.Column="0"
@@ -272,12 +332,57 @@
                             </Grid>
                         </VerticalStackLayout>
 
-                        <BoxView HeightRequest="1"
-                                 Color="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"/>
+                        <!-- display: during the exercise, then on the results page -->
+                        <VerticalStackLayout Spacing="6" IsVisible="{Binding IsDisplaySection}">
+                            <Label Text="PENDANT L'EXERCICE" StyleClass="label_field" FontAttributes="Bold"/>
 
-                        <!-- results display -->
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="RÉSULTATS" StyleClass="label_field" FontAttributes="Bold"/>
+                            <Grid RowDefinitions="auto,auto,auto,auto" ColumnDefinitions="auto,*" ColumnSpacing="10" RowSpacing="4" Margin="0,0,0,10">
+                                <Switch Grid.Row="0" Grid.Column="0"
+                                        VerticalOptions="Center"
+                                        IsToggled="{Binding ShowTypingProgress}"/>
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       VerticalOptions="Center"
+                                       Text="Barre de progression au-dessus du texte">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SwitchShowTypingProgressCommand}" Tapped="Page_Tapped"/>
+                                    </Label.GestureRecognizers>
+                                </Label>
+
+                                <Switch Grid.Row="1" Grid.Column="0"
+                                        VerticalOptions="Center"
+                                        IsToggled="{Binding ShowLiveSpeed}"/>
+                                <Label Grid.Row="1" Grid.Column="1"
+                                       VerticalOptions="Center"
+                                       Text="Vitesse de frappe en direct (10 dernières secondes)">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SwitchShowLiveSpeedCommand}" Tapped="Page_Tapped"/>
+                                    </Label.GestureRecognizers>
+                                </Label>
+
+                                <Switch Grid.Row="2" Grid.Column="0"
+                                        VerticalOptions="Center"
+                                        IsToggled="{Binding ShowScoreProgress}"/>
+                                <Label Grid.Row="2" Grid.Column="1"
+                                       VerticalOptions="Center"
+                                       Text="Avancement du morceau derrière son titre">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SwitchShowScoreProgressCommand}" Tapped="Page_Tapped"/>
+                                    </Label.GestureRecognizers>
+                                </Label>
+
+                                <Switch Grid.Row="3" Grid.Column="0"
+                                        VerticalOptions="Center"
+                                        IsToggled="{Binding ShowScoreChangeMarker}"/>
+                                <Label Grid.Row="3" Grid.Column="1"
+                                       VerticalOptions="Center"
+                                       Text="Repère ♪ dans le texte là où le morceau change">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SwitchShowScoreChangeMarkerCommand}" Tapped="Page_Tapped"/>
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Grid>
+
+                            <Label Text="À LA FIN DE L'EXERCICE" StyleClass="label_field" FontAttributes="Bold"/>
 
                             <Grid RowDefinitions="auto,auto,auto" ColumnDefinitions="auto,*" ColumnSpacing="10" RowSpacing="4">
                                 <Switch Grid.Row="0" Grid.Column="0"
@@ -315,12 +420,9 @@
                             </Grid>
                         </VerticalStackLayout>
 
-                        <BoxView HeightRequest="1"
-                                 Color="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"/>
-
                         <!-- sound volumes -->
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="SONS" StyleClass="label_field" FontAttributes="Bold"/>
+                        <VerticalStackLayout Spacing="6" IsVisible="{Binding IsSoundSection}">
+                            <Label Text="VOLUME" StyleClass="label_field" FontAttributes="Bold"/>
 
                             <Grid RowDefinitions="auto,auto" ColumnDefinitions="auto,*,auto,auto" ColumnSpacing="10" RowSpacing="8">
                                 <Label Grid.Row="0" Grid.Column="0"
@@ -373,16 +475,11 @@
                             </Grid>
 
                             <!-- instrument of the correct key notes (standard or piece of music) -->
-                            <Grid ColumnDefinitions="auto,*" ColumnSpacing="10" Margin="0,6,0,0">
-                                <Label Text="Instrument"
-                                       VerticalOptions="Center"/>
-                                <Picker Grid.Column="1"
-                                        ItemsSource="{Binding InstrumentOptions}"
-                                        SelectedItem="{Binding InstrumentSelected}"
-                                        StyleClass="picker_themed"
-                                        HorizontalOptions="Start"
-                                        MinimumWidthRequest="180"/>
-                            </Grid>
+                            <VerticalStackLayout Spacing="6" Margin="0,10,0,0">
+                                <Label Text="INSTRUMENT" StyleClass="label_field" FontAttributes="Bold"/>
+                                <controls:SegmentedControl ItemsSource="{Binding InstrumentOptions}"
+                                                           SelectedItem="{Binding InstrumentSelected}"/>
+                            </VerticalStackLayout>
                             <!-- random instrument: which ones can be picked -->
                             <VerticalStackLayout IsVisible="{Binding IsRandomInstrument}" Spacing="2">
                                 <Label Text="Instruments tirés au hasard"
@@ -403,16 +500,11 @@
                             </VerticalStackLayout>
 
                             <!-- correct key sound: standard notes or a piece of music -->
-                            <Grid ColumnDefinitions="auto,*" ColumnSpacing="10" Margin="0,6,0,0">
-                                <Label Text="Bonnes frappes"
-                                       VerticalOptions="Center"/>
-                                <Picker Grid.Column="1"
-                                        ItemsSource="{Binding OkSoundModeOptions}"
-                                        SelectedItem="{Binding OkSoundModeSelected}"
-                                        StyleClass="picker_themed"
-                                        HorizontalOptions="Start"
-                                        MinimumWidthRequest="180"/>
-                            </Grid>
+                            <VerticalStackLayout Spacing="6" Margin="0,10,0,0">
+                                <Label Text="BONNES FRAPPES" StyleClass="label_field" FontAttributes="Bold"/>
+                                <controls:SegmentedControl ItemsSource="{Binding OkSoundModeOptions}"
+                                                           SelectedItem="{Binding OkSoundModeSelected}"/>
+                            </VerticalStackLayout>
 
                             <VerticalStackLayout Spacing="6" IsVisible="{Binding IsScoreMode}">
                                 <Label Text="{Binding CurrentScoreText}"

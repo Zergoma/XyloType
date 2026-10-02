@@ -37,11 +37,11 @@
     </Style>
 
     <Style TargetType="Label" Class="label_on_tile">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextOnTileLight}, Dark={StaticResource TextOnTileDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextTitleLight}, Dark={StaticResource TextTitleDark}}" />
     </Style>
 
     <Style TargetType="Label" Class="label_on_tile_secondary">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextOnTileSecondaryLight}, Dark={StaticResource TextOnTileSecondaryDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}" />
     </Style>
 
     <Style TargetType="Label" Class="label_muted">

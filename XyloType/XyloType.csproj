@@ -119,10 +119,4 @@
 	  <ProjectReference Include="..\XyloType.ViewModels\XyloType.ViewModels.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <MauiFont Update="Resources\Fonts\icones_themes.ttf">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </MauiFont>
-	</ItemGroup>
-
 </Project>

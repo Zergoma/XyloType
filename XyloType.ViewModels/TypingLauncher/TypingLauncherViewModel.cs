@@ -26,7 +26,6 @@ public partial class TypingLauncherViewModel : ObservableObject
     private readonly ITypingExerciseRunService _runService;
     private readonly IUserDialogService _dialogService;
     private readonly IThemeChangerService _themeChangerService;
-    private readonly IThemeIconeCodeProvider _themeIconeProvider;
     private TypingExercices? _loadedExercises;
     private Guid? _lastSeenRunExerciseId;
     private ILogger<TypingLauncherViewModel> _logger;
@@ -37,7 +36,6 @@ public partial class TypingLauncherViewModel : ObservableObject
     public ObservableCollection<ExerciceItemViewModel> AllExercice { get; set; } = [];
     private readonly List<KeyBoardLayoutDto> _keyboardLayoutAvailableElem;
 
-    ThemeStateConfiguration _themeSwitch = ThemeStateConfiguration.Dark;
 
     public TypingLauncherViewModel(
         ITypingExercicesStorage typingExerciceStorage,
@@ -46,7 +44,6 @@ public partial class TypingLauncherViewModel : ObservableObject
         IUserDialogService dialogService,
         IKeyBoardLayoutAvailableService keyboardLayoutAvailableService,
         IThemeChangerService themeChangerService,
-        IThemeIconeCodeProvider themeIconeProvider,
         ILogger<TypingLauncherViewModel> logger,
         ITypingExerciseWordNumberService typingExerciceWordNumberService,
         ITypingExerciseLineNumberService typingExerciceLineNumberService)
@@ -58,7 +55,6 @@ public partial class TypingLauncherViewModel : ObservableObject
         _keyboardLayoutAvailableElem = keyboardLayoutAvailableService.GetKeyBoardAvailable();
 
         _themeChangerService = themeChangerService;
-        _themeIconeProvider = themeIconeProvider;
         _logger = logger;
         _typingExerciceWordNumberService = typingExerciceWordNumberService;
         _typingExerciceLineNumberService = typingExerciceLineNumberService;
@@ -74,8 +70,7 @@ public partial class TypingLauncherViewModel : ObservableObject
             OnPropertyChanged(nameof(HasNoExercice));
         };
 
-        _themeSwitch = _themeChangerService.ApplyUserSelectedTheme();
-        IconeTheme = _themeIconeProvider.GetIconeCode(_themeSwitch);
+        Theme = _themeChangerService.ApplyUserSelectedTheme();
         NbLine = _typingExerciceLineNumberService.LineNumber;
         NbWordPerLine = _typingExerciceWordNumberService.ItemNumber;
     }
@@ -109,6 +104,7 @@ public partial class TypingLauncherViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasNbLineError))]
     [NotifyCanExecuteChangedFor(nameof(LaunchCommand))]
+    [NotifyPropertyChangedFor(nameof(IsLaunchEnabled))]
     public partial string NbLineError { get; set; } = string.Empty;
 
     public bool HasNbLineError => !string.IsNullOrEmpty(NbLineError);
@@ -125,12 +121,18 @@ public partial class TypingLauncherViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasNbWordPerLineError))]
     [NotifyCanExecuteChangedFor(nameof(LaunchCommand))]
+    [NotifyPropertyChangedFor(nameof(IsLaunchEnabled))]
     public partial string NbWordPerLineError { get; set; } = string.Empty;
 
     public bool HasNbWordPerLineError => !string.IsNullOrEmpty(NbWordPerLineError);
 
     private bool CanLaunch()
         => !IsDynamic || (!HasNbLineError && !HasNbWordPerLineError);
+
+    /// <summary>
+    /// For the custom launch button, which has no command state of its own.
+    /// </summary>
+    public bool IsLaunchEnabled => CanLaunch();
 
     public bool HasExercice => AllExercice.Count > 0;
 
@@ -199,6 +201,7 @@ public partial class TypingLauncherViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ExerciceLetters))]
     [NotifyPropertyChangedFor(nameof(IsDynamic))]
     [NotifyCanExecuteChangedFor(nameof(LaunchCommand))]
+    [NotifyPropertyChangedFor(nameof(IsLaunchEnabled))]
     public partial ExerciceItemViewModel? ExerciceSelected { get; set; }
 
 
@@ -256,29 +259,34 @@ public partial class TypingLauncherViewModel : ObservableObject
 
 
 
+    #region Theme
+
     [ObservableProperty]
-    public partial string IconeTheme { get; set; }
+    [NotifyPropertyChangedFor(nameof(IsThemeLight))]
+    [NotifyPropertyChangedFor(nameof(IsThemeDark))]
+    [NotifyPropertyChangedFor(nameof(IsThemeSystem))]
+    public partial ThemeStateConfiguration Theme { get; set; }
 
+    public bool IsThemeLight => Theme == ThemeStateConfiguration.Light;
+    public bool IsThemeDark => Theme == ThemeStateConfiguration.Dark;
+    public bool IsThemeSystem => Theme == ThemeStateConfiguration.System;
+
+    /// <summary>
+    /// Light, dark, or following the Windows setting.
+    /// </summary>
     [RelayCommand]
-    public void ChangeTheme()
+    public void SetTheme(ThemeStateConfiguration theme)
     {
-        _themeSwitch = _themeSwitch switch
+        switch (theme)
         {
-            ThemeStateConfiguration.Dark => ThemeStateConfiguration.Light,
-            ThemeStateConfiguration.Light => ThemeStateConfiguration.System,
-            ThemeStateConfiguration.System => ThemeStateConfiguration.Dark,
-            _ => throw new NotImplementedException(),
-        };
-
-
-        switch(_themeSwitch)
-        {
-            case ThemeStateConfiguration.Dark: _themeChangerService.SetDark();break;
-            case ThemeStateConfiguration.Light: _themeChangerService.SetLight();break;
-            case ThemeStateConfiguration.System: _themeChangerService.SetToSystem();break;
+            case ThemeStateConfiguration.Dark: _themeChangerService.SetDark(); break;
+            case ThemeStateConfiguration.Light: _themeChangerService.SetLight(); break;
+            case ThemeStateConfiguration.System: _themeChangerService.SetToSystem(); break;
             default: throw new NotImplementedException();
-        };
+        }
 
-        IconeTheme = _themeIconeProvider.GetIconeCode(_themeSwitch);
+        Theme = theme;
     }
+
+    #endregion
 }

@@ -62,6 +62,16 @@ public partial class TypingView : ContentPage
             _targetLine = lineNumber;
             Dispatcher.Dispatch(() => _ = FollowCurrentLineAsync(vm));
         };
+
+        // the speed and progress follow the letter being typed
+        vm.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(TypingViewModel.TypingProgress)
+                or nameof(TypingViewModel.ShowTypingProgress)
+                or nameof(TypingViewModel.ShowLiveSpeed))
+                Dispatcher.Dispatch(() => PlaceCaretInfo(animated: true));
+        };
+        TypingLinesLayout.SizeChanged += (_, _) => PlaceCaretInfo(animated: false);
         
         _navigationService = navigationService;
     }
@@ -80,6 +90,8 @@ public partial class TypingView : ContentPage
 	{
         base.OnAppearing();
 
+        StartLiveSpeedTimer();
+
         await Task.Yield(); // laisse le layout se faire
 
         await Dispatcher.DispatchAsync(async () =>
@@ -87,6 +99,31 @@ public partial class TypingView : ContentPage
             await Task.Delay(100);
             RequestTypingFocus();
         });
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _liveSpeedTimer?.Stop();
+    }
+
+    // the live speed also falls when no key is typed
+    private IDispatcherTimer? _liveSpeedTimer;
+
+    private void StartLiveSpeedTimer()
+    {
+        if (_liveSpeedTimer is null)
+        {
+            _liveSpeedTimer = Dispatcher.CreateTimer();
+            _liveSpeedTimer.Interval = TimeSpan.FromMilliseconds(500);
+            _liveSpeedTimer.Tick += (_, _) =>
+            {
+                if (BindingContext is TypingViewModel vm && vm.ShowLiveSpeed)
+                    vm.RefreshLiveSpeed();
+            };
+        }
+
+        _liveSpeedTimer.Start();
     }
 
     private void OnTextChanged(object? sender, TextChangedEventArgs e)
@@ -145,7 +182,7 @@ public partial class TypingView : ContentPage
 
             case Windows.System.VirtualKey.F5:
                 e.Handled = true;
-                vm.Session.ResetProgression();
+                vm.ResetProgression();
                 break;
 
             case Windows.System.VirtualKey.Tab:
@@ -353,6 +390,10 @@ public partial class TypingView : ContentPage
         {
             _isFollowingLine = false;
         }
+
+        // the lines above were removed: once laid out again, the letter has moved up
+        await Task.Delay(s_layoutDelay);
+        PlaceCaretInfo(animated: false);
     }
 
     private async Task ScrollToLineAsync(int index)
@@ -367,6 +408,64 @@ public partial class TypingView : ContentPage
             line,
             ScrollToPosition.Start,
             animated: true);
+    }
+
+    #endregion
+
+    #region Speed and progress under the current letter
+
+    private void TypingScrollView_Scrolled(object? sender, ScrolledEventArgs e)
+        => PlaceCaretInfo(animated: false);
+
+    /// <summary>
+    /// Puts the live speed and the small progress bar just under the letter being typed,
+    /// where the eyes are. Hidden when the letter is out of sight.
+    /// </summary>
+    private void PlaceCaretInfo(bool animated)
+    {
+        if (BindingContext is not TypingViewModel vm || !(vm.ShowTypingProgress || vm.ShowLiveSpeed))
+        {
+            CaretInfo.Opacity = 0;
+            return;
+        }
+
+        int lineIndex = vm.VisibleIndexOf(vm.Session.CurrentLineIndex);
+        if (lineIndex < 0 || lineIndex >= TypingLinesLayout.Children.Count
+            || TypingLinesLayout.Children[lineIndex] is not Layout line || line.Children.Count == 0)
+        {
+            CaretInfo.Opacity = 0;
+            return;
+        }
+
+        // at the very end the cursor is past the last letter: stay under it
+        int charIndex = Math.Min(vm.Session.CurrentCharacterIndex, line.Children.Count - 1);
+        if (line.Children[charIndex] is not View letter || letter.Width <= 0)
+            return;
+
+        double x = line.Frame.X + letter.Frame.X + letter.Frame.Width / 2 - CaretInfo.WidthRequest / 2;
+        double y = line.Frame.Y + letter.Frame.Bottom - TypingScrollView.ScrollY + 1;
+
+        x = Math.Clamp(x, 0, Math.Max(0, TypingScrollView.Width - CaretInfo.WidthRequest));
+
+        if (y < 0 || y > TypingScrollView.Height - CaretInfo.Height)
+        {
+            CaretInfo.Opacity = 0;
+            return;
+        }
+
+        CaretInfo.CancelAnimations();
+
+        if (animated && CaretInfo.Opacity > 0)
+        {
+            _ = CaretInfo.TranslateToAsync(x, y, 90, Easing.CubicOut);
+        }
+        else
+        {
+            CaretInfo.TranslationX = x;
+            CaretInfo.TranslationY = y;
+        }
+
+        CaretInfo.Opacity = 1;
     }
 
     #endregion

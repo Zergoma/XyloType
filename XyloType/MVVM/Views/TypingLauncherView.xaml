@@ -4,12 +4,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="XyloType.MVVM.Views.TypingLauncherView"
              xmlns:vm="clr-namespace:XyloType.ViewModels.TypingLauncher;assembly=XyloType.ViewModels"
-             Title="TypingLauncherView"
+             xmlns:themes="clr-namespace:XyloType.Application.Models.Themes;assembly=XyloType.Application"
+             xmlns:controls="clr-namespace:XyloType.MVVM.Controls"
+             Title="Accueil"
              x:DataType="vm:TypingLauncherViewModel"
              xmlns:behaviors="clr-namespace:XyloType.Behaviors"
              Shell.NavBarIsVisible="False"
              StyleClass="xylotype_page_bg"
              x:Name="RootPage">
+
+    <ContentPage.Resources>
+        <!-- launch button and its halo: accent gradient, blue to violet -->
+        <LinearGradientBrush x:Key="LaunchBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Offset="0" Color="{AppThemeBinding Light={StaticResource LaunchStartLight}, Dark={StaticResource LaunchStartDark}}"/>
+            <GradientStop Offset="1" Color="{AppThemeBinding Light={StaticResource LaunchEndLight}, Dark={StaticResource LaunchEndDark}}"/>
+        </LinearGradientBrush>
+    </ContentPage.Resources>
 
     <Grid
         RowDefinitions="auto,*"
@@ -19,26 +29,32 @@
         Padding="5"
         RowSpacing="5">
 
-        <!--UI Settings-->
-        <Grid Grid.Row="0" Grid.Column="1">
-
-            <HorizontalStackLayout VerticalOptions="Center" HorizontalOptions="End">
-
-                <Button Grid.Row="1"
-                    Padding="0"
-                    Command="{Binding ChangeThemeCommand}"
-                    StyleClass="ButtonHoverAddExercice"
-                    CornerRadius="20"
-                    WidthRequest="100"
-                    HeightRequest="20">
-                    <Button.ImageSource>
-                        <FontImageSource FontFamily="icones_themes"
-                         Glyph="{Binding IconeTheme}"
-                         Size="20"/>
-                    </Button.ImageSource>
-                </Button>
+        <!-- theme: light, dark or following Windows -->
+        <Border Grid.Row="0" Grid.Column="1"
+                HorizontalOptions="End"
+                StyleClass="BorderBgStd"
+                StrokeShape="RoundRectangle 20"
+                StrokeThickness="1"
+                Stroke="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"
+                Padding="4">
+            <HorizontalStackLayout Spacing="4">
+                <controls:IconButton Icon="{x:Static controls:Icons.Sun}"
+                                     IsActive="{Binding IsThemeLight}"
+                                     ToolTipProperties.Text="Thème clair"
+                                     Command="{Binding SetThemeCommand}"
+                                     CommandParameter="{x:Static themes:ThemeStateConfiguration.Light}"/>
+                <controls:IconButton Icon="{x:Static controls:Icons.Moon}"
+                                     IsActive="{Binding IsThemeDark}"
+                                     ToolTipProperties.Text="Thème sombre"
+                                     Command="{Binding SetThemeCommand}"
+                                     CommandParameter="{x:Static themes:ThemeStateConfiguration.Dark}"/>
+                <controls:IconButton Icon="{x:Static controls:Icons.Monitor}"
+                                     IsActive="{Binding IsThemeSystem}"
+                                     ToolTipProperties.Text="Thème du système"
+                                     Command="{Binding SetThemeCommand}"
+                                     CommandParameter="{x:Static themes:ThemeStateConfiguration.System}"/>
             </HorizontalStackLayout>
-        </Grid>
+        </Border>
 
         <!--Selected exercice description-->
         <Border Grid.Row="1" Grid.Column="1"
@@ -62,6 +78,36 @@
                         <Label Text="{Binding ExerciceName}"
                                StyleClass="label_page_title"
                                VerticalOptions="Center"/>
+
+                        <!-- same badge as the tile -->
+                        <Border Grid.Column="1"
+                                IsVisible="{Binding ExerciceSelected.IsDynamic, FallbackValue=False}"
+                                VerticalOptions="Center"
+                                StrokeShape="RoundRectangle 13"
+                                StrokeThickness="0"
+                                Padding="11,5,12,6"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource BadgePseudoWordsBgLight}, Dark={StaticResource BadgePseudoWordsBgDark}}"
+                                ToolTipProperties.Text="Nouveaux mots à chaque partie">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding ExerciceSelected.IsRealWords, FallbackValue=False}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource BadgeRealWordsBgLight}, Dark={StaticResource BadgeRealWordsBgDark}}"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+
+                            <HorizontalStackLayout Spacing="6">
+                                <Path Data="{x:Static controls:Icons.Shuffle}"
+                                      Fill="White"
+                                      Aspect="Uniform"
+                                      WidthRequest="13"
+                                      HeightRequest="13"
+                                      VerticalOptions="Center"/>
+                                <Label Text="{Binding ExerciceSelected.BadgeText}"
+                                       TextColor="White"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                        </Border>
                     </Grid>
 
                     <Border StyleClass="BorderRounded10, BorderBgDescription" Padding="16,12">
@@ -116,18 +162,58 @@
                         </Grid>
                     </Border>
 
+                    <!-- launch: pill with a gradient; the halo behind pulses to draw the eye (see code behind) -->
+                    <Grid HorizontalOptions="End" Margin="0,14,8,8">
+                        <Border x:Name="LaunchHalo"
+                                Background="{StaticResource LaunchBrush}"
+                                StrokeShape="RoundRectangle 28"
+                                StrokeThickness="0"
+                                Opacity="0"
+                                InputTransparent="True"/>
 
-                    <Button HorizontalOptions="End"
-                            Text="Lancer !"
-                            Command="{Binding LaunchCommand}"
-                            StyleClass="ButtonHoverLaunch"
-                            HeightRequest="56"
-                            Padding="48,0"
-                            CornerRadius="12"
-                            FontSize="20"
-                            FontAttributes="Bold"
-                            Margin="0,14,0,0" />
+                        <Border x:Name="LaunchButton"
+                                Background="{StaticResource LaunchBrush}"
+                                StrokeShape="RoundRectangle 28"
+                                StrokeThickness="0"
+                                HeightRequest="56"
+                                Padding="34,0,40,0"
+                                ToolTipProperties.Text="Lancer l'exercice">
+                            <Border.Shadow>
+                                <Shadow Brush="#7C3AED" Offset="0,6" Radius="18" Opacity="0.35"/>
+                            </Border.Shadow>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsLaunchEnabled}" Value="False">
+                                    <Setter Property="Opacity" Value="0.45"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding LaunchCommand}"/>
+                                <PointerGestureRecognizer PointerEntered="Launch_PointerEntered" PointerExited="Launch_PointerExited"/>
+                            </Border.GestureRecognizers>
 
+                            <Grid>
+                                <!-- lightens the button on hover -->
+                                <BoxView x:Name="LaunchHover"
+                                         Color="White"
+                                         Opacity="0"
+                                         Margin="-34,0,-40,0"
+                                         InputTransparent="True"/>
+                                <HorizontalStackLayout Spacing="10" VerticalOptions="Center" HorizontalOptions="Center">
+                                    <Path Data="{x:Static controls:Icons.Play}"
+                                          Fill="White"
+                                          Aspect="Uniform"
+                                          WidthRequest="22"
+                                          HeightRequest="22"
+                                          VerticalOptions="Center"/>
+                                    <Label Text="Lancer"
+                                           TextColor="White"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Border>
+                    </Grid>
 
                 </VerticalStackLayout>
             </Grid>
@@ -148,17 +234,18 @@
                        StyleClass="label_page_title"
                        VerticalOptions="Center"/>
 
-                    <Border Grid.Row="1" StyleClass="BorderRounded10, BorderBgDescription" Padding="16,10">
-                        <Grid ColumnDefinitions="auto,*"
-                              RowDefinitions="*,auto">
-                            <Label Text="Type de clavier" StyleClass="label_on_description" Margin="0,0,0,0" VerticalOptions="Center"/>
-                            <Picker Grid.Column="1" ItemsSource="{Binding KeyboardLayoutAvailable}" SelectedItem="{Binding KeyboardLayoutSelected}" 
-                                StyleClass="picker_themed"
-                                Margin="10,0,0,0"
-                                VerticalTextAlignment="Center"/>
-
-
-                        </Grid>
+                    <Border Grid.Row="1"
+                            HorizontalOptions="Start"
+                            StyleClass="BorderRounded10, BorderBgDescription"
+                            Padding="14,6">
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="Clavier" StyleClass="label_on_description" VerticalOptions="Center"/>
+                            <Picker ItemsSource="{Binding KeyboardLayoutAvailable}"
+                                    SelectedItem="{Binding KeyboardLayoutSelected}"
+                                    StyleClass="picker_themed"
+                                    WidthRequest="170"
+                                    VerticalTextAlignment="Center"/>
+                        </HorizontalStackLayout>
                     </Border>
                 </Grid>
 
@@ -181,85 +268,109 @@
 
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="vm:ExerciceItemViewModel">
-                                    <Border HeightRequest="120" WidthRequest="120"
-                                            StyleClass="BorderBgBlue,BorderRounded10,BorderHoverLaunch"
-                                            Margin="6"
-                                            Padding="10,12">
+                                    <!-- the top and right padding leave room for the badge, which sticks out of the tile -->
+                                    <Grid WidthRequest="134" HeightRequest="134"
+                                          Padding="0,12,12,0"
+                                          Margin="2">
 
-                                        <Border.GestureRecognizers>
-                                            <TapGestureRecognizer 
-                                                Command="{Binding BindingContext.SelectCommand, Source={x:Reference RootPage}}"
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding BindingContext.SelectCommand, Source={x:Reference RootPage}, x:DataType=ContentPage}"
                                                 CommandParameter="{Binding .}"/>
+                                        </Grid.GestureRecognizers>
 
-                                        </Border.GestureRecognizers>
-
-                                        <Border.Triggers>
-                                            <DataTrigger TargetType="Border"
-                                                         Binding="{Binding IsSelected}"
-                                                         Value="True">
-                                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgLight}, Dark={StaticResource TileSelectedBgDark}}"/>
-                                                <Setter Property="StrokeThickness" Value="2" />
-                                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource TileSelectedStrokeLight}, Dark={StaticResource TileSelectedStrokeDark}}" />
-                                                <Setter Property="Scale" Value="1.05" />
-
-
-                                                <Setter Property="VisualStateManager.VisualStateGroups">
-
-                                                    <VisualStateGroupList>
-
-                                                        <VisualStateGroup Name="CommonStates">
-
-                                                            <VisualState Name="Normal">
-                                                                <VisualState.Setters>
-                                                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgLight}, Dark={StaticResource TileSelectedBgDark}}" />
-                                                                </VisualState.Setters>
-                                                            </VisualState>
-
-                                                            <VisualState Name="PointerOver">
-                                                                <VisualState.Setters>
-                                                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgHoverLight}, Dark={StaticResource TileSelectedBgHoverDark}}" />
-                                                                </VisualState.Setters>
-                                                            </VisualState>
-
-                                                        </VisualStateGroup>
-
-                                                    </VisualStateGroupList>
-
-                                                </Setter>
+                                        <Grid.Triggers>
+                                            <DataTrigger TargetType="Grid" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="Scale" Value="1.05"/>
                                             </DataTrigger>
-                                        </Border.Triggers>
+                                        </Grid.Triggers>
 
-                                        <Grid RowDefinitions="auto,*,auto">
+                                        <Border StyleClass="BorderRounded10,BorderHoverLaunch"
+                                                StrokeThickness="1"
+                                                Stroke="{AppThemeBinding Light={StaticResource TileStrokeLight}, Dark={StaticResource TileStrokeDark}}"
+                                                Padding="10,12">
 
-                                            <Label Grid.Row="0" Text="{Binding Name}" 
-                                                   StyleClass="label_on_tile"
-                                                   FontAttributes="Bold"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center"
-                                                   FontSize="17"
-                                                   LineBreakMode="TailTruncation"
-                                                   Margin="0,0,0,8"/>
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border"
+                                                             Binding="{Binding IsSelected}"
+                                                             Value="True">
+                                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgLight}, Dark={StaticResource TileSelectedBgDark}}"/>
+                                                    <Setter Property="StrokeThickness" Value="2" />
+                                                    <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource TileSelectedStrokeLight}, Dark={StaticResource TileSelectedStrokeDark}}" />
 
-                                            <Label Grid.Row="1" Text="{Binding Letters}"
-                                                   StyleClass="label_on_tile_secondary"
-                                                   FontSize="11"
-                                                   LineBreakMode="WordWrap"
-                                                   MaxLines="3"
-                                                   Margin="0"/>
+                                                    <Setter Property="VisualStateManager.VisualStateGroups">
+                                                        <VisualStateGroupList>
+                                                            <VisualStateGroup Name="CommonStates">
+                                                                <VisualState Name="Normal">
+                                                                    <VisualState.Setters>
+                                                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgLight}, Dark={StaticResource TileSelectedBgDark}}" />
+                                                                    </VisualState.Setters>
+                                                                </VisualState>
+                                                                <VisualState Name="PointerOver">
+                                                                    <VisualState.Setters>
+                                                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TileSelectedBgHoverLight}, Dark={StaticResource TileSelectedBgHoverDark}}" />
+                                                                    </VisualState.Setters>
+                                                                </VisualState>
+                                                            </VisualStateGroup>
+                                                        </VisualStateGroupList>
+                                                    </Setter>
+                                                </DataTrigger>
+                                            </Border.Triggers>
 
-                                            <Border Grid.Row="2"
-                                                IsVisible="{Binding IsDynamic}"
-                                                StrokeShape="RoundRectangle 6" HorizontalOptions="End"
-                                                Stroke="Transparent"
-                                                BackgroundColor="#33FFFFFF"
-                                                Padding="6,1,6,2" Margin="0,6,0,0">
+                                            <Grid RowDefinitions="auto,*">
 
-                                                <Label Text="{Binding TextType}" HorizontalOptions="End"
-                                                       VerticalOptions="End"
-                                                        FontSize="12" StyleClass="label_on_tile"/>
-                                            </Border>
-                                        </Grid>
-                                    </Border>
+                                                <Label Grid.Row="0" Text="{Binding Name}"
+                                                       StyleClass="label_on_tile"
+                                                       FontAttributes="Bold"
+                                                       HorizontalOptions="Center"
+                                                       VerticalOptions="Center"
+                                                       FontSize="17"
+                                                       LineBreakMode="TailTruncation"
+                                                       Margin="0,4,0,8"/>
+
+                                                <Label Grid.Row="1" Text="{Binding Letters}"
+                                                       StyleClass="label_on_tile_secondary"
+                                                       FontSize="11"
+                                                       LineBreakMode="WordWrap"
+                                                       MaxLines="4"
+                                                       Margin="0"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- generated exercises: new words at each game, invented or real -->
+                                        <Border IsVisible="{Binding IsDynamic}"
+                                                HorizontalOptions="End"
+                                                VerticalOptions="Start"
+                                                Margin="0,-12,-12,0"
+                                                StrokeShape="RoundRectangle 10"
+                                                StrokeThickness="0"
+                                                Padding="8,3,9,4"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource BadgePseudoWordsBgLight}, Dark={StaticResource BadgePseudoWordsBgDark}}"
+                                                ToolTipProperties.Text="Nouveaux mots à chaque partie">
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsRealWords}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource BadgeRealWordsBgLight}, Dark={StaticResource BadgeRealWordsBgDark}}"/>
+                                                </DataTrigger>
+                                            </Border.Triggers>
+                                            <Border.Shadow>
+                                                <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.25"/>
+                                            </Border.Shadow>
+
+                                            <HorizontalStackLayout Spacing="4">
+                                                <Path Data="{x:Static controls:Icons.Shuffle}"
+                                                      Fill="White"
+                                                      Aspect="Uniform"
+                                                      WidthRequest="10"
+                                                      HeightRequest="10"
+                                                      VerticalOptions="Center"/>
+                                                <Label Text="{Binding BadgeText}"
+                                                       TextColor="White"
+                                                       FontSize="11"
+                                                       FontAttributes="Bold"
+                                                       VerticalOptions="Center"/>
+                                            </HorizontalStackLayout>
+                                        </Border>
+                                    </Grid>
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
 

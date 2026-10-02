@@ -24,6 +24,11 @@ public partial class ScoreOptionViewModel : ObservableObject
 
     public string Composer => Score.Composer;
 
+    /// <summary>
+    /// A song with lyrics, or an instrumental piece.
+    /// </summary>
+    public bool IsSong => Score.IsSong;
+
     private bool _isEnabled;
     public bool IsEnabled
     {

@@ -21,7 +21,7 @@ public class ScoreCatalog : IScoreCatalog
             E5 E5 F5 G5 G5 F5 E5 D5 C5 C5 D5 E5 D5 C5 C5
             D5 D5 E5 C5 D5 E5 F5 E5 C5 D5 E5 F5 E5 D5 C5 D5 G4
             E5 E5 F5 G5 G5 F5 E5 D5 C5 C5 D5 E5 D5 C5 C5
-            """)),
+            """)) { IsSong = true },
 
         new("beethoven-fur-elise", "Lettre à Élise", "Ludwig van Beethoven", Notes.ParseMelody("""
             E5 D#5 E5 D#5 E5 B4 D5 C5 A4 C4 E4 A4 B4 E4 G#4 B4 C5 E4
@@ -35,7 +35,7 @@ public class ScoreCatalog : IScoreCatalog
             C5 C5 G5 G5 A5 A5 G5 F5 F5 E5 E5 D5 D5 C5
             G5 G5 F5 F5 E5 E5 D5 G5 G5 F5 F5 E5 E5 D5
             C5 C5 G5 G5 A5 A5 G5 F5 F5 E5 E5 D5 D5 C5
-            """)),
+            """)) { IsSong = true },
 
         new("grieg-mountain-king", "Dans l'antre du roi de la montagne", "Edvard Grieg", Notes.ParseMelody("""
             A4 B4 C5 D5 E5 C5 E5 Eb5 B4 Eb5 D5 Bb4 D5
@@ -71,7 +71,7 @@ public class ScoreCatalog : IScoreCatalog
             D5 E5 F5 D5 D5 E5 F5 D5 F5 B5 A5 G5 B5 C6
             C5 C5 C6 A5 F5 G5 E5 C5 F5 G5 A5 G5
             C5 C5 C6 A5 F5 G5 E5 C5 F5 E5 D5 C5
-            """)),
+            """)) { IsSong = true },
 
         new("strauss-blue-danube", "Le Beau Danube bleu", "Johann Strauss II", Notes.ParseMelody("""
             D4 D4 F#4 A4 A4 A5 A5 F#5 F#5
@@ -135,7 +135,7 @@ public class ScoreCatalog : IScoreCatalog
             D5 G5 D5 B4 G4 B4 D5 G5 D4 E4 F#4 A4 G4 A4 C5 B4
             C5 A4 F#4 D4 F#4 A4 C5 B4 A4 B4 G4 A4 B4 D5 C5 C5
             E5 D5 D5 G5 F#5 G5 D5 B4 G4 A4 B4 E4 D5 C5
-            """), ScoreCategories.Classical),
+            """), ScoreCategories.Classical) { IsSong = true },
 
         // ===== Traditional =====
 
@@ -144,29 +144,29 @@ public class ScoreCatalog : IScoreCatalog
             C5 C5 C5 D5 E5 D5 C5 E5 D5 D5 C5
             D5 D5 D5 D5 A4 A4 D5 C5 B4 A4 G4
             C5 C5 C5 D5 E5 D5 C5 E5 D5 D5 C5
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-frere-jacques", "Frère Jacques", "Chanson traditionnelle française", Notes.ParseMelody("""
             C5 D5 E5 C5 C5 D5 E5 C5
             E5 F5 G5 E5 F5 G5
             G5 A5 G5 F5 E5 C5 G5 A5 G5 F5 E5 C5
             C5 G4 C5 C5 G4 C5
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-greensleeves", "Greensleeves", "Chanson traditionnelle anglaise", Notes.ParseMelody("""
             A4 C5 D5 E5 F5 E5 D5 B4 G4 A4 B4 C5 A4 A4 G#4 A4 B4 G#4 E4
             A4 C5 D5 E5 F5 E5 D5 B4 G4 A4 B4 C5 B4 A4 G#4 F#4 G#4 A4 A4
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-korobeiniki", "Korobeïniki", "Chanson traditionnelle russe", Notes.ParseMelody("""
             E5 B4 C5 D5 C5 B4 A4 A4 C5 E5 D5 C5 B4 C5 D5 E5 C5 A4 A4
             D5 F5 A5 G5 F5 E5 C5 E5 D5 C5 B4 B4 C5 D5 E5 C5 A4 A4
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-sur-le-pont-d-avignon", "Sur le pont d'Avignon", "Chanson traditionnelle française", Notes.ParseMelody("""
             C5 C5 C5 D5 D5 D5 E5 F5 G5 C5 B4 C5 D5 G4 C5 C5
             C5 D5 D5 D5 E5 F5 G5 C5 D5 B4 C5
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-a-la-claire-fontaine", "À la claire fontaine", "Chanson traditionnelle française", Notes.ParseMelody("""
             G4 G4 B4 B4 A4 B4 A4 G4 G4 B4 B4 A4 B4 G4 G4 B4
@@ -175,7 +175,7 @@ public class ScoreCatalog : IScoreCatalog
             B4 A4 G4 B4 A4 G4 B4 B4 A4 G4 B4 D5 B4 D5 D5 B4
             G4 B4 A4 G4 G4 B4 B4 A4 G4 B4 G4 B4 B4 A4 G4 B4
             A4 G4
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-j-ai-du-bon-tabac", "J'ai du bon tabac", "Chanson traditionnelle française", Notes.ParseMelody("""
             C4 D4 E4 C4 D4 D4 E4 F4 F4 E4 E4 C4 D4 E4 C4 D4
@@ -184,14 +184,14 @@ public class ScoreCatalog : IScoreCatalog
             F4 G4 F4 E4 G4 G4 F4 E4 D4 E4 F4 G4 D4 C4 D4 E4
             C4 D4 D4 E4 F4 F4 E4 E4 C4 D4 E4 C4 D4 D4 E4 F4
             G4 C4
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-le-bon-roi-dagobert", "Le bon roi Dagobert", "Chanson traditionnelle française", Notes.ParseMelody("""
             B4 B4 A4 A4 G4 G4 A4 B4 C5 B4 A4 G4 A4 G4 B4 B4
             A4 A4 G4 G4 A4 B4 C5 B4 A4 G4 A4 G4 G4 A4 B4 B4
             B4 C5 D5 A4 A4 A4 G4 A4 B4 B4 B4 C5 D5 A4 A4 A4
             B4 B4 A4 A4 G4 G4 A4 B4 C5 B4 A4 G4 A4 G4
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-malbrough", "Malbrough s'en va-t-en guerre", "Chanson traditionnelle française", Notes.ParseMelody("""
             G4 A4 B4 B4 B4 A4 B4 C5 B4 C5 B4 A4 A4 A4 G4 A4
@@ -205,7 +205,7 @@ public class ScoreCatalog : IScoreCatalog
             E5 D5 B4 C5 D5 D5 E5 F#5 G5 D5 C#5 C5 B4 B4 B4 A4
             B4 C5 B4 C5 B4 A4 A4 A4 G4 A4 B4 G4 A4 B4 B4 B4
             A4 B4 D5 C#5 C5 B4 C5 B4 A4 A4 A4 B4 A4 G4
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-meunier-tu-dors", "Meunier, tu dors", "Chanson traditionnelle française", Notes.ParseMelody("""
             G4 C5 E5 C5 B4 C5 D5 D5 D5 D5 C5 D5 E5 C5 G4 C5
@@ -215,7 +215,7 @@ public class ScoreCatalog : IScoreCatalog
             C5 G4 C5 C5 C5 C5 C5 E5 E5 E5 C5 B4 C5 D5 D5 D5
             D5 D5 C5 D5 E5 C5 G4 C5 C5 C5 C5 C5 E5 E5 E5 C5
             B4 C5 D5 D5 D5 D5 F5 E5 D5 C5
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-danny-boy", "Danny Boy", "Air traditionnel irlandais", Notes.ParseMelody("""
             B3 C4 D4 E4 D4 E4 A4 G4 E4 D4 C4 A3 C4 E4 F4 G4
@@ -224,7 +224,7 @@ public class ScoreCatalog : IScoreCatalog
             B4 B4 A4 G4 A4 G4 E4 C4 G4 A4 B4 C5 B4 B4 A4 G4
             E4 D4 G4 G4 G4 E5 D5 D5 C5 A4 C5 G4 E4 C4 B3 C4
             D4 E4 A4 G4 E4 D4 C4 A3 B3 C4
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-kalinka", "Kalinka", "Chanson traditionnelle russe", Notes.ParseMelody("""
             A4 G4 E4 F4 G4 E4 F4 G4 F4 E4 D4 A4 A4 G4 F4 E4
@@ -234,7 +234,7 @@ public class ScoreCatalog : IScoreCatalog
             D4 D4 E4 G4 F4 E4 D4 C4 C4 C4 C5 A4 C5 G4 A4 F4
             C4 A4 C5 G4 A4 F4 C4 D4 D4 E4 G4 F4 E4 D4 C5 Bb4
             A4
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-auld-lang-syne", "Auld Lang Syne", "Air traditionnel écossais", Notes.ParseMelody("""
             D4 G4 G4 G4 B4 A4 G4 A4 B4 G4 G4 B4 D5 E5 G5 D5
@@ -244,7 +244,7 @@ public class ScoreCatalog : IScoreCatalog
             B4 D5 B4 B4 G4 B4 E5 D5 B4 B4 G4 A4 G4 A4 B4 G4
             E4 E4 D4 G4 E5 D5 B4 B4 G4 A4 G4 A4 B4 D5 B4 B4
             G4 B4 E5 D5 B4 B4 G4 A4 G4 A4 B4 G4 E4 E4 D4 G4
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         new("trad-la-cucaracha", "La Cucaracha", "Chanson traditionnelle mexicaine", Notes.ParseMelody("""
             A3 A3 D4 D4 F#4 F#4 A4 F#4 A4 B4 A4 G4 F#4 A4 G4 E4
@@ -254,7 +254,7 @@ public class ScoreCatalog : IScoreCatalog
             D4 A3 A3 A3 D4 F#4 A3 A3 A3 D4 F#4 D4 D4 C#4 C#4 B3
             B3 A3 A3 A3 A3 C#4 E4 A3 A3 A3 C#4 E4 A4 B4 A4 G4
             F#4 E4 D4
-            """), ScoreCategories.Traditional),
+            """), ScoreCategories.Traditional) { IsSong = true },
 
         // ===== Ragtime =====
 
@@ -278,19 +278,19 @@ public class ScoreCatalog : IScoreCatalog
             A4 A4 C5 B4 A4 G4 A4 G4 E4
             D5 D5 F5 D5 B4 C5 E5
             C5 G4 E4 G4 F4 D4 C4
-            """), ScoreCategories.Christmas),
+            """), ScoreCategories.Christmas) { IsSong = true },
 
         new("pierpont-jingle-bells", "Vive le vent (Jingle Bells)", "James Lord Pierpont", Notes.ParseMelody("""
             E5 E5 E5 E5 E5 E5 E5 G5 C5 D5 E5
             F5 F5 F5 F5 F5 E5 E5 E5 E5 D5 D5 E5 D5 G5
             E5 E5 E5 E5 E5 E5 E5 G5 C5 D5 E5
             F5 F5 F5 F5 F5 E5 E5 E5 G5 G5 F5 D5 C5
-            """), ScoreCategories.Christmas),
+            """), ScoreCategories.Christmas) { IsSong = true },
 
         new("trad-o-tannenbaum", "Mon beau sapin", "Chant traditionnel allemand", Notes.ParseMelody("""
             C5 F5 F5 F5 G5 A5 A5 A5 G5 A5 Bb5 E5 G5 F5
             C5 F5 F5 F5 G5 A5 A5 A5 G5 A5 Bb5 E5 G5 F5
-            """), ScoreCategories.Christmas),
+            """), ScoreCategories.Christmas) { IsSong = true },
 
         new("trad-les-anges-dans-nos-campagnes", "Les anges dans nos campagnes", "Chant traditionnel français", Notes.ParseMelody("""
             A4 A4 A4 A4 C5 C5 Bb4 A4 F4 A4 A4 G4 A4 A4 C5 C5
@@ -299,7 +299,7 @@ public class ScoreCatalog : IScoreCatalog
             A4 G4 F4 G4 G4 C4 F4 G4 A4 Bb4 A4 G4 C5 D5 C5 Bb4
             A4 Bb4 C5 Bb4 A4 G4 A4 Bb4 A4 G4 F4 G4 G4 C4 F4 G4
             A4 Bb4 A4 G4 F4
-            """), ScoreCategories.Christmas),
+            """), ScoreCategories.Christmas) { IsSong = true },
 
         new("trad-il-est-ne-le-divin-enfant", "Il est né le divin enfant", "Chant traditionnel français", Notes.ParseMelody("""
             D4 G4 G4 B4 G4 D4 G4 G4 G4 G4 A4 B4 C5 B4 A4 G4
@@ -307,7 +307,7 @@ public class ScoreCatalog : IScoreCatalog
             B4 A4 D5 G4 B4 C5 D5 C5 B4 C5 E5 D5 B4 C5 D5 E5
             D5 C5 B4 B4 A4 B4 C5 D5 C5 B4 C5 E5 D5 B4 C5 D5
             E5 D5 C5 B4 A4
-            """), ScoreCategories.Christmas),
+            """), ScoreCategories.Christmas) { IsSong = true },
 
         new("trad-deck-the-halls", "Deck the Halls", "Chant traditionnel gallois", Notes.ParseMelody("""
             C5 Bb4 A4 G4 F4 G4 A4 F4 G4 A4 Bb4 G4 A4 G4 F4 E4
@@ -315,21 +315,21 @@ public class ScoreCatalog : IScoreCatalog
             E4 F4 G4 A4 Bb4 G4 A4 Bb4 C5 G4 A4 Bb4 C5 D5 E5 F5
             E5 D5 C5 C5 Bb4 A4 G4 F4 G4 A4 F4 D5 D5 D5 D5 C5
             Bb4 A4 G4 F4
-            """), ScoreCategories.Christmas),
+            """), ScoreCategories.Christmas) { IsSong = true },
 
         new("trad-adeste-fideles", "Adeste Fideles", "John Francis Wade", Notes.ParseMelody("""
             F4 F4 C4 F4 G4 C4 A4 G4 A4 Bb4 A4 G4 F4 F4 E4 D4
             E4 F4 G4 A4 E4 D4 C4 C4 C5 Bb4 A4 Bb4 A4 G4 A4 F4
             G4 E4 D4 C4 F4 F4 E4 F4 G4 F4 C4 A4 A4 G4 A4 Bb4
             A4 G4 A4 Bb4 A4 G4 F4 E4 F4 Bb4 A4 G4 F4 F4
-            """), ScoreCategories.Christmas),
+            """), ScoreCategories.Christmas) { IsSong = true },
 
         new("trad-we-wish-you-a-merry-christmas", "We Wish You a Merry Christmas", "Chant traditionnel anglais", Notes.ParseMelody("""
             D4 G4 G4 A4 G4 F#4 E4 C4 E4 A4 A4 B4 A4 G4 F#4 D4
             D4 B4 B4 C5 B4 A4 G4 E4 D4 D4 E4 A4 F#4 G4 D4 G4
             G4 G4 F#4 F#4 G4 F#4 E4 D4 A4 B4 A4 A4 G4 D5 D4 D4
             D4 E4 A4 F#4 G4
-            """), ScoreCategories.Christmas),
+            """), ScoreCategories.Christmas) { IsSong = true },
 
         new("trad-god-rest-ye-merry-gentlemen", "God Rest Ye Merry Gentlemen", "Chant traditionnel anglais", Notes.ParseMelody("""
             E4 E4 B4 B4 A4 G4 F#4 E4 D4 E4 F#4 G4 A4 B4 E4 E4
@@ -337,7 +337,7 @@ public class ScoreCatalog : IScoreCatalog
             C5 D5 E5 B4 A4 G4 E4 F#4 G4 A4 G4 A4 B4 C5 B4 B4
             A4 G4 F#4 E4 G4 F#4 E4 A4 G4 A4 B4 C5 D5 E5 B4 A4
             G4 F#4 E4
-            """), ScoreCategories.Christmas),
+            """), ScoreCategories.Christmas) { IsSong = true },
 
         // ===== American folk =====
 
@@ -345,34 +345,34 @@ public class ScoreCatalog : IScoreCatalog
             C5 E5 F5 G5 C5 E5 F5 G5 C5 E5 F5 G5 E5 C5 E5 D5
             E5 E5 D5 C5 C5 E5 G5 G5 G5 F5
             E5 F5 G5 E5 C5 D5 C5
-            """), ScoreCategories.AmericanFolk),
+            """), ScoreCategories.AmericanFolk) { IsSong = true },
 
         new("trad-amazing-grace", "Amazing Grace", "Hymne traditionnel", Notes.ParseMelody("""
             D4 G4 B4 G4 B4 A4 G4 E4 D4
             D4 G4 B4 G4 B4 A4 D5
             B4 D5 B4 D5 B4 G4 D4 E4 G4 G4 E4 D4
             D4 G4 B4 G4 B4 A4 G4
-            """), ScoreCategories.AmericanFolk),
+            """), ScoreCategories.AmericanFolk) { IsSong = true },
 
         new("foster-oh-susanna", "Oh! Susanna", "Stephen Foster", Notes.ParseMelody("""
             C5 D5 E5 G5 G5 A5 G5 E5 C5 D5 E5 E5 D5 C5 D5
             C5 D5 E5 G5 G5 A5 G5 E5 C5 D5 E5 E5 D5 D5 C5
             F5 F5 A5 A5 A5 G5 G5 E5 C5 D5
             C5 D5 E5 G5 G5 A5 G5 E5 C5 D5 E5 E5 D5 D5 C5
-            """), ScoreCategories.AmericanFolk),
+            """), ScoreCategories.AmericanFolk) { IsSong = true },
         new("trad-swing-low-sweet-chariot", "Swing Low, Sweet Chariot", "Spiritual traditionnel", Notes.ParseMelody("""
             F#4 D4 F#4 D4 D4 B3 A3 D4 D4 D4 D4 F#4 F#4 A4 A4 B4
             A4 F#4 A4 D4 D4 B3 A3 D4 D4 D4 D4 F#4 F#4 E4 D4 F#4
             A4 D4 A3 D4 D4 D4 D4 D4 D4 B3 A3 D4 D4 D4 D4 F#4
             F#4 A4 A4 A4 B4 A4 F#4 F#4 D4 D4 D4 D4 D4 B3 A3 D4
             D4 D4 D4 F#4 F#4 E4 D4
-            """), ScoreCategories.AmericanFolk),
+            """), ScoreCategories.AmericanFolk) { IsSong = true },
 
         new("trad-shenandoah", "Shenandoah", "Chanson traditionnelle américaine", Notes.ParseMelody("""
             D4 G4 G4 G4 A4 B4 C5 E5 D5 G5 F#5 E5 D5 E5 D5 B4
             D5 D5 E5 E5 E5 B4 D5 B4 A4 G4 G4 A4 B4 G4 B4 E5
             D5 G4 A4 B4 G4 A4 G4
-            """), ScoreCategories.AmericanFolk),
+            """), ScoreCategories.AmericanFolk) { IsSong = true },
 
         new("foster-camptown-races", "Camptown Races", "Stephen Foster", Notes.ParseMelody("""
             A4 A4 A4 F#4 A4 B4 A4 F#4 F#4 E4 F#4 E4 A4 A4 A4 F#4
@@ -382,18 +382,18 @@ public class ScoreCatalog : IScoreCatalog
             A4 F#4 E4 F#4 G4 F#4 E4 E4 D4 D4 D4 F#4 A4 D5 B4 B4
             D5 B4 A4 F#4 A4 A4 F#4 A4 B4 A4 F#4 E4 F#4 G4 F#4 E4
             E4 D4
-            """), ScoreCategories.AmericanFolk),
+            """), ScoreCategories.AmericanFolk) { IsSong = true },
 
         new("trad-red-river-valley", "Red River Valley", "Chanson traditionnelle américaine", Notes.ParseMelody("""
             D4 G4 B4 B4 B4 A4 B4 A4 G4 D4 G4 B4 G4 B4 D5 C5
             B4 A4 D5 C5 B4 B4 A4 G4 A4 B4 D5 C5 E4 E4 D4 F#4
             G4 A4 B4 A4 G4
-            """), ScoreCategories.AmericanFolk),
+            """), ScoreCategories.AmericanFolk) { IsSong = true },
 
         new("montrose-clementine", "Clementine", "Percy Montrose", Notes.ParseMelody("""
             D4 D4 D4 A3 F#4 F#4 F#4 D4 D4 F#4 A4 A4 G4 F#4 E4 E4
             F#4 G4 G4 F#4 E4 F#4 D4 D4 F#4 E4 A3 C#4 E4 D4
-            """), ScoreCategories.AmericanFolk),
+            """), ScoreCategories.AmericanFolk) { IsSong = true },
 
     ];
 

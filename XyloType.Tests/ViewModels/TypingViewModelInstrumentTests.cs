@@ -94,7 +94,7 @@ public class TypingViewModelInstrumentTests
     public void PreviousScore_GoesBackToThePiecePlayedBefore()
     {
         var (vm, _) = Create(InstrumentChoice.Xylophone);
-        vm.OkSoundModeSelected = vm.OkSoundModeOptions.Single(o => o.Value == OkSoundMode.Score);
+        vm.OkSoundModeSelected = vm.OkSoundModeOptions.Single(o => o.Value == OkSoundMode.Instrumental);
         string first = vm.CurrentScoreTitle;
         vm.HasPreviousScore.Should().BeFalse();
 
@@ -112,7 +112,7 @@ public class TypingViewModelInstrumentTests
     public void PreviousScore_SkipsThePiecesExcludedSince()
     {
         var (vm, _) = Create(InstrumentChoice.Xylophone);
-        vm.OkSoundModeSelected = vm.OkSoundModeOptions.Single(o => o.Value == OkSoundMode.Score);
+        vm.OkSoundModeSelected = vm.OkSoundModeOptions.Single(o => o.Value == OkSoundMode.Instrumental);
         string first = vm.CurrentScoreTitle;
         vm.SkipScore();
 
@@ -126,16 +126,17 @@ public class TypingViewModelInstrumentTests
     {
         var (vm, _) = Create(InstrumentChoice.Xylophone);
         vm.IsScoreShuffle.Should().BeFalse();
-        vm.OkSoundModeSelected = vm.OkSoundModeOptions.Single(o => o.Value == OkSoundMode.Score);
+        vm.OkSoundModeSelected = vm.OkSoundModeOptions.Single(o => o.Value == OkSoundMode.Instrumental);
 
-        string[] titles = [.. new ScoreCatalog().GetAll().Select(s => s.Title)];
+        // instrumental mode: the instrumental pieces only, songs left out
+        string[] titles = [.. new ScoreCatalog().GetAll().Where(s => !s.IsSong).Select(s => s.Title)];
         vm.CurrentScoreTitle.Should().Be(titles[0]);
 
         vm.SkipScore();
         vm.CurrentScoreTitle.Should().Be(titles[1]);
 
         // a disabled piece is skipped
-        vm.ScoreOptions[2].IsEnabled = false;
+        vm.ScoreOptions.Where(o => !o.IsSong).ElementAt(2).IsEnabled = false;
         vm.SkipScore();
         vm.CurrentScoreTitle.Should().Be(titles[3]);
     }
@@ -155,7 +156,7 @@ public class TypingViewModelInstrumentTests
     public void RandomInstrument_ChangesWithEachPiece()
     {
         var (vm, _) = Create(InstrumentChoice.Random);
-        vm.OkSoundModeSelected = vm.OkSoundModeOptions.Single(o => o.Value == OkSoundMode.Score);
+        vm.OkSoundModeSelected = vm.OkSoundModeOptions.Single(o => o.Value == OkSoundMode.Instrumental);
 
         for (int i = 0; i < 10; i++)
         {
@@ -196,5 +197,21 @@ public class TypingViewModelInstrumentTests
 
         vm.CurrentInstrumentLabel.Should().Be("Glockenspiel");
         vm.InstrumentSwitches.Single(s => s.Value == InstrumentChoice.Glockenspiel).IsEnabled.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SongMode_PlaysSongsOnly_AndListsThemOnly()
+    {
+        var (vm, _) = Create(InstrumentChoice.Xylophone);
+        vm.OkSoundModeSelected = vm.OkSoundModeOptions.Single(o => o.Value == OkSoundMode.Song);
+
+        for (int i = 0; i < 10; i++)
+        {
+            vm.ScoreOptions.Single(o => o.Title == vm.CurrentScoreTitle).IsSong.Should().BeTrue();
+            vm.SkipScore();
+        }
+
+        vm.ScoreCategoryGroups.SelectMany(g => g.Pieces).Should().OnlyContain(p => p.IsSong);
+        vm.ScoreCategoryGroups.Should().NotContain(g => g.Name == "Ragtime");
     }
 }

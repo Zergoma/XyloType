@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
+using XyloType.Application.Models.Typing;
 using XyloType.Application.Models.Typing.Exercices;
 
 namespace XyloType.ViewModels.TypingLauncher;
@@ -36,13 +37,19 @@ public partial class ExerciceItemViewModel : ObservableObject
 
     public bool IsDynamic => _isDynamic;
 
-    public string TextType
-    {
-        get
-        {
-            if (IsStatic) return "";
-            return "Dynamic";
-        }
-    }
+    /// <summary>
+    /// Words drawn again at each game, from the imported dictionary (real words).
+    /// </summary>
+    public bool IsRealWords => _exercice.TextDataType is TypingTextDataDynamic { GeneratedTypeSource: GeneratedTypeSource.Words };
+
+    /// <summary>
+    /// Words invented from the allowed letters, drawn again at each game.
+    /// </summary>
+    public bool IsPseudoWords => IsDynamic && !IsRealWords;
+
+    /// <summary>
+    /// Badge of the generated exercises: new words at each game.
+    /// </summary>
+    public string BadgeText => IsRealWords ? "Vrais mots" : IsPseudoWords ? "Mots inventés" : string.Empty;
 
 }

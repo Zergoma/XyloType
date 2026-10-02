@@ -21,8 +21,8 @@
     </Shell.ItemTemplate>
 
 
-    <FlyoutItem Title="Dactylo launcher">
-        <ShellContent Title="Dactylo launcher"
+    <FlyoutItem Title="Accueil">
+        <ShellContent Title="Accueil"
                       Route="TypingLauncherView"
                       ContentTemplate="{DataTemplate views:TypingLauncherView}"/>
 

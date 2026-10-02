@@ -261,5 +261,45 @@
                 </CollectionView>
             </Grid>
         </Border>
+
+        <!-- loading: veil over the results, like "Reprendre la saisie" on the typing page -->
+        <Border Grid.Row="1" Grid.Column="1"
+                x:Name="LoadingOverlay"
+                IsVisible="{Binding IsLoading}"
+                PropertyChanged="LoadingOverlay_PropertyChanged"
+                StyleClass="BorderTypingRounded10, BorderBgOverlay"
+                StrokeThickness="0">
+
+            <Border StyleClass="BorderRounded10, BorderBgStd"
+                    Stroke="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"
+                    StrokeThickness="1"
+                    Padding="30,20"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,6" Radius="18" Opacity="0.2"/>
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Chargement des mots…"
+                           StyleClass="label_section_title"
+                           HorizontalOptions="Center"/>
+
+                    <!-- indeterminate progress bar: a segment sliding along the track (see code behind) -->
+                    <Border x:Name="LoadingTrack"
+                            WidthRequest="240"
+                            HeightRequest="6"
+                            StrokeShape="RoundRectangle 3"
+                            StrokeThickness="0"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgDescriptionLight}, Dark={StaticResource BorderBgDescriptionDark}}">
+                        <BoxView x:Name="LoadingSegment"
+                                 WidthRequest="80"
+                                 HorizontalOptions="Start"
+                                 CornerRadius="3"
+                                 Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+        </Border>
     </Grid>
 </ContentPage>

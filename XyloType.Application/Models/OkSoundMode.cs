@@ -1,4 +1,4 @@
-﻿namespace XyloType.Application.Models;
+namespace XyloType.Application.Models;
 
 /// <summary>
 /// Sound played on a correct key.
@@ -6,12 +6,17 @@
 public enum OkSoundMode
 {
     /// <summary>
-    /// A random xylophone note among a few.
+    /// A random note among a few.
     /// </summary>
     Standard = 0,
 
     /// <summary>
-    /// The next note of a piece of music.
+    /// The next note of an instrumental piece.
     /// </summary>
-    Score
+    Instrumental,
+
+    /// <summary>
+    /// The next note of a song.
+    /// </summary>
+    Song
 }

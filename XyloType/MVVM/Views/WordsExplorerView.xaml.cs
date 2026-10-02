@@ -77,6 +77,27 @@ public partial class WordsExplorerView : ContentPage
             VisualStateManager.GoToState(button, button.IsEnabled ? "Normal" : "Disabled");
     }
 
+    // loading veil: the segment of the progress bar slides along its track while it is shown
+    private const string LoadingAnimation = "Loading";
+
+    private void LoadingOverlay_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(IsVisible))
+            return;
+
+        if (!LoadingOverlay.IsVisible)
+        {
+            LoadingSegment.AbortAnimation(LoadingAnimation);
+            return;
+        }
+
+        double track = LoadingTrack.WidthRequest;
+        double segment = LoadingSegment.WidthRequest;
+
+        new Animation(x => LoadingSegment.TranslationX = x, -segment, track)
+            .Commit(LoadingSegment, LoadingAnimation, length: 1100, easing: Easing.CubicInOut, repeat: () => LoadingOverlay.IsVisible);
+    }
+
     private static Color Resource(string key)
         => Microsoft.Maui.Controls.Application.Current?.Resources.TryGetValue(key, out object? value) == true && value is Color color
             ? color
