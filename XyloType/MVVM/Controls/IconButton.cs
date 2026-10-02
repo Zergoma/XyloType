@@ -11,7 +11,12 @@ public class IconButton : ContentView
 {
     public static readonly BindableProperty IconProperty = BindableProperty.Create(
         nameof(Icon), typeof(Geometry), typeof(IconButton),
-        propertyChanged: (bindable, _, value) => ((IconButton)bindable)._path.Data = (Geometry?)value);
+        propertyChanged: (bindable, _, value) =>
+        {
+            IconButton button = (IconButton)bindable;
+            button._path.Data = (Geometry?)value;
+            button._activePath.Data = (Geometry?)value;
+        });
 
     /// <summary>
     /// Toggle buttons: highlighted with the accent color when on.
@@ -31,7 +36,12 @@ public class IconButton : ContentView
     private const double Size = 32;
     private const double IconSize = 14;
 
+    // the main color is a dynamic resource set once on its own layers, only shown or hidden:
+    // removing and setting it again did not apply it any more
     private readonly Path _path;
+    private readonly Path _activePath;
+    private readonly BoxView _activeLayer;
+    private readonly BoxView _activeHoverLayer;
     private readonly Border _circle;
     private bool _isPointerOver;
 
@@ -46,13 +56,29 @@ public class IconButton : ContentView
             VerticalOptions = LayoutOptions.Center,
         };
 
+        _activePath = new Path
+        {
+            Aspect = Stretch.Uniform,
+            WidthRequest = IconSize,
+            HeightRequest = IconSize,
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+        };
+        _activePath.SetDynamicResource(Path.FillProperty, "AccentForeground");
+
+        _activeLayer = new BoxView();
+        _activeLayer.SetDynamicResource(BoxView.ColorProperty, "Accent");
+        _activeHoverLayer = new BoxView();
+        _activeHoverLayer.SetDynamicResource(BoxView.ColorProperty, "AccentHover");
+
         _circle = new Border
         {
             WidthRequest = Size,
             HeightRequest = Size,
             StrokeThickness = 0,
             StrokeShape = new RoundRectangle { CornerRadius = Size / 2 },
-            Content = _path,
+            Content = new Grid { Children = { _activeLayer, _activeHoverLayer, _path, _activePath } },
         };
 
         TapGestureRecognizer tap = new();
@@ -125,14 +151,20 @@ public class IconButton : ContentView
     /// </summary>
     private void ApplyBackground()
     {
-        string kind = IsActive ? "Primary" : "Neutral";
         string state = _isPointerOver && IsEnabled ? "Hover" : string.Empty;
+
+        // active: the main color chosen by the user, kept up to date
+        bool hover = state.Length > 0;
+        _activeLayer.IsVisible = IsActive && !hover;
+        _activeHoverLayer.IsVisible = IsActive && hover;
+        _activePath.IsVisible = IsActive;
+        _path.IsVisible = !IsActive;
 
         // theme bound color: follows a light / dark switch by itself
         _circle.SetAppThemeColor(
             Border.BackgroundColorProperty,
-            Resource($"Button{kind}Bg{state}Light"),
-            Resource($"Button{kind}Bg{state}Dark"));
+            Resource($"ButtonNeutralBg{state}Light"),
+            Resource($"ButtonNeutralBg{state}Dark"));
     }
 
     private static Color Resource(string key)

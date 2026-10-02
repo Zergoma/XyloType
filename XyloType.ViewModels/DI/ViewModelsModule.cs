@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
+using XyloType.ViewModels.Theme;
 using XyloType.ViewModels.ExercisesManager;
 using XyloType.ViewModels.Import;
 using XyloType.ViewModels.WordsExplorer;
@@ -17,6 +18,8 @@ public static class ViewModelsModule
         services.AddTransient<TypingLauncherViewModel>();
         services.AddTransient<ExercisesManagerViewModel>();
         services.AddTransient<WordsExplorerViewModel>();
+        services.AddSingleton<ThemeViewModel>();
+        services.AddSingleton<AccentColorViewModel>();
         return services;
     }
 }

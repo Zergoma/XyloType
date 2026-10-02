@@ -5,7 +5,7 @@
 
 
     <Style TargetType="Page" ApplyToDerivedTypes="True" Class="xylotype_page_bg">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PageBgLight}, Dark={StaticResource PageBgDark}}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource AccentPageBg}" />
     </Style>
 
 
@@ -33,7 +33,7 @@
 
 
     <Style TargetType="Label" Class="label_on_description">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextOnDescriptionLight}, Dark={StaticResource TextOnDescriptionDark}}" />
+        <Setter Property="TextColor" Value="{DynamicResource AccentOnSurface}" />
     </Style>
 
     <Style TargetType="Label" Class="label_on_tile">
@@ -66,7 +66,7 @@
     </Style>
 
     <Style TargetType="Label" Class="label_stat_value">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextAccentLight}, Dark={StaticResource TextAccentDark}}" />
+        <Setter Property="TextColor" Value="{DynamicResource AccentText}" />
         <Setter Property="FontSize" Value="40" />
         <Setter Property="FontAttributes" Value="Bold" />
     </Style>
@@ -87,8 +87,8 @@
 
 
     <Style TargetType="Slider" Class="slider_themed">
-        <Setter Property="MinimumTrackColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}" />
-        <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource ButtonPrimaryBgLight}, Dark={StaticResource ButtonPrimaryBgDark}}" />
+        <Setter Property="MinimumTrackColor" Value="{DynamicResource Accent}" />
+        <Setter Property="ThumbColor" Value="{DynamicResource Accent}" />
         <Setter Property="MaximumTrackColor" Value="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource PickerBgDark}}" />
     </Style>
 

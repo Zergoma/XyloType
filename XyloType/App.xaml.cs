@@ -13,6 +13,9 @@ public partial class App : MauiAppNS.Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
+        // the main color chosen by the user, before the page is drawn
+        _serviceProvider.GetRequiredService<Services.MauiAccentColorService>().Apply();
+
         Window win = new Window(_serviceProvider.GetRequiredService<MainPage>());
 #if WINDOWS
         win.Height = 800;

@@ -9,7 +9,7 @@ namespace XyloType.ViewModels.Typing;
 
 public partial class TypingCharStateViewModel : ObservableObject
 {
-    private readonly ITypingTheme _typingTheme;
+    private ITypingTheme _typingTheme;
     public TypingChar Model { get; }
     public char Character => Model.Character;
     public List<char> Errors => Model.Errors;
@@ -31,6 +31,15 @@ public partial class TypingCharStateViewModel : ObservableObject
         // All the magic is here
         // model state changed -> trigger property bound to UI
         Model.StateChanged += OnStateChanged;
+    }
+
+    /// <summary>
+    /// The app theme changed (light / dark): the letter takes the colors of the new one.
+    /// </summary>
+    public void ApplyTheme(ITypingTheme theme)
+    {
+        _typingTheme = theme;
+        OnStateChanged();
     }
 
     private void OnStateChanged()

@@ -25,13 +25,24 @@ public partial class WordItemViewModel : ObservableObject
         HandsText = analysis switch
         {
             null => "",
-            { UsesLeftHand: true, UsesRightHand: false } => "main gauche",
-            { UsesLeftHand: false, UsesRightHand: true } => "main droite",
-            _ => "deux mains",
+            { UsesLeftHand: true, UsesRightHand: false } => "gauche",
+            { UsesLeftHand: false, UsesRightHand: true } => "droite",
+            _ => "deux",
+        };
+
+        HandsTooltip = analysis switch
+        {
+            null => "",
+            { UsesLeftHand: true, UsesRightHand: false } => "Main gauche seule",
+            { UsesLeftHand: false, UsesRightHand: true } => "Main droite seule",
+            _ => "Les deux mains",
         };
 
         if (analysis?.ExternalAccent == true)
-            HandsText += " · touche morte";
+            HandsText += " · morte";
+
+        if (analysis?.ExternalAccent == true)
+            HandsTooltip += ", avec une touche morte (accent tapé avant la lettre)";
     }
 
     public int Id { get; }
@@ -45,6 +56,15 @@ public partial class WordItemViewModel : ObservableObject
     public string LanguageCode { get; }
 
     public string HandsText { get; }
+
+    public string HandsTooltip { get; }
+
+    public bool HasHands => HandsText.Length > 0;
+
+    /// <summary>
+    /// Language code shown in capitals ("FR").
+    /// </summary>
+    public string LanguageLabel => LanguageCode.ToUpperInvariant();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsActive))]

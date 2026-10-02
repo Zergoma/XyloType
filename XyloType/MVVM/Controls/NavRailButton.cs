@@ -6,16 +6,30 @@ namespace XyloType.MVVM.Controls;
 
 /// <summary>
 /// A button of the navigation rail (left edge of the window): a flat icon, shaded on hover,
-/// on the accent color for the page being shown.
+/// on the main color for the page being shown.
+/// The main color is a dynamic resource set once on its own layer, only shown or hidden:
+/// removing and setting it again did not apply it any more.
 /// </summary>
 public class NavRailButton : ContentView
 {
     public static readonly BindableProperty IconProperty = BindableProperty.Create(
         nameof(Icon), typeof(Geometry), typeof(NavRailButton),
-        propertyChanged: (bindable, _, value) => ((NavRailButton)bindable)._path.Data = (Geometry?)value);
+        propertyChanged: (bindable, _, value) =>
+        {
+            NavRailButton button = (NavRailButton)bindable;
+            button._path.Data = (Geometry?)value;
+            button._activePath.Data = (Geometry?)value;
+        });
 
     public static readonly BindableProperty IsActiveProperty = BindableProperty.Create(
         nameof(IsActive), typeof(bool), typeof(NavRailButton), false,
+        propertyChanged: (bindable, _, _) => ((NavRailButton)bindable).ApplyColors());
+
+    /// <summary>
+    /// False when a group draws the selection itself (a sliding pill): the active button only changes its icon color.
+    /// </summary>
+    public static readonly BindableProperty UsesActiveBackgroundProperty = BindableProperty.Create(
+        nameof(UsesActiveBackground), typeof(bool), typeof(NavRailButton), true,
         propertyChanged: (bindable, _, _) => ((NavRailButton)bindable).ApplyColors());
 
     public event EventHandler? Clicked;
@@ -25,21 +39,21 @@ public class NavRailButton : ContentView
     private const double Size = 40;
     private const double IconSize = 20;
 
+    // icon of an inactive button (muted, brighter on hover) and of the active one (on the main color)
     private readonly Path _path;
+    private readonly Path _activePath;
+    private readonly BoxView _activeLayer;
     private readonly Border _frame;
     private bool _isPointerOver;
 
     public NavRailButton()
     {
-        _path = new Path
-        {
-            Aspect = Stretch.Uniform,
-            WidthRequest = IconSize,
-            HeightRequest = IconSize,
-            StrokeThickness = 0,
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Center,
-        };
+        _path = NewIcon();
+        _activePath = NewIcon();
+        _activePath.SetDynamicResource(Shape.FillProperty, "AccentForeground");
+
+        _activeLayer = new BoxView();
+        _activeLayer.SetDynamicResource(BoxView.ColorProperty, "Accent");
 
         _frame = new Border
         {
@@ -47,7 +61,7 @@ public class NavRailButton : ContentView
             HeightRequest = Size,
             StrokeThickness = 0,
             StrokeShape = new RoundRectangle { CornerRadius = 10 },
-            Content = _path,
+            Content = new Grid { Children = { _activeLayer, _path, _activePath } },
         };
 
         TapGestureRecognizer tap = new();
@@ -63,6 +77,17 @@ public class NavRailButton : ContentView
         ApplyColors();
     }
 
+    private static Path NewIcon()
+        => new()
+        {
+            Aspect = Stretch.Uniform,
+            WidthRequest = IconSize,
+            HeightRequest = IconSize,
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+        };
+
     public Geometry? Icon
     {
         get => (Geometry?)GetValue(IconProperty);
@@ -75,16 +100,19 @@ public class NavRailButton : ContentView
         set => SetValue(IsActiveProperty, value);
     }
 
+    public bool UsesActiveBackground
+    {
+        get => (bool)GetValue(UsesActiveBackgroundProperty);
+        set => SetValue(UsesActiveBackgroundProperty, value);
+    }
+
     private void ApplyColors()
     {
-        if (IsActive)
-        {
-            _frame.SetAppThemeColor(Border.BackgroundColorProperty, Resource("Primary"), Resource("PrimaryDark"));
-            _path.Fill = Colors.White;
-            return;
-        }
+        _activeLayer.IsVisible = IsActive && UsesActiveBackground;
+        _activePath.IsVisible = IsActive;
+        _path.IsVisible = !IsActive;
 
-        if (_isPointerOver)
+        if (_isPointerOver && !IsActive)
             _frame.SetAppThemeColor(Border.BackgroundColorProperty, Resource("RowHoverBgLight"), Resource("RowHoverBgDark"));
         else
             _frame.BackgroundColor = Colors.Transparent;

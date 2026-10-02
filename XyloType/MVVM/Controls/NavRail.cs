@@ -17,7 +17,7 @@ public class NavRail : ContentView
     private static readonly (AppSection Section, Geometry Icon, string Name)[] s_sections =
     [
         (AppSection.Home, Icons.Home, "Accueil"),
-        (AppSection.Exercises, Icons.List, "Exercices"),
+        (AppSection.Exercises, Icons.List, "Éditeur d'exercices"),
         (AppSection.Words, Icons.Words, "Mots"),
         (AppSection.Import, Icons.Import, "Import"),
     ];
@@ -51,11 +51,7 @@ public class NavRail : ContentView
         foreach (var (section, icon, name) in s_sections)
             bottom.Children.Add(AddButton(section, icon, () => name));
 
-        // thin line between the rail and the page
-        BoxView separator = new() { WidthRequest = 1, HorizontalOptions = LayoutOptions.End };
-        separator.SetAppThemeColor(BoxView.ColorProperty, Resource("BorderTypingRounded10BorderLight"), Resource("BorderTypingRounded10BorderDark"));
-
-        Grid rail = new() { WidthRequest = RailWidth, Children = { top, bottom, separator } };
+        Grid rail = new() { WidthRequest = RailWidth, Children = { top, bottom } };
         rail.SetAppThemeColor(BackgroundColorProperty, Resource("BorderBgStdLight"), Resource("BorderBgStdDark"));
         Content = rail;
     }

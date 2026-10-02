@@ -37,6 +37,13 @@ public class AppNavigator
     /// </summary>
     public event Action? StateChanged;
 
+    /// <summary>
+    /// A view is being created or loaded: the main page shows a loading veil (true), or hides it (false).
+    /// </summary>
+    public event Action<bool>? BusyChanged;
+
+    public bool IsBusy { get; private set; }
+
     public AppSection CurrentSection { get; private set; } = AppSection.Home;
 
     public View? CurrentView { get; private set; }
@@ -77,6 +84,9 @@ public class AppNavigator
     /// </summary>
     public async Task GoToSectionAsync(AppSection section)
     {
+        if (IsBusy)
+            return;
+
         if (section == CurrentSection || section == AppSection.Exercise)
             return;
 
@@ -85,6 +95,18 @@ public class AppNavigator
 
         // leaving the exercise ends it: there is no going back to it
         _exerciseView = null;
+
+        // first visit: the view is created, which takes a while
+        if (!_sectionViews.ContainsKey(section))
+        {
+            await RunBusyAsync(() =>
+            {
+                CurrentSection = section;
+                Show(SectionView(section));
+                return Task.CompletedTask;
+            });
+            return;
+        }
 
         CurrentSection = section;
         Show(SectionView(section));
@@ -109,6 +131,34 @@ public class AppNavigator
         CurrentSection = AppSection.Home;
         Show(SectionView(AppSection.Home));
     }
+
+    /// <summary>
+    /// Shows the loading veil while a long work runs on the UI thread (creating a view):
+    /// the veil is given the time to appear first, and to be removed once the new view is laid out.
+    /// </summary>
+    public async Task<T> RunBusyAsync<T>(Func<Task<T>> work)
+    {
+        IsBusy = true;
+        BusyChanged?.Invoke(true);
+        try
+        {
+            await Task.Delay(s_veilDelay);
+            T result = await work();
+            await Task.Delay(s_veilDelay);
+            return result;
+        }
+        finally
+        {
+            IsBusy = false;
+            BusyChanged?.Invoke(false);
+        }
+    }
+
+    public Task RunBusyAsync(Func<Task> work)
+        => RunBusyAsync(async () => { await work(); return true; });
+
+    // time for the veil to be drawn before the UI thread gets busy
+    private static readonly TimeSpan s_veilDelay = TimeSpan.FromMilliseconds(40);
 
     private void Show(View view)
     {

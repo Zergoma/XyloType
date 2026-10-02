@@ -943,6 +943,20 @@ public partial class TypingViewModel : ObservableObject
         RefreshLiveSpeed();
     }
 
+    /// <summary>
+    /// The app theme changed during the exercise: the letters take the colors of the new theme.
+    /// </summary>
+    public async Task RefreshTypingThemeAsync()
+    {
+        Result<ITypingTheme> theme =
+            await _typingThemeProvider.GetThemeAsync("XyloType_Typing_Theme", _themeChangerService.GetTheme());
+        if (!theme.Success)
+            return;
+
+        foreach (TypingLineStateViewModel line in LinesStates)
+            line.ApplyTheme(theme.GetValue);
+    }
+
     public void PauseTyping()
         => Session.Pause();
 

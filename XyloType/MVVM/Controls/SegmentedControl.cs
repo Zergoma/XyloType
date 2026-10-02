@@ -23,7 +23,9 @@ public class SegmentedControl : ContentView
 
     private readonly FlexLayout _segments;
     private readonly Border _indicator;
-    private readonly List<(object Item, Border Segment, Label Text)> _items = [];
+    // each option has two texts: normal, and on the main color when selected (a dynamic resource set once,
+    // only shown or hidden: removing and setting it again did not apply it any more)
+    private readonly List<(object Item, Border Segment, Label Text, Label SelectedText)> _items = [];
 
     public SegmentedControl()
     {
@@ -36,7 +38,7 @@ public class SegmentedControl : ContentView
             InputTransparent = true,
             Opacity = 0,
         };
-        _indicator.SetAppThemeColor(BackgroundColorProperty, Resource("Primary"), Resource("PrimaryDark"));
+        _indicator.SetDynamicResource(BackgroundColorProperty, "Accent");
 
         _segments = new FlexLayout { Wrap = Microsoft.Maui.Layouts.FlexWrap.Wrap };
         _segments.SizeChanged += (_, _) => OnSelectionChanged(animated: false);
@@ -84,6 +86,16 @@ public class SegmentedControl : ContentView
                 VerticalOptions = LayoutOptions.Center,
                 HorizontalOptions = LayoutOptions.Center,
             };
+            text.SetAppThemeColor(Label.TextColorProperty, Resource("TextTitleLight"), Resource("TextTitleDark"));
+
+            Label selectedText = new()
+            {
+                Text = item.ToString(),
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Center,
+                IsVisible = false,
+            };
+            selectedText.SetDynamicResource(Label.TextColorProperty, "AccentForeground");
 
             Border segment = new()
             {
@@ -91,7 +103,7 @@ public class SegmentedControl : ContentView
                 StrokeShape = new RoundRectangle { CornerRadius = 15 },
                 Padding = new Thickness(16, 6),
                 BackgroundColor = Colors.Transparent,
-                Content = text,
+                Content = new Grid { Children = { text, selectedText } },
             };
 
             TapGestureRecognizer tap = new();
@@ -111,7 +123,7 @@ public class SegmentedControl : ContentView
             segment.SizeChanged += (_, _) => OnSelectionChanged(animated: false);
 
             _segments.Children.Add(segment);
-            _items.Add((item, segment, text));
+            _items.Add((item, segment, text, selectedText));
         }
 
         OnSelectionChanged(animated: false);
@@ -119,17 +131,13 @@ public class SegmentedControl : ContentView
 
     private void OnSelectionChanged(bool animated)
     {
-        foreach (var (item, segment, text) in _items)
+        foreach (var (item, segment, text, selectedText) in _items)
         {
-            if (Equals(item, SelectedItem))
-            {
+            bool isSelected = Equals(item, SelectedItem);
+            text.IsVisible = !isSelected;
+            selectedText.IsVisible = isSelected;
+            if (isSelected)
                 segment.BackgroundColor = Colors.Transparent;
-                text.TextColor = Colors.White;
-            }
-            else
-            {
-                text.SetAppThemeColor(Label.TextColorProperty, Resource("TextTitleLight"), Resource("TextTitleDark"));
-            }
         }
 
         var selected = _items.FirstOrDefault(i => Equals(i.Item, SelectedItem));

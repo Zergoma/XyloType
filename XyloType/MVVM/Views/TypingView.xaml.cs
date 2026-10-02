@@ -89,6 +89,8 @@ public partial class TypingView : ContentView, IViewLifecycle
 
     public async void OnAppearing()
 	{
+        if (Microsoft.Maui.Controls.Application.Current is { } app)
+            app.RequestedThemeChanged += OnAppThemeChanged;
 
         StartLiveSpeedTimer();
 
@@ -104,6 +106,16 @@ public partial class TypingView : ContentView, IViewLifecycle
     public void OnDisappearing()
     {
         _liveSpeedTimer?.Stop();
+
+        if (Microsoft.Maui.Controls.Application.Current is { } app)
+            app.RequestedThemeChanged -= OnAppThemeChanged;
+    }
+
+    // the letters already shown take the colors of the new theme
+    private async void OnAppThemeChanged(object? sender, AppThemeChangedEventArgs e)
+    {
+        if (BindingContext is TypingViewModel vm)
+            await vm.RefreshTypingThemeAsync();
     }
 
     // the live speed also falls when no key is typed
