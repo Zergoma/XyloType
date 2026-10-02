@@ -126,4 +126,18 @@
     <Color x:Key="ButtonPrimaryTextPressedDark">#FFFFFF</Color>
     <Color x:Key="ButtonPrimaryTextPressedLight">#FFFFFF</Color>
 
+    <!-- Danger button hover (button_row_exclude) -->
+    <Color x:Key="ButtonDangerBgHoverDark">#DC2626</Color>
+    <Color x:Key="ButtonDangerBgHoverLight">#DC2626</Color>
+
+    <Color x:Key="ButtonDangerBgPressedDark">#B91C1C</Color>
+    <Color x:Key="ButtonDangerBgPressedLight">#B91C1C</Color>
+
+    <!-- Table rows (words explorer) -->
+    <Color x:Key="RowExcludedBgDark">#3A2328</Color>
+    <Color x:Key="RowExcludedBgLight">#FDE8E8</Color>
+
+    <Color x:Key="RowHoverBgDark">#33FFFFFF</Color>
+    <Color x:Key="RowHoverBgLight">#240F172A</Color>
+
 </ResourceDictionary>

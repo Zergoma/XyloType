@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using XyloType.Application.Interfaces;
 using XyloType.Application.Models;
 using XyloType.Domain.Entities;
+using XyloType.Domain.Enums;
 using XyloType.Infrastructure.DbContexts;
 
 namespace XyloType.Infrastructure.Repositories;
@@ -104,6 +105,12 @@ public class DactyloRepository : IDactyloRepository
             (WordSortField.Text, true) => query.OrderByDescending(w => w.Text),
             (WordSortField.Length, false) => query.OrderBy(w => w.Length).ThenBy(w => w.Text),
             (WordSortField.Length, true) => query.OrderByDescending(w => w.Length).ThenBy(w => w.Text),
+            (WordSortField.Hands, false) => OrderByHands(query, criteria.Layout, descending: false),
+            (WordSortField.Hands, true) => OrderByHands(query, criteria.Layout, descending: true),
+            (WordSortField.Language, false) => query.OrderBy(w => w.LanguageCode).ThenBy(w => w.Text),
+            (WordSortField.Language, true) => query.OrderByDescending(w => w.LanguageCode).ThenBy(w => w.Text),
+            (WordSortField.Excluded, false) => query.OrderBy(w => w.IsExcluded).ThenBy(w => w.Text),
+            (WordSortField.Excluded, true) => query.OrderByDescending(w => w.IsExcluded).ThenBy(w => w.Text),
             (_, false) => query.OrderBy(w => w.OccurrenceCount).ThenBy(w => w.Text),
             _ => query.OrderByDescending(w => w.OccurrenceCount).ThenBy(w => w.Text),
         };
@@ -124,6 +131,29 @@ public class DactyloRepository : IDactyloRepository
         await ctx.Words
             .Where(w => w.Id == wordId)
             .ExecuteUpdateAsync(s => s.SetProperty(w => w.IsExcluded, excluded));
+    }
+
+    /// <summary>
+    /// Left hand only, then right hand only, then both hands (on the given keyboard),
+    /// words with a dead key after the others.
+    /// </summary>
+    private static IOrderedQueryable<Word> OrderByHands(IQueryable<Word> query, KeyboardLayout? layout, bool descending)
+    {
+        System.Linq.Expressions.Expression<Func<Word, int>> hands = w => w.Analyses
+            .Where(a => layout == null || a.Layout == layout)
+            .Select(a => a.UsesLeftHand && !a.UsesRightHand ? 0 : !a.UsesLeftHand && a.UsesRightHand ? 1 : 2)
+            .FirstOrDefault();
+
+        System.Linq.Expressions.Expression<Func<Word, bool>> deadKey = w => w.Analyses
+            .Where(a => layout == null || a.Layout == layout)
+            .Select(a => a.ExternalAccent)
+            .FirstOrDefault();
+
+        IOrderedQueryable<Word> ordered = descending
+            ? query.OrderByDescending(hands).ThenByDescending(deadKey)
+            : query.OrderBy(hands).ThenBy(deadKey);
+
+        return ordered.ThenBy(w => w.Text);
     }
 
     private static IQueryable<Word> BuildQuery(DactyloDbContext ctx, WordSearchCriteria criteria)
@@ -201,6 +231,11 @@ public class DactyloRepository : IDactyloRepository
         if (criteria.MinOccurrences.HasValue)
         {
             query = query.Where(w => w.OccurrenceCount >= criteria.MinOccurrences.Value);
+        }
+
+        if (criteria.MaxOccurrences.HasValue)
+        {
+            query = query.Where(w => w.OccurrenceCount <= criteria.MaxOccurrences.Value);
         }
 
         if (criteria.Hands != HandFilter.Any)

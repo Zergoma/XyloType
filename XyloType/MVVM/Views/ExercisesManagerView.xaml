@@ -252,15 +252,16 @@
                         <!-- word source: drawn at each game (dynamic) or used by "Générer" (fixed text) -->
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                             <VerticalStackLayout Spacing="6">
-                                <Label Text="Langue" StyleClass="label_field"/>
-                                <Picker ItemsSource="{Binding LanguageAvailable}"
-                                        SelectedItem="{Binding LanguageSelected}"
-                                        StyleClass="picker_themed"/>
-                            </VerticalStackLayout>
-                            <VerticalStackLayout Grid.Column="1" Spacing="6">
                                 <Label Text="Source des mots" StyleClass="label_field"/>
                                 <Picker ItemsSource="{Binding GenerationTypeSourceAvailable}"
                                         SelectedItem="{Binding GenerationTypeSourceSelected}"
+                                        StyleClass="picker_themed"/>
+                            </VerticalStackLayout>
+                            <!-- pseudo words are invented from the letters: no language -->
+                            <VerticalStackLayout Grid.Column="1" Spacing="6" IsVisible="{Binding IsLanguageUsed}">
+                                <Label Text="Langue" StyleClass="label_field"/>
+                                <Picker ItemsSource="{Binding LanguageAvailable}"
+                                        SelectedItem="{Binding LanguageSelected}"
                                         StyleClass="picker_themed"/>
                             </VerticalStackLayout>
                         </Grid>

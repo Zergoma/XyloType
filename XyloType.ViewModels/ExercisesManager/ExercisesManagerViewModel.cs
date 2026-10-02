@@ -355,6 +355,11 @@ public partial class ExercisesManagerViewModel : ObservableObject
     [ObservableProperty]
     public partial GeneratedTypeSourceDto? GenerationTypeSourceSelected { get; set; }
 
+    /// <summary>
+    /// Only the imported words come in a language: invented pseudo words do not need one.
+    /// </summary>
+    public bool IsLanguageUsed => GenerationTypeSourceSelected == GeneratedTypeSourceDto.Words;
+
     partial void OnExerciseNameChanged(string value) => ApplyEditor();
     partial void OnDescriptionChanged(string value) => ApplyEditor();
     partial void OnAllowedCharsChanged(string value) => ApplyEditor();
@@ -362,7 +367,11 @@ public partial class ExercisesManagerViewModel : ObservableObject
     partial void OnMinLengthWordChanged(int value) => ApplyEditor();
     partial void OnMaxLengthWordChanged(int value) => ApplyEditor();
     partial void OnLanguageSelectedChanged(string? value) => ApplyEditor();
-    partial void OnGenerationTypeSourceSelectedChanged(GeneratedTypeSourceDto? value) => ApplyEditor();
+    partial void OnGenerationTypeSourceSelectedChanged(GeneratedTypeSourceDto? value)
+    {
+        OnPropertyChanged(nameof(IsLanguageUsed));
+        ApplyEditor();
+    }
 
     partial void OnGeneratedTextChanged(string value)
     {

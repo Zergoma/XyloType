@@ -67,6 +67,12 @@ public sealed class WordQueryBuilder
         return this;
     }
 
+    public WordQueryBuilder WithMaxOccurrences(int value)
+    {
+        _criteria = _criteria with { MaxOccurrences = value };
+        return this;
+    }
+
     public WordQueryBuilder WithHands(HandFilter hands)
     {
         _criteria = _criteria with { Hands = hands };

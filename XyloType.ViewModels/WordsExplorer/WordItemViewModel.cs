@@ -47,8 +47,8 @@ public partial class WordItemViewModel : ObservableObject
     public string HandsText { get; }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ExcludeActionText))]
+    [NotifyPropertyChangedFor(nameof(IsActive))]
     public partial bool IsExcluded { get; set; }
 
-    public string ExcludeActionText => IsExcluded ? "Restaurer" : "Exclure";
+    public bool IsActive => !IsExcluded;
 }
