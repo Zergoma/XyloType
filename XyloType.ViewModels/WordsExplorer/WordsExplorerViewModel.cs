@@ -79,6 +79,7 @@ public partial class WordsExplorerViewModel : ObservableObject
     [ObservableProperty] public partial string MinLength { get; set; } = string.Empty;
     [ObservableProperty] public partial string MaxLength { get; set; } = string.Empty;
     [ObservableProperty] public partial string MinOccurrences { get; set; } = string.Empty;
+    [ObservableProperty] public partial string MaxOccurrences { get; set; } = string.Empty;
     [ObservableProperty] public partial PickerOption<string?> LanguageSelected { get; set; }
     [ObservableProperty] public partial PickerOption<HandFilter> HandsSelected { get; set; }
     [ObservableProperty] public partial PickerOption<WordExclusionFilter> ExclusionSelected { get; set; }
@@ -89,9 +90,10 @@ public partial class WordsExplorerViewModel : ObservableObject
     partial void OnMinLengthChanged(string value) => ScheduleSearch();
     partial void OnMaxLengthChanged(string value) => ScheduleSearch();
     partial void OnMinOccurrencesChanged(string value) => ScheduleSearch();
-    partial void OnLanguageSelectedChanged(PickerOption<string?> value) => ScheduleSearch();
-    partial void OnHandsSelectedChanged(PickerOption<HandFilter> value) => ScheduleSearch();
-    partial void OnExclusionSelectedChanged(PickerOption<WordExclusionFilter> value) => ScheduleSearch();
+    partial void OnMaxOccurrencesChanged(string value) => ScheduleSearch();
+    partial void OnLanguageSelectedChanged(PickerOption<string?> value) => OnColumnFilterChanged();
+    partial void OnHandsSelectedChanged(PickerOption<HandFilter> value) => OnColumnFilterChanged();
+    partial void OnExclusionSelectedChanged(PickerOption<WordExclusionFilter> value) => OnColumnFilterChanged();
 
     [RelayCommand]
     public void ResetFilters()
@@ -101,6 +103,7 @@ public partial class WordsExplorerViewModel : ObservableObject
         MinLength = string.Empty;
         MaxLength = string.Empty;
         MinOccurrences = string.Empty;
+        MaxOccurrences = string.Empty;
         LanguageSelected = LanguageOptions[0];
         HandsSelected = HandsOptions[0];
         ExclusionSelected = ExclusionOptions[0];
@@ -115,6 +118,9 @@ public partial class WordsExplorerViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(TextHeader))]
     [NotifyPropertyChangedFor(nameof(OccurrencesHeader))]
     [NotifyPropertyChangedFor(nameof(LengthHeader))]
+    [NotifyPropertyChangedFor(nameof(HandsHeader))]
+    [NotifyPropertyChangedFor(nameof(LanguageHeader))]
+    [NotifyPropertyChangedFor(nameof(ExcludedHeader))]
     public partial WordSort Sort { get; set; } = WordSort.Default;
 
     partial void OnSortChanged(WordSort value) => ScheduleSearch();
@@ -122,23 +128,62 @@ public partial class WordsExplorerViewModel : ObservableObject
     public string TextHeader => Header("MOT", WordSortField.Text);
     public string OccurrencesHeader => Header("OCCURRENCES", WordSortField.Occurrences);
     public string LengthHeader => Header("LONGUEUR", WordSortField.Length);
+    public string HandsHeader => Header("MAIN(S)", WordSortField.Hands);
+    public string LanguageHeader => Header("LANGUE", WordSortField.Language);
+    public string ExcludedHeader => Header("EXCLU", WordSortField.Excluded);
 
     /// <summary>
     /// Usual table behavior: a click sorts by the column, a second click reverses the order.
-    /// Numbers start with the biggest, words with "a".
+    /// Numbers start with the biggest, the excluded words come first, the others in alphabetical order.
     /// </summary>
     [RelayCommand]
     public void SortBy(string column)
     {
         WordSortField field = Enum.Parse<WordSortField>(column);
+        if (!IsSortable(field))
+            return;
 
         Sort = Sort.Field == field
             ? Sort with { Descending = !Sort.Descending }
-            : new WordSort(field, Descending: field != WordSortField.Text);
+            : new WordSort(field, Descending: field is WordSortField.Occurrences or WordSortField.Length or WordSortField.Excluded);
     }
 
+    /// <summary>
+    /// A column filtered down to a single value (one language, one hand, only active or excluded words)
+    /// has nothing to sort.
+    /// </summary>
+    public bool IsSortable(WordSortField field) => field switch
+    {
+        WordSortField.Language => LanguageSelected?.Value is null,
+        WordSortField.Hands => HandsSelected?.Value is null or HandFilter.Any,
+        WordSortField.Excluded => ExclusionSelected?.Value == WordExclusionFilter.All,
+        _ => true,
+    };
+
+    /// <summary>
+    /// Sorted column: its direction. Other sortable columns: an icon showing a click sorts them.
+    /// </summary>
     private string Header(string label, WordSortField field)
-        => Sort.Field != field ? label : $"{label} {(Sort.Descending ? "▼" : "▲")}";
+    {
+        if (!IsSortable(field))
+            return label;
+
+        return Sort.Field == field
+            ? $"{label} {(Sort.Descending ? "▼" : "▲")}"
+            : $"{label} ↕";
+    }
+
+    private void OnColumnFilterChanged()
+    {
+        // the sorted column was just filtered down to a single value: back to the usual order
+        if (!IsSortable(Sort.Field))
+            Sort = WordSort.Default;
+
+        OnPropertyChanged(nameof(HandsHeader));
+        OnPropertyChanged(nameof(LanguageHeader));
+        OnPropertyChanged(nameof(ExcludedHeader));
+        ScheduleSearch();
+    }
 
     #endregion
     #region Results
@@ -166,6 +211,35 @@ public partial class WordsExplorerViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsSearching { get; set; }
 
+    /// <summary>
+    /// A new list is being loaded (not the next page while scrolling): shown over the results
+    /// only when it takes a while, so quick searches do not flash.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsLoading { get; set; }
+
+    private static readonly TimeSpan s_loadingDelay = TimeSpan.FromMilliseconds(200);
+    private int _loadingVersion;
+
+    private void BeginLoading()
+    {
+        int version = ++_loadingVersion;
+        _ = ShowLoadingLaterAsync(version);
+    }
+
+    private async Task ShowLoadingLaterAsync(int version)
+    {
+        await Task.Delay(s_loadingDelay);
+        if (version == _loadingVersion)
+            IsLoading = true;
+    }
+
+    private void EndLoading()
+    {
+        _loadingVersion++;
+        IsLoading = false;
+    }
+
     [ObservableProperty]
     public partial string ErrorText { get; set; } = string.Empty;
 
@@ -186,8 +260,16 @@ public partial class WordsExplorerViewModel : ObservableObject
                 _layout = layoutResult.GetValue;
         }
 
-        await RefreshDatabaseTextAsync();
-        await SearchAsync();
+        BeginLoading();
+        try
+        {
+            await RefreshDatabaseTextAsync();
+            await SearchAsync();
+        }
+        finally
+        {
+            EndLoading();
+        }
     }
 
     private void ScheduleSearch()
@@ -213,6 +295,7 @@ public partial class WordsExplorerViewModel : ObservableObject
         _currentSort = Sort;
 
         IsSearching = true;
+        BeginLoading();
         ErrorText = string.Empty;
         try
         {
@@ -232,6 +315,7 @@ public partial class WordsExplorerViewModel : ObservableObject
         finally
         {
             IsSearching = false;
+            EndLoading();
         }
     }
 
@@ -298,6 +382,9 @@ public partial class WordsExplorerViewModel : ObservableObject
 
         if (int.TryParse(MinOccurrences, out int occurrences) && occurrences > 0)
             builder.WithMinOccurrences(occurrences);
+
+        if (int.TryParse(MaxOccurrences, out int maxOccurrences) && maxOccurrences > 0)
+            builder.WithMaxOccurrences(maxOccurrences);
 
         return builder.Build();
     }

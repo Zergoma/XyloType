@@ -10,7 +10,6 @@ public static class PresenterModule
     {
         services.AddTransient<IChoosePath, MauiChooseFilePresenter>();
         services.AddTransient<IThemeChangerService, MauiThemeChangerService>();
-        services.AddTransient<IThemeIconeCodeProvider, ThemeIconeCodeProvider>();
 
 
         // TODO

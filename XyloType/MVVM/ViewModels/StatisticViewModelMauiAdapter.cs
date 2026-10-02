@@ -1,12 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
 
-using Microcharts;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 using Microsoft.Extensions.Logging;
 
 using XyloType.ViewModels.Statistic;
-
-using SkiaSharp;
 
 using XyloType.Application.Interfaces;
 using XyloType.Application.Models.Themes;
@@ -18,12 +16,6 @@ namespace XyloType.MVVM.ViewModels;
 public partial class StatisticViewModelMauiAdapter : ObservableObject
 {
     private readonly StatisticViewModel _statisticViewModel;
-
-    [ObservableProperty]
-    public partial BarChart TimeResponseChart { get; set; }
-
-    [ObservableProperty]
-    public partial RadarChart ErrorsChart { get; set; }
 
     private readonly IChartResponseTimeColorsProvider _chartResponseTimeColorsProvider;
     private readonly IChartErrorProvider _chartErrorColorsProvider;
@@ -92,18 +84,35 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
         }
     }
 
-    public bool ShowSpeedSection => Core.ShowSpeed || Core.ShowResponseTime;
-    public bool ShowErrorsChart => Core.ShowErrors && HasError;
-    public bool ShowNoErrorMessage => Core.ShowErrors && !HasError;
+    public bool ShowErrorsChart => HasError;
+    public bool ShowNoErrorMessage => !HasError;
 
     [ObservableProperty]
     public partial bool HasError { get; set; } = false;
 
+    // keys whose values differ by less than this are grouped, when the grouping is on
+    private const double ResponseTimeTolerance = 0.1;
+    private const double ErrorRateTolerance = 5;
+
+    // a pause would make every other bar useless: 5 s at most per key
+    private const double MaxResponseTime = 5;
+
+    private readonly List<KeyValue> _responseTimes = [];
+    private readonly List<KeyValue> _errorRates = [];
+    private readonly Dictionary<char, CharStats> _errorStats = [];
+
+    /// <summary>
+    /// Average response time per key, slowest first.
+    /// </summary>
+    public ObservableCollection<StatBarItem> ResponseTimeBars { get; } = [];
+
+    /// <summary>
+    /// Share of the occurrences of each key typed wrong at least once, worst first.
+    /// </summary>
+    public ObservableCollection<StatBarItem> ErrorBars { get; } = [];
+
     public void Init()
     {
-        List<ChartEntry> gatherResponseTime = [];
-        List<ChartEntry> gatherError = [];
-
         foreach (KeyValuePair<char, CharStats> item in _statisticViewModel.Statistics)
         {
             CharStats charStats = item.Value;
@@ -112,74 +121,32 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
             TotalErrors += charStats.RealErrors.Count;
             TotalCharsWithError += charStats.NbCharError;
 
-            // We concidere 5sec as the maximum time to press the key
-            // This to avoid to have chart useless because of a pause
-            double timeResponseAverage = Math.Min(charStats.ResponseTimeAverage.TotalSeconds, 5.0);
-
-            SKColor colorLabel = SKColor.Parse(_chartResponseTimeColorsProvider.GetHexColorTimeResponse(timeResponseAverage, _themeState));
-            SKColor colorText = SKColor.Parse(_chartResponseTimeColorsProvider.GetHexColorTxtLabel(_themeState));
-
-            var timeResponseEntry =
-                new ChartEntry((float)timeResponseAverage)
-                {
-                    Label = item.Key.ToString(),
-                    ValueLabel = $"{timeResponseAverage:f2}",
-                    Color = colorLabel,
-                    ValueLabelColor = colorText,
-                    TextColor = colorText,
-                };
-
-            gatherResponseTime.Add(timeResponseEntry);
-
+            _responseTimes.Add(new KeyValue(item.Key, Math.Min(charStats.ResponseTimeAverage.TotalSeconds, MaxResponseTime)));
 
             if (charStats.NbCharError > 0)
             {
-                double errorPercentage = 
-                    charStats.NbOccurence > 0
-                    ? charStats.NbCharError*100.0 / charStats.NbOccurence
+                double errorPercentage = charStats.NbOccurence > 0
+                    ? charStats.NbCharError * 100.0 / charStats.NbOccurence
                     : 100.0;
 
-                SKColor colorError = SKColor.Parse(_chartErrorColorsProvider.GetHexColorError(errorPercentage, _themeState));
-
-                var errorEntry =
-                    new ChartEntry((float)errorPercentage)
-                    {
-                        Label = item.Key.ToString(),
-                        ValueLabel = $"{charStats.NbCharError}/{charStats.NbOccurence} ({errorPercentage:f2})%",
-                        Color = colorError,
-                        ValueLabelColor = colorText,
-                        TextColor = colorText,
-                    };
-                gatherError.Add(errorEntry);
+                _errorRates.Add(new KeyValue(item.Key, errorPercentage));
+                _errorStats[item.Key] = charStats;
             }
-
         }
 
+        HasError = _errorRates.Count > 0;
 
-        SKColor colorBg = SKColor.Parse(_chartResponseTimeColorsProvider.GetHexColorBg(_themeState));
+        BuildResponseTimeBars();
+        BuildErrorBars();
 
-        TimeResponseChart =
-            new BarChart()
-            {
-                Entries = [.. gatherResponseTime.OrderByDescending(x => x.Value)],
-                MinValue = 0,
-                //MaxValue = 5,
-                LabelOrientation = Orientation.Horizontal,
-                BackgroundColor = colorBg,
-                CornerRadius = 5,
-            };
-
-        HasError = gatherError.Count > 0;
-
-        ErrorsChart =
-            new RadarChart()
-            {
-                Entries = [.. gatherError.OrderByDescending(x => x.Value)],
-                MinValue = 0,
-                LabelTextSize = 10,
-                BackgroundColor = colorBg,
-            };
-
+        // the grouping switches rebuild their chart
+        Core.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(StatisticViewModel.GroupResponseTimes))
+                BuildResponseTimeBars();
+            else if (e.PropertyName == nameof(StatisticViewModel.GroupErrors))
+                BuildErrorBars();
+        };
 
         _logger.LogInformation(
             "Letters per minute {LPM}, Words per minute {WPM}, Errors {CharsError}",
@@ -194,4 +161,48 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
             )));
     }
 
+    private void BuildResponseTimeBars()
+    {
+        IReadOnlyList<KeyGroup> groups = StatBars.Group(_responseTimes, ResponseTimeTolerance, Core.GroupResponseTimes);
+        double max = groups.Count > 0 ? Math.Max(groups.Max(g => g.Value), 0.01) : 1;
+
+        ResponseTimeBars.Clear();
+        foreach (KeyGroup group in groups)
+        {
+            ResponseTimeBars.Add(new StatBarItem(
+                StatBars.Label(group.Keys),
+                group.Value,
+                group.IsSingle ? $"{group.Value:0.00} s" : $"≈ {group.Value:0.00} s",
+                group.Value / max,
+                _chartResponseTimeColorsProvider.GetHexColorTimeResponse(group.Value, _themeState)));
+        }
+    }
+
+    private void BuildErrorBars()
+    {
+        IReadOnlyList<KeyGroup> groups = StatBars.Group(_errorRates, ErrorRateTolerance, Core.GroupErrors);
+        double max = groups.Count > 0 ? Math.Max(groups.Max(g => g.Value), 1) : 1;
+
+        ErrorBars.Clear();
+        foreach (KeyGroup group in groups)
+        {
+            string valueText;
+            if (group.IsSingle)
+            {
+                CharStats stats = _errorStats[group.Keys[0].Key];
+                valueText = $"{stats.NbCharError}/{stats.NbOccurence} ({group.Value:0} %)";
+            }
+            else
+            {
+                valueText = $"≈ {group.Value:0} %";
+            }
+
+            ErrorBars.Add(new StatBarItem(
+                StatBars.Label(group.Keys),
+                group.Value,
+                valueText,
+                group.Value / max,
+                _chartErrorColorsProvider.GetHexColorError(group.Value, _themeState)));
+        }
+    }
 }

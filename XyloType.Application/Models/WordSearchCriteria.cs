@@ -36,6 +36,8 @@ public struct WordSearchCriteria
 
     public int? MinOccurrences { get; set; }
 
+    public int? MaxOccurrences { get; set; }
+
     /// <summary>
     /// Hands needed to type the word (requires <see cref="Layout"/> to be meaningful).
     /// </summary>
@@ -66,7 +68,10 @@ public enum WordSortField
 {
     Occurrences = 0,
     Text,
-    Length
+    Length,
+    Hands,
+    Language,
+    Excluded
 }
 
 /// <summary>

@@ -259,6 +259,10 @@ public sealed class WordImportIntegrationTests : IDisposable
             new WordQueryBuilder().WithText("CH").WithMinOccurrences(2).Build(), new WordSort(WordSortField.Text, false), 0, 50);
         contains.Words.Select(w => w.Text).Should().Equal("chat");
 
+        WordSearchPage occurrenceRange = await repository.SearchPageAsync(
+            new WordQueryBuilder().WithMinOccurrences(2).WithMaxOccurrences(2).Build(), new WordSort(WordSortField.Text, false), 0, 50);
+        occurrenceRange.Words.Select(w => w.Text).Should().Equal("chat");
+
         WordSearchPage longestFirst = await repository.SearchPageAsync(
             new WordSearchCriteria(), new WordSort(WordSortField.Length, Descending: true), 0, 1);
         longestFirst.Words.Single().Text.Should().Be("caresse");
@@ -266,6 +270,30 @@ public sealed class WordImportIntegrationTests : IDisposable
         WordSearchPage leftHand = await repository.SearchPageAsync(
             new WordQueryBuilder().WithLayout(KeyboardLayout.AzertyFr).WithHands(HandFilter.LeftOnly).Build(), new WordSort(WordSortField.Text, false), 0, 50);
         leftHand.Words.Select(w => w.Text).Should().Equal("caresse", "vert");
+    }
+
+    [Fact]
+    public async Task SearchPage_SortsByHandsAndExclusion()
+    {
+        await CreateOrchestrator().ImportAsync(
+            WriteText("le le le chat chat chien vert caresse fête"), "fr", new AzertyKeysLocator());
+        DactyloRepository repository = CreateRepository();
+        WordSearchCriteria azerty = new WordQueryBuilder().WithLayout(KeyboardLayout.AzertyFr).Build();
+
+        // left hand only first
+        WordSearchPage byHands = await repository.SearchPageAsync(azerty, new WordSort(WordSortField.Hands, false), 0, 2);
+        byHands.Words.Select(w => w.Text).Should().Equal("caresse", "vert");
+
+        WordSearchPage byHandsDescending = await repository.SearchPageAsync(azerty, new WordSort(WordSortField.Hands, true), 0, 50);
+        byHandsDescending.Words.TakeLast(2).Select(w => w.Text).Should().Equal("caresse", "vert");
+
+        int vert = byHands.Words.Single(w => w.Text == "vert").Id;
+        await repository.SetExcludedAsync(vert, excluded: true);
+
+        WordSearchPage excludedFirst = await repository.SearchPageAsync(
+            new WordSearchCriteria { Exclusion = WordExclusionFilter.All }, new WordSort(WordSortField.Excluded, true), 0, 50);
+        excludedFirst.Words.First().Text.Should().Be("vert");
+        excludedFirst.Words.Skip(1).Should().OnlyContain(w => !w.IsExcluded);
     }
 
     [Fact]

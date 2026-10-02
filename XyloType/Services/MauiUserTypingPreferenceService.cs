@@ -20,6 +20,12 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
     private const string ScoreShuffleKey = "sound_score_shuffle";
     private const string InstrumentKey = "sound_instrument";
     private const string DisabledInstrumentsKey = "sound_disabled_instruments";
+    private const string ShowTypingProgressKey = "display_typing_progress";
+    private const string ShowLiveSpeedKey = "display_live_speed";
+    private const string ShowScoreProgressKey = "display_score_progress";
+    private const string ShowScoreChangeMarkerKey = "display_score_change_marker";
+    private const string GroupResponseTimesKey = "result_group_response_times";
+    private const string GroupErrorsKey = "result_group_errors";
 
     private const double DefaultOkVolume = .3;
     private const double DefaultErrorVolume = .4;
@@ -83,10 +89,28 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
     public void SetShowErrorsResult(bool show)
         => Preferences.Default.Set(ShowErrorsResultKey, show);
 
+    public bool GetGroupResponseTimes()
+        => Preferences.Default.Get(GroupResponseTimesKey, false);
+
+    public void SetGroupResponseTimes(bool group)
+        => Preferences.Default.Set(GroupResponseTimesKey, group);
+
+    public bool GetGroupErrors()
+        => Preferences.Default.Get(GroupErrorsKey, false);
+
+    public void SetGroupErrors(bool group)
+        => Preferences.Default.Set(GroupErrorsKey, group);
+
     public OkSoundMode GetOkSoundMode()
-        => Enum.TryParse(Preferences.Default.Get(OkSoundModeKey, nameof(OkSoundMode.Standard)), out OkSoundMode mode)
-            ? mode
-            : OkSoundMode.Standard;
+    {
+        string saved = Preferences.Default.Get(OkSoundModeKey, nameof(OkSoundMode.Standard));
+
+        // before songs and instrumental pieces were told apart, every piece was a "Score"
+        if (saved == "Score")
+            return OkSoundMode.Instrumental;
+
+        return Enum.TryParse(saved, out OkSoundMode mode) ? mode : OkSoundMode.Standard;
+    }
 
     public void SetOkSoundMode(OkSoundMode mode)
         => Preferences.Default.Set(OkSoundModeKey, mode.ToString());
@@ -104,6 +128,30 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
 
     public void SetScoreShuffle(bool shuffle)
         => Preferences.Default.Set(ScoreShuffleKey, shuffle);
+
+    public bool GetShowTypingProgress()
+        => Preferences.Default.Get(ShowTypingProgressKey, true);
+
+    public void SetShowTypingProgress(bool show)
+        => Preferences.Default.Set(ShowTypingProgressKey, show);
+
+    public bool GetShowLiveSpeed()
+        => Preferences.Default.Get(ShowLiveSpeedKey, true);
+
+    public void SetShowLiveSpeed(bool show)
+        => Preferences.Default.Set(ShowLiveSpeedKey, show);
+
+    public bool GetShowScoreProgress()
+        => Preferences.Default.Get(ShowScoreProgressKey, true);
+
+    public void SetShowScoreProgress(bool show)
+        => Preferences.Default.Set(ShowScoreProgressKey, show);
+
+    public bool GetShowScoreChangeMarker()
+        => Preferences.Default.Get(ShowScoreChangeMarkerKey, true);
+
+    public void SetShowScoreChangeMarker(bool show)
+        => Preferences.Default.Set(ShowScoreChangeMarkerKey, show);
 
     public InstrumentChoice GetInstrument()
         => Enum.TryParse(Preferences.Default.Get(InstrumentKey, nameof(InstrumentChoice.Xylophone)), out InstrumentChoice instrument)

@@ -171,4 +171,37 @@
         </Setter>
     </Style>
 
+    <!-- row action "Exclure": neutral, turns red when hovered so it stands out on the highlighted row -->
+    <Style TargetType="Button" Class="button_row_exclude">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonNeutralBgLight}, Dark={StaticResource ButtonNeutralBgDark}}"/>
+        <Setter Property="TextColor" Value="White"/>
+
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup Name="CommonStates">
+
+                    <VisualState Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonNeutralBgLight}, Dark={StaticResource ButtonNeutralBgDark}}"/>
+                        </VisualState.Setters>
+                    </VisualState>
+
+                    <VisualState Name="PointerOver">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonDangerBgHoverLight}, Dark={StaticResource ButtonDangerBgHoverDark}}"/>
+                        </VisualState.Setters>
+                    </VisualState>
+
+                    <VisualState Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ButtonDangerBgPressedLight}, Dark={StaticResource ButtonDangerBgPressedDark}}"/>
+                            <Setter Property="Scale" Value="0.98"/>
+                        </VisualState.Setters>
+                    </VisualState>
+
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

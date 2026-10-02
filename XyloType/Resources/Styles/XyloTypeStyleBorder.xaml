@@ -23,10 +23,6 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource BorderBgDescriptionLight}, Dark={StaticResource BorderBgDescriptionDark}}" />
     </Style>
 
-    <Style TargetType="Border" Class="BorderBgBlue">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource BorderBgBlueLight}, Dark={StaticResource BorderBgBlueDark}}" />
-    </Style>
-
 
     <Style TargetType="Border" Class="BorderBgTyping">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource BorderBgTypingLight}, Dark={StaticResource BorderBgTypingDark}}" />

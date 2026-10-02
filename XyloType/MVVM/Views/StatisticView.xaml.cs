@@ -19,6 +19,19 @@ public partial class StatisticView : ContentPage
         ActionsBar.SizeChanged += (_, _) => UpdateContentPadding();
     }
 
+    // the grouping labels switch their grouping too
+    private void GroupResponseTimes_Tapped(object? sender, TappedEventArgs e)
+    {
+        if (BindingContext is StatisticViewModelMauiAdapter vm)
+            vm.Core.GroupResponseTimes = !vm.Core.GroupResponseTimes;
+    }
+
+    private void GroupErrors_Tapped(object? sender, TappedEventArgs e)
+    {
+        if (BindingContext is StatisticViewModelMauiAdapter vm)
+            vm.Core.GroupErrors = !vm.Core.GroupErrors;
+    }
+
     /// <summary>
     /// Keeps the first and last results reachable: they must be able to scroll out from under the bars.
     /// </summary>

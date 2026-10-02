@@ -38,6 +38,18 @@ public interface IUserTypingPreferenceService
     bool GetShowErrorsResult();
     void SetShowErrorsResult(bool show);
 
+    /// <summary>
+    /// Results: keys with close response times shown on a single row.
+    /// </summary>
+    bool GetGroupResponseTimes();
+    void SetGroupResponseTimes(bool group);
+
+    /// <summary>
+    /// Results: keys with close error rates shown on a single row.
+    /// </summary>
+    bool GetGroupErrors();
+    void SetGroupErrors(bool group);
+
     OkSoundMode GetOkSoundMode();
     void SetOkSoundMode(OkSoundMode mode);
 
@@ -49,6 +61,30 @@ public interface IUserTypingPreferenceService
     /// </summary>
     bool GetScoreShuffle();
     void SetScoreShuffle(bool shuffle);
+
+    /// <summary>
+    /// Progress bar above the text.
+    /// </summary>
+    bool GetShowTypingProgress();
+    void SetShowTypingProgress(bool show);
+
+    /// <summary>
+    /// Live typing speed (words per minute over the last seconds) above the text.
+    /// </summary>
+    bool GetShowLiveSpeed();
+    void SetShowLiveSpeed(bool show);
+
+    /// <summary>
+    /// Progress of the piece of music, behind its title.
+    /// </summary>
+    bool GetShowScoreProgress();
+    void SetShowScoreProgress(bool show);
+
+    /// <summary>
+    /// Mark on the letter where the piece of music changes.
+    /// </summary>
+    bool GetShowScoreChangeMarker();
+    void SetShowScoreChangeMarker(bool show);
 
     InstrumentChoice GetInstrument();
     void SetInstrument(InstrumentChoice instrument);

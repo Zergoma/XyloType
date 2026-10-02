@@ -43,6 +43,12 @@ public partial class TypingCharStateViewModel : ObservableObject
     }
 
 
+    /// <summary>
+    /// The piece of music changes (or starts again) on this letter.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsScoreChange { get; set; }
+
     public string TextColor => Style.TextColor;
     public string BgColor => Style.BackgroundColor;
     public string BorderColor => Style.BorderColor;

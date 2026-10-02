@@ -27,6 +27,26 @@ public class TypingSession
     private readonly Stopwatch _sessionStopwatch = new();
 
     public TimeSpan Duration => _sessionStopwatch.Elapsed;
+
+    /// <summary>
+    /// Part of the text already typed, from 0 to 1.
+    /// </summary>
+    public double Progress
+    {
+        get
+        {
+            int total = Lines.Sum(l => l.Characters.Count);
+            if (total == 0)
+                return 0;
+
+            if (_isEnded)
+                return 1;
+
+            int typed = Lines.Take(CurrentLineIndex).Sum(l => l.Characters.Count) + CurrentCharacterIndex;
+            return Math.Clamp((double)typed / total, 0, 1);
+        }
+    }
+
     private bool _isFirstChar = true;
     private bool _isEnded;
     private bool _isPaused;

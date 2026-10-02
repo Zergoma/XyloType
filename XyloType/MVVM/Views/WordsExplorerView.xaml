@@ -74,16 +74,28 @@
                         </VerticalStackLayout>
                     </Grid>
 
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="Occurrences minimum" StyleClass="label_field"/>
-                        <Entry Text="{Binding MinOccurrences}"
-                               Keyboard="Numeric"
-                               StyleClass="entry_no_spell_no_prediction">
-                            <Entry.Behaviors>
-                                <behaviors:DigitsOnlyBehavior />
-                            </Entry.Behaviors>
-                        </Entry>
-                    </VerticalStackLayout>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Occurrences min" StyleClass="label_field"/>
+                            <Entry Text="{Binding MinOccurrences}"
+                                   Keyboard="Numeric"
+                                   StyleClass="entry_no_spell_no_prediction">
+                                <Entry.Behaviors>
+                                    <behaviors:DigitsOnlyBehavior />
+                                </Entry.Behaviors>
+                            </Entry>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="4">
+                            <Label Text="max" StyleClass="label_field"/>
+                            <Entry Text="{Binding MaxOccurrences}"
+                                   Keyboard="Numeric"
+                                   StyleClass="entry_no_spell_no_prediction">
+                                <Entry.Behaviors>
+                                    <behaviors:DigitsOnlyBehavior />
+                                </Entry.Behaviors>
+                            </Entry>
+                        </VerticalStackLayout>
+                    </Grid>
 
                     <VerticalStackLayout Spacing="4">
                         <Label Text="Mains" StyleClass="label_field"/>
@@ -131,26 +143,39 @@
                 <!-- simple rows only: no FlexLayout inside a CollectionView (it crashes on Windows) -->
                 <!-- column headers: outside the list so they stay visible when scrolling; click to sort -->
                 <Grid Grid.Row="2"
-                      ColumnDefinitions="*,120,110,160,60,100"
+                      ColumnDefinitions="*,100,120,110,160,80"
                       ColumnSpacing="10"
-                      Padding="10,0,22,6">
+                      Padding="12,0,24,6">
                     <Label Text="{Binding TextHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Text"/>
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label Grid.Column="1" Text="{Binding OccurrencesHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap" HorizontalTextAlignment="End">
+                    <Label Grid.Column="1" Text="{Binding ExcludedHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap" HorizontalTextAlignment="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Excluded"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label Grid.Column="2" Text="{Binding OccurrencesHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap" HorizontalTextAlignment="End">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Occurrences"/>
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label Grid.Column="2" Text="{Binding LengthHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap" HorizontalTextAlignment="End">
+                    <Label Grid.Column="3" Text="{Binding LengthHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap" HorizontalTextAlignment="End">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Length"/>
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label Grid.Column="3" Text="CLAVIER" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap"/>
-                    <Label Grid.Column="4" Text="LANGUE" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap"/>
+                    <Label Grid.Column="4" Text="{Binding HandsHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Hands"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label Grid.Column="5" Text="{Binding LanguageHeader}" StyleClass="label_field" FontAttributes="Bold" LineBreakMode="NoWrap">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Language"/>
+                        </Label.GestureRecognizers>
+                    </Label>
                 </Grid>
 
                 <CollectionView Grid.Row="3"
@@ -160,48 +185,121 @@
 
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="vm:WordItemViewModel">
-                            <Grid ColumnDefinitions="*,120,110,160,60,100"
-                                  ColumnSpacing="10"
-                                  Padding="10,4"
-                                  HeightRequest="40">
+                            <!-- the border always takes its stroke room: the hover outline does not move the text -->
+                            <Border StrokeThickness="2"
+                                    Stroke="Transparent"
+                                    StrokeShape="RoundRectangle 6"
+                                    BackgroundColor="Transparent"
+                                    Padding="0">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsExcluded}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource RowExcludedBgLight}, Dark={StaticResource RowExcludedBgDark}}"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.GestureRecognizers>
+                                    <PointerGestureRecognizer PointerEntered="Row_PointerEntered" PointerExited="Row_PointerExited"/>
+                                </Border.GestureRecognizers>
 
-                                <Label Text="{Binding Text}"
-                                       FontSize="16"
-                                       FontAttributes="Bold"
-                                       VerticalOptions="Center"
-                                       LineBreakMode="TailTruncation">
-                                    <Label.Triggers>
-                                        <DataTrigger TargetType="Label" Binding="{Binding IsExcluded}" Value="True">
-                                            <Setter Property="TextDecorations" Value="Strikethrough"/>
-                                            <Setter Property="Opacity" Value="0.5"/>
-                                        </DataTrigger>
-                                    </Label.Triggers>
-                                </Label>
+                                <Grid ColumnDefinitions="*,100,120,110,160,80"
+                                      ColumnSpacing="10"
+                                      Padding="10,4"
+                                      HeightRequest="40">
 
-                                <Label Grid.Column="1" Text="{Binding Occurrences, StringFormat='{0:N0}'}"
-                                       HorizontalTextAlignment="End" VerticalOptions="Center"/>
-                                <Label Grid.Column="2" Text="{Binding Length}"
-                                       HorizontalTextAlignment="End" VerticalOptions="Center"/>
-                                <Label Grid.Column="3" Text="{Binding HandsText}"
-                                       StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
-                                <Label Grid.Column="4" Text="{Binding LanguageCode}"
-                                       StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                    <Label Text="{Binding Text}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"
+                                           LineBreakMode="TailTruncation">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsExcluded}" Value="True">
+                                                <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                                <Setter Property="Opacity" Value="0.5"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
 
-                                <Button Grid.Column="5"
-                                        Text="{Binding ExcludeActionText}"
-                                        StyleClass="button_hover"
-                                        FontSize="12"
-                                        Padding="10,0"
-                                        HeightRequest="30"
-                                        MinimumHeightRequest="30"
-                                        CornerRadius="15"
-                                        Command="{Binding BindingContext.ToggleExcludedCommand, Source={x:Reference RootPage}, x:DataType=ContentPage}"
-                                        CommandParameter="{Binding .}"/>
-                            </Grid>
+                                    <!-- exclude (neutral) / restore (green) -->
+                                    <Button Grid.Column="1"
+                                            Text="Exclure"
+                                            IsVisible="{Binding IsActive}"
+                                            StyleClass="button_row_exclude"
+                                            PropertyChanged="RowButton_PropertyChanged"
+                                            BindingContextChanged="RowButton_BindingContextChanged"
+                                            FontSize="12"
+                                            Padding="10,0"
+                                            HeightRequest="30"
+                                            MinimumHeightRequest="30"
+                                            CornerRadius="15"
+                                            Command="{Binding BindingContext.ToggleExcludedCommand, Source={x:Reference RootPage}, x:DataType=ContentPage}"
+                                            CommandParameter="{Binding .}"/>
+                                    <Button Grid.Column="1"
+                                            Text="Restaurer"
+                                            IsVisible="{Binding IsExcluded}"
+                                            StyleClass="ButtonHoverLaunch"
+                                            PropertyChanged="RowButton_PropertyChanged"
+                                            BindingContextChanged="RowButton_BindingContextChanged"
+                                            FontSize="12"
+                                            Padding="10,0"
+                                            HeightRequest="30"
+                                            MinimumHeightRequest="30"
+                                            CornerRadius="15"
+                                            Command="{Binding BindingContext.ToggleExcludedCommand, Source={x:Reference RootPage}, x:DataType=ContentPage}"
+                                            CommandParameter="{Binding .}"/>
+
+                                    <Label Grid.Column="2" Text="{Binding Occurrences, StringFormat='{0:N0}'}"
+                                           HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                    <Label Grid.Column="3" Text="{Binding Length}"
+                                           HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                    <Label Grid.Column="4" Text="{Binding HandsText}"
+                                           StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                    <Label Grid.Column="5" Text="{Binding LanguageCode}"
+                                           StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                </Grid>
+                            </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </Grid>
+        </Border>
+
+        <!-- loading: veil over the results, like "Reprendre la saisie" on the typing page -->
+        <Border Grid.Row="1" Grid.Column="1"
+                x:Name="LoadingOverlay"
+                IsVisible="{Binding IsLoading}"
+                PropertyChanged="LoadingOverlay_PropertyChanged"
+                StyleClass="BorderTypingRounded10, BorderBgOverlay"
+                StrokeThickness="0">
+
+            <Border StyleClass="BorderRounded10, BorderBgStd"
+                    Stroke="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"
+                    StrokeThickness="1"
+                    Padding="30,20"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,6" Radius="18" Opacity="0.2"/>
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Chargement des mots…"
+                           StyleClass="label_section_title"
+                           HorizontalOptions="Center"/>
+
+                    <!-- indeterminate progress bar: a segment sliding along the track (see code behind) -->
+                    <Border x:Name="LoadingTrack"
+                            WidthRequest="240"
+                            HeightRequest="6"
+                            StrokeShape="RoundRectangle 3"
+                            StrokeThickness="0"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgDescriptionLight}, Dark={StaticResource BorderBgDescriptionDark}}">
+                        <BoxView x:Name="LoadingSegment"
+                                 WidthRequest="80"
+                                 HorizontalOptions="Start"
+                                 CornerRadius="3"
+                                 Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
         </Border>
     </Grid>
 </ContentPage>
