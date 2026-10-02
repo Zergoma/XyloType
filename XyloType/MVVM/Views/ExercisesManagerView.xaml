@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:XyloType.ViewModels.ExercisesManager;assembly=XyloType.ViewModels"
              xmlns:behaviors="clr-namespace:XyloType.Behaviors"
              x:Class="XyloType.MVVM.Views.ExercisesManagerView"
              x:DataType="vm:ExercisesManagerViewModel"
-             x:Name="RootPage"
-             Title="Exercices"
-             Shell.NavBarIsVisible="False"
-             StyleClass="xylotype_page_bg">
+             x:Name="RootPage">
 
     <Grid RowDefinitions="auto,*,auto"
           ColumnDefinitions="380,*"
@@ -87,7 +84,7 @@
                                         StyleClass="BorderRounded10, BorderBgDescription">
 
                                     <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding BindingContext.SelectCommand, Source={x:Reference RootPage}, x:DataType=ContentPage}"
+                                        <TapGestureRecognizer Command="{Binding BindingContext.SelectCommand, Source={x:Reference RootPage}, x:DataType=ContentView}"
                                                               CommandParameter="{Binding .}"/>
                                         <PointerGestureRecognizer PointerPressed="Item_PointerPressed"
                                                                   PointerReleased="List_PointerReleased"/>
@@ -346,4 +343,4 @@
                     Command="{Binding SaveCommand}"/>
         </Grid>
     </Grid>
-</ContentPage>
+</ContentView>

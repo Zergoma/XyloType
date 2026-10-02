@@ -1,3 +1,4 @@
+using XyloType.Navigation;
 using XyloType.ViewModels.TypingLauncher;
 
 using XyloType.Application;
@@ -5,7 +6,7 @@ using XyloType.Application.Interfaces;
 
 namespace XyloType.MVVM.Views;
 
-public partial class TypingLauncherView : ContentPage
+public partial class TypingLauncherView : ContentView, IViewLifecycle
 {
 	private readonly IUserKeyboardLayoutPreferenceService _userKeyboardPreferenceService;
 
@@ -31,9 +32,8 @@ public partial class TypingLauncherView : ContentPage
         }
     }
 
-    protected async override void OnAppearing()
+    public async void OnAppearing()
     {
-        base.OnAppearing();
         StartLaunchAnimation();
 
         if(BindingContext is TypingLauncherViewModel vm)
@@ -48,9 +48,8 @@ public partial class TypingLauncherView : ContentPage
 		}
     }
 
-    protected override void OnDisappearing()
+    public void OnDisappearing()
     {
-        base.OnDisappearing();
         _launchAnimation?.Cancel();
         _launchAnimation = null;
     }

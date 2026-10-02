@@ -1,86 +1,61 @@
-﻿using XyloType.Application;
+using XyloType.Application;
 using XyloType.Application.Interfaces;
 using XyloType.Domain.Typing.Analysis;
 using XyloType.Factories;
+using XyloType.Navigation;
 
 namespace XyloType.Services;
 
+/// <summary>
+/// Navigation asked by the view models: the views are shown in the main page by the <see cref="AppNavigator"/>.
+/// </summary>
 public class MauiNavigationService : INavigationService
 {
     private readonly ITypingViewFactory _typingViewFactory;
     private readonly IStatisticViewFactory _statisticViewFactory;
+    private readonly AppNavigator _navigator;
 
     public MauiNavigationService(
         ITypingViewFactory typingViewFactory,
-        IStatisticViewFactory statisticViewFactory)
+        IStatisticViewFactory statisticViewFactory,
+        AppNavigator navigator)
     {
         _typingViewFactory = typingViewFactory;
         _statisticViewFactory = statisticViewFactory;
+        _navigator = navigator;
     }
 
     public async Task<Result<bool>> NavigateToTypingExerciseAsync(IStringsProvider stringProvider)
-    {
-        Result<ContentPage> typingviewResult =
-            await _typingViewFactory.CreateTypingViewAsync(stringProvider, this);
-        if(!typingviewResult.Success)
-        {
-            return Result<bool>.Fail(typingviewResult.Error);
-        }
-
-        await Shell.Current.Navigation.PushAsync(typingviewResult.GetValue);
-
-        return Result<bool>.Ok(true);
-    }
-
-
-    public async Task<Result<bool>> NavigateToStatisticAsync(TypingSessionResult result)
-    {
-        Result<ContentPage> viewCReationResult = await _statisticViewFactory.Create(result, this);
-
-        if(!viewCReationResult.Success)
-        {
-            return Result<bool>
-                .Fail(viewCReationResult.Error);
-        }
-
-        await Shell.Current.Navigation.PushAsync(viewCReationResult.GetValue);
-
-        return Result<bool>.Ok(true);
-    }
-
-
-    public async Task PopBackAsync()
-    {
-        await Shell.Current.Navigation.PopAsync();
-    }
+        => await ShowAsync(_typingViewFactory.CreateTypingViewAsync(stringProvider, this), _navigator.ShowExercise);
 
     public async Task<Result<bool>> ReplaceWithTypingExerciseAsync(IStringsProvider stringProvider)
-        => await ReplaceCurrentPageAsync(() => NavigateToTypingExerciseAsync(stringProvider));
+        => await ShowAsync(_typingViewFactory.CreateTypingViewAsync(stringProvider, this), _navigator.ShowExercise);
+
+    public async Task<Result<bool>> NavigateToStatisticAsync(TypingSessionResult result)
+        => await ShowAsync(_statisticViewFactory.Create(result, this), _navigator.ShowExercise);
 
     public async Task<Result<bool>> ReplaceWithStatisticAsync(TypingSessionResult result)
-        => await ReplaceCurrentPageAsync(() => NavigateToStatisticAsync(result));
+        => await ShowAsync(_statisticViewFactory.Create(result, this), _navigator.ShowExercise);
 
-    public async Task PopToRootAsync()
+    public Task PopBackAsync()
     {
-        await Shell.Current.Navigation.PopToRootAsync();
+        _navigator.CloseExercise();
+        return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Pushes the new page first, then removes the previous one,
-    /// so the home screen never flashes in between.
-    /// </summary>
-    private static async Task<Result<bool>> ReplaceCurrentPageAsync(Func<Task<Result<bool>>> navigate)
+    public Task PopToRootAsync()
     {
-        INavigation navigation = Shell.Current.Navigation;
-        Page? current = navigation.NavigationStack.LastOrDefault();
+        _navigator.CloseExercise();
+        return Task.CompletedTask;
+    }
 
-        Result<bool> result = await navigate();
+    private static async Task<Result<bool>> ShowAsync(Task<Result<ContentView>> creation, Action<View> show)
+    {
+        Result<ContentView> view = await creation;
+        if (!view.Success)
+            return Result<bool>.Fail(view.Error);
 
-        if (result.Success && current is not null && navigation.NavigationStack.Contains(current))
-        {
-            navigation.RemovePage(current);
-        }
-
-        return result;
+        show(view.GetValue);
+        return Result<bool>.Ok(true);
     }
 }

@@ -1,8 +1,9 @@
+using XyloType.Navigation;
 using XyloType.ViewModels.ExercisesManager;
 
 namespace XyloType.MVVM.Views;
 
-public partial class ExercisesManagerView : ContentPage
+public partial class ExercisesManagerView : ContentView, IViewLifecycle, INavigationGuard
 {
     // Vertical move needed before a press becomes a drag (a smaller move stays a click)
     private const double DragThreshold = 6;
@@ -25,33 +26,19 @@ public partial class ExercisesManagerView : ContentPage
         BindingContext = _vm = vm;
     }
 
-    protected override async void OnAppearing()
+    public async void OnAppearing()
     {
-        base.OnAppearing();
-        Shell.Current.Navigating += OnShellNavigating;
         await _vm.InitializeAsync();
     }
 
-    protected override void OnDisappearing()
+    public void OnDisappearing()
     {
-        Shell.Current.Navigating -= OnShellNavigating;
-        base.OnDisappearing();
     }
 
     #region Unsaved changes
 
-    private async void OnShellNavigating(object? sender, ShellNavigatingEventArgs e)
-    {
-        if (!_vm.HasChanges)
-            return;
-
-        ShellNavigatingDeferral deferral = e.GetDeferral();
-        if (!await _vm.ConfirmDiscardChangesAsync())
-        {
-            e.Cancel();
-        }
-        deferral.Complete();
-    }
+    public async Task<bool> CanLeaveAsync()
+        => !_vm.HasChanges || await _vm.ConfirmDiscardChangesAsync();
 
     #endregion
 

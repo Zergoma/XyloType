@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="XyloType.MVVM.Views.TypingLauncherView"
              xmlns:vm="clr-namespace:XyloType.ViewModels.TypingLauncher;assembly=XyloType.ViewModels"
              xmlns:themes="clr-namespace:XyloType.Application.Models.Themes;assembly=XyloType.Application"
              xmlns:controls="clr-namespace:XyloType.MVVM.Controls"
-             Title="Accueil"
              x:DataType="vm:TypingLauncherViewModel"
              xmlns:behaviors="clr-namespace:XyloType.Behaviors"
-             Shell.NavBarIsVisible="False"
-             StyleClass="xylotype_page_bg"
              x:Name="RootPage">
 
-    <ContentPage.Resources>
+    <ContentView.Resources>
         <!-- launch button and its halo: accent gradient, blue to violet -->
         <LinearGradientBrush x:Key="LaunchBrush" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Offset="0" Color="{AppThemeBinding Light={StaticResource LaunchStartLight}, Dark={StaticResource LaunchStartDark}}"/>
             <GradientStop Offset="1" Color="{AppThemeBinding Light={StaticResource LaunchEndLight}, Dark={StaticResource LaunchEndDark}}"/>
         </LinearGradientBrush>
-    </ContentPage.Resources>
+    </ContentView.Resources>
 
     <Grid
         RowDefinitions="auto,*"
@@ -297,7 +294,7 @@
 
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer
-                                                Command="{Binding BindingContext.SelectCommand, Source={x:Reference RootPage}, x:DataType=ContentPage}"
+                                                Command="{Binding BindingContext.SelectCommand, Source={x:Reference RootPage}, x:DataType=ContentView}"
                                                 CommandParameter="{Binding .}"/>
                                         </Grid.GestureRecognizers>
 
@@ -402,4 +399,4 @@
             </Grid>
         </Border>
     </Grid>
-</ContentPage>
+</ContentView>

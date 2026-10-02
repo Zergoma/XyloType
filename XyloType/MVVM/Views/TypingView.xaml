@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:XyloType.ViewModels.Typing;assembly=XyloType.ViewModels"
              xmlns:converters="clr-namespace:XyloType.Converters"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:controls="clr-namespace:XyloType.MVVM.Controls"
              x:Class="XyloType.MVVM.Views.TypingView"
-             x:DataType="vm:TypingViewModel"
-             Shell.NavBarIsVisible="False"
-             Shell.FlyoutBehavior="Disabled"
-             StyleClass="xylotype_page_bg">
-    <ContentPage.Resources>
+             x:DataType="vm:TypingViewModel">
+    <ContentView.Resources>
         <converters:StringToColorConverter x:Key="stringToColor"/>
 
-    </ContentPage.Resources>
+    </ContentView.Resources>
 
     <!-- page scroll: keeps the settings reachable when the window is small -->
     <!-- transparent backgrounds make empty areas clickable (click outside = pause) -->
@@ -587,4 +584,4 @@
         </Border>
     </Grid>
     </ScrollView>
-</ContentPage>
+</ContentView>

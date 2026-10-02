@@ -1,13 +1,16 @@
-﻿using XyloType.Application.Interfaces;
+using XyloType.Application.Interfaces;
 
 namespace XyloType.Services;
 
 public class MauiUserDialogService : IUserDialogService
 {
+    // the single page of the app
+    private static Page? Page
+        => Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault()?.Page;
+
     public async Task<bool> ConfirmAsync(string title, string message, string accept, string cancel)
     {
-        Page? page = Shell.Current?.CurrentPage ?? Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault()?.Page;
-        if (page is null)
+        if (Page is not Page page)
             return false;
 
         return await page.DisplayAlertAsync(title, message, accept, cancel);
@@ -15,8 +18,7 @@ public class MauiUserDialogService : IUserDialogService
 
     public async Task AlertAsync(string title, string message)
     {
-        Page? page = Shell.Current?.CurrentPage ?? Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault()?.Page;
-        if (page is null)
+        if (Page is not Page page)
             return;
 
         await page.DisplayAlertAsync(title, message, "OK");

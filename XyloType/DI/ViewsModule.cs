@@ -1,4 +1,5 @@
 ﻿using XyloType.MVVM.Views;
+using XyloType.Navigation;
 
 namespace XyloType.DI;
 
@@ -11,6 +12,11 @@ public static class ViewsModule
         services.AddTransient<TypingLauncherView>();
         services.AddTransient<ExercisesManagerView>();
         services.AddTransient<WordsExplorerView>();
+        services.AddTransient<ImportView>();
+
+        // the single page and its navigation
+        services.AddSingleton<AppNavigator>();
+        services.AddSingleton<MainPage>();
 
         return services;
     }

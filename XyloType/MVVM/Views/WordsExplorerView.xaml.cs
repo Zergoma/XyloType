@@ -1,8 +1,9 @@
+using XyloType.Navigation;
 using XyloType.ViewModels.WordsExplorer;
 
 namespace XyloType.MVVM.Views;
 
-public partial class WordsExplorerView : ContentPage
+public partial class WordsExplorerView : ContentView, IViewLifecycle
 {
     private readonly WordsExplorerViewModel _vm;
 
@@ -12,9 +13,8 @@ public partial class WordsExplorerView : ContentPage
         BindingContext = _vm = vm;
     }
 
-    protected override async void OnAppearing()
+    public async void OnAppearing()
     {
-        base.OnAppearing();
 
         // refreshed each time: an import may have added words
         await _vm.InitializeAsync();
@@ -102,4 +102,8 @@ public partial class WordsExplorerView : ContentPage
         => Microsoft.Maui.Controls.Application.Current?.Resources.TryGetValue(key, out object? value) == true && value is Color color
             ? color
             : Colors.Gray;
+
+    public void OnDisappearing()
+    {
+    }
 }

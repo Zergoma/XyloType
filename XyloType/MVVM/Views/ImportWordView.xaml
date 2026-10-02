@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="XyloType.MVVM.Views.ImportWordView"
              xmlns:vm="clr-namespace:XyloType.ViewModels.Import;assembly=XyloType.ViewModels"
-             Title="ImportWordView"
-             x:DataType="vm:ImportWordViewModel"
-             Shell.NavBarIsVisible="False"
-             StyleClass="xylotype_page_bg">
+             x:DataType="vm:ImportWordViewModel">
 
     <ScrollView>
       <VerticalStackLayout Padding="30" Spacing="20" HorizontalOptions="Center" VerticalOptions="Center">
@@ -112,4 +109,4 @@
       </VerticalStackLayout>
     </ScrollView>
 
-</ContentPage>
+</ContentView>

@@ -1,17 +1,13 @@
-<ContentPage x:Class="XyloType.MVVM.Views.StatisticView"
+<ContentView x:Class="XyloType.MVVM.Views.StatisticView"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm ="clr-namespace:XyloType.MVVM.ViewModels"
              xmlns:stat="clr-namespace:XyloType.ViewModels.Statistic;assembly=XyloType.ViewModels"
              xmlns:converters="clr-namespace:XyloType.Converters"
              xmlns:views="clr-namespace:XyloType.MVVM.Views"
-             x:DataType="vm:StatisticViewModelMauiAdapter"
-             Title="StatisticView"
-             Shell.NavBarIsVisible="False"
-             Shell.FlyoutBehavior="Disabled"
-             StyleClass="xylotype_page_bg">
+             x:DataType="vm:StatisticViewModelMauiAdapter">
 
-    <ContentPage.Resources>
+    <ContentView.Resources>
         <converters:StringToColorConverter x:Key="stringToColor"/>
 
         <Style TargetType="Border" Class="kpi_card">
@@ -49,7 +45,7 @@
                        VerticalOptions="Center"/>
             </Grid>
         </DataTemplate>
-    </ContentPage.Resources>
+    </ContentView.Resources>
 
     <!-- the results scroll under the floating header and actions bar -->
     <Grid>
@@ -290,4 +286,4 @@
             </Grid>
         </Border>
     </Grid>
-</ContentPage>
+</ContentView>

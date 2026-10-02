@@ -1,3 +1,4 @@
+using XyloType.Navigation;
 using Microsoft.UI.Xaml.Input;
 
 using XyloType.Application.Interfaces;
@@ -8,7 +9,7 @@ using XyloType.ViewModels.Typing;
 
 namespace XyloType.MVVM.Views;
 
-public partial class TypingView : ContentPage
+public partial class TypingView : ContentView, IViewLifecycle
 {
     private event Action TextEnded;
     private readonly INavigationService _navigationService;
@@ -86,9 +87,8 @@ public partial class TypingView : ContentPage
         }
     }
 
-    protected override async void OnAppearing()
+    public async void OnAppearing()
 	{
-        base.OnAppearing();
 
         StartLiveSpeedTimer();
 
@@ -101,9 +101,8 @@ public partial class TypingView : ContentPage
         });
     }
 
-    protected override void OnDisappearing()
+    public void OnDisappearing()
     {
-        base.OnDisappearing();
         _liveSpeedTimer?.Stop();
     }
 
