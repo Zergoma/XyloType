@@ -27,6 +27,11 @@ public partial class TypingViewModel : ObservableObject
 
     public event Action<int>? LineChanged;
 
+    /// <summary>
+    /// Colors of the letters (correct, wrong, current...): a theme file of the app, or of the user.
+    /// </summary>
+    public const string TypingThemeName = "XyloType_Typing_Theme";
+
     public TypingSession Session { get; } = new();
     public ObservableCollection<TypingLineStateViewModel> LinesStates { get; } = [];
 
@@ -786,7 +791,8 @@ public partial class TypingViewModel : ObservableObject
         if (IsScoreMode)
             PickScore();
 
-        await PreloadOkSoundsAsync();
+        // the notes are decoded meanwhile, off the UI thread: the exercise shows without waiting for them
+        _ = PreloadOkSoundsAsync();
 
         // Get current theme apply
         ThemeState themeState = _themeChangerService.GetTheme();
@@ -794,7 +800,7 @@ public partial class TypingViewModel : ObservableObject
         // TODO
         // to property, + user access
         Result <ITypingTheme> themeResu =
-            await _typingThemeProvider.GetThemeAsync("XyloType_Typing_Theme", themeState);
+            await _typingThemeProvider.GetThemeAsync(TypingThemeName, themeState);
 
         if (!themeResu.Success)
         {
@@ -949,7 +955,7 @@ public partial class TypingViewModel : ObservableObject
     public async Task RefreshTypingThemeAsync()
     {
         Result<ITypingTheme> theme =
-            await _typingThemeProvider.GetThemeAsync("XyloType_Typing_Theme", _themeChangerService.GetTheme());
+            await _typingThemeProvider.GetThemeAsync(TypingThemeName, _themeChangerService.GetTheme());
         if (!theme.Success)
             return;
 
@@ -1065,7 +1071,11 @@ public partial class TypingViewModel : ObservableObject
     public void SwitchShowScoreChangeMarker()
         => ShowScoreChangeMarker = !ShowScoreChangeMarker;
 
-    private TypingCharStateViewModel? _scoreChangeLetter;
+    /// <summary>
+    /// Letter where the piece of music changes (or starts again): line and column, or null.
+    /// A single mark drawn by the view over the letter (one per letter cost too much to create).
+    /// </summary>
+    public (int Line, int Column)? ScoreChangeLetter { get; private set; }
 
     /// <summary>
     /// Marks the letter where the piece of music changes (or starts again), when every key is right:
@@ -1073,7 +1083,7 @@ public partial class TypingViewModel : ObservableObject
     /// </summary>
     private void UpdateScoreChangeMarker()
     {
-        TypingCharStateViewModel? letter = null;
+        (int Line, int Column)? letter = null;
 
         if (ShowScoreChangeMarker && _melody is not null && LinesStates.Count > 0)
         {
@@ -1087,15 +1097,14 @@ public partial class TypingViewModel : ObservableObject
             }
 
             if (line < LinesStates.Count)
-                letter = LinesStates[line].Characters[column];
+                letter = (line, column);
         }
 
-        if (letter == _scoreChangeLetter)
+        if (letter == ScoreChangeLetter)
             return;
 
-        _scoreChangeLetter?.IsScoreChange = false;
-        _scoreChangeLetter = letter;
-        _scoreChangeLetter?.IsScoreChange = true;
+        ScoreChangeLetter = letter;
+        OnPropertyChanged(nameof(ScoreChangeLetter));
     }
 
     #endregion
