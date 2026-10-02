@@ -55,6 +55,39 @@ public static class Icons
     /// </summary>
     public static Geometry Play { get; } = Parse("M8 5v14l11-7z");
 
+    /// <summary>
+    /// "home": home page.
+    /// </summary>
+    public static Geometry Home { get; } = Parse("M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z");
+
+    /// <summary>
+    /// "format_list_bulleted": the exercises.
+    /// </summary>
+    public static Geometry List { get; } = Parse(
+        "M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z");
+
+    /// <summary>
+    /// "spellcheck": the words.
+    /// </summary>
+    public static Geometry Words { get; } = Parse(
+        "M12.45 16h2.09L9.43 3H7.57L2.46 16h2.09l1.12-3h5.64l1.14 3zm-6.02-5L8.5 5.48 10.57 11H6.43zm15.16.59l-8.09 8.09L9.83 16l-1.41 1.41 5.09 5.09L23 13l-1.41-1.41z");
+
+    /// <summary>
+    /// "file_upload": import.
+    /// </summary>
+    public static Geometry Import { get; } = Parse("M5 20h14v-2H5v2zm0-10h4v6h6v-6h4l-7-7-7 7z");
+
+    /// <summary>
+    /// "keyboard": the exercise being typed.
+    /// </summary>
+    public static Geometry Keyboard { get; } = Parse(
+        "M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z");
+
+    /// <summary>
+    /// "bar_chart": the results of the exercise.
+    /// </summary>
+    public static Geometry Chart { get; } = Parse("M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z");
+
     private static Geometry Parse(string data)
         => (Geometry)s_converter.ConvertFromInvariantString(data)!;
 }

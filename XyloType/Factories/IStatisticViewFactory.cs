@@ -6,7 +6,7 @@ namespace XyloType.Factories
 {
     public interface IStatisticViewFactory
     {
-        Task<Result<ContentPage>> Create(
+        Task<Result<ContentView>> Create(
             TypingSessionResult result,
             INavigationService navigationService);
     }

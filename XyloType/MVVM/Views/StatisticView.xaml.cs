@@ -2,7 +2,7 @@ using XyloType.MVVM.ViewModels;
 
 namespace XyloType.MVVM.Views;
 
-public partial class StatisticView : ContentPage
+public partial class StatisticView : ContentView
 {
     // space around the floating header and actions bar: the results show through it when scrolling
     public static readonly Thickness BarMargin = new(16, 12);

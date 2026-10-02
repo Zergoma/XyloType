@@ -38,7 +38,7 @@ public class TypingViewFactory : ITypingViewFactory
         _scoreCatalog = scoreCatalog;
     }
 
-    public async Task<Result<ContentPage>> CreateTypingViewAsync(
+    public async Task<Result<ContentView>> CreateTypingViewAsync(
         IStringsProvider stringProvider,
         INavigationService navigationService)
     {
@@ -54,7 +54,7 @@ public class TypingViewFactory : ITypingViewFactory
         Result<bool> loadResult = await typingviewmodel.LoadTextAsync(stringProvider);
         if (!loadResult.Success)
         {
-            return Result<ContentPage>
+            return Result<ContentView>
                 .Fail(loadResult.Error);
         }
 
@@ -63,7 +63,7 @@ public class TypingViewFactory : ITypingViewFactory
                 typingviewmodel,
                 navigationService);
 
-        return Result<ContentPage>
+        return Result<ContentView>
             .Ok(typingView);
     }
 }

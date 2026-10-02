@@ -1,0 +1,127 @@
+namespace XyloType.Navigation;
+
+/// <summary>
+/// Navigation of the single main page: the view shown in its host, like a WPF ContentControl.
+/// The main sections show one view each, created once and kept.
+/// The exercise is a section of its own, open while an exercise or its results are shown;
+/// going to another section closes it.
+/// </summary>
+public class AppNavigator
+{
+    private static readonly Dictionary<AppSection, Type> s_sectionViews = new()
+    {
+        [AppSection.Home] = typeof(MVVM.Views.TypingLauncherView),
+        [AppSection.Exercises] = typeof(MVVM.Views.ExercisesManagerView),
+        [AppSection.Words] = typeof(MVVM.Views.WordsExplorerView),
+        [AppSection.Import] = typeof(MVVM.Views.ImportView),
+    };
+
+    private readonly IServiceProvider _services;
+    private readonly Dictionary<AppSection, View> _sectionViews = [];
+
+    // the exercise, then its results (shown in place of the exercise)
+    private View? _exerciseView;
+
+    public AppNavigator(IServiceProvider services)
+    {
+        _services = services;
+    }
+
+    /// <summary>
+    /// The view to show changed: the host shows it.
+    /// </summary>
+    public event Action<View>? CurrentViewChanged;
+
+    /// <summary>
+    /// The section shown, or the exercise view, changed (the rail updates its buttons).
+    /// </summary>
+    public event Action? StateChanged;
+
+    public AppSection CurrentSection { get; private set; } = AppSection.Home;
+
+    public View? CurrentView { get; private set; }
+
+    /// <summary>
+    /// The open exercise or its results, if any.
+    /// </summary>
+    public View? ExerciseView => _exerciseView;
+
+    private View SectionView(AppSection section)
+    {
+        if (section == AppSection.Exercise)
+            return _exerciseView ?? SectionView(AppSection.Home);
+
+        if (!_sectionViews.TryGetValue(section, out View? view))
+        {
+            view = (View)_services.GetRequiredService(s_sectionViews[section]);
+            _sectionViews[section] = view;
+        }
+
+        return view;
+    }
+
+    /// <summary>
+    /// The views kept in the host: the section views, and the open exercise.
+    /// </summary>
+    public bool IsKept(View view)
+        => view == _exerciseView || _sectionViews.ContainsValue(view);
+
+    /// <summary>
+    /// Shows the first section, at start.
+    /// </summary>
+    public void Start()
+        => Show(SectionView(CurrentSection));
+
+    /// <summary>
+    /// Goes to a section of the bottom of the rail: the open exercise (or its results) is closed.
+    /// </summary>
+    public async Task GoToSectionAsync(AppSection section)
+    {
+        if (section == CurrentSection || section == AppSection.Exercise)
+            return;
+
+        if (CurrentView is INavigationGuard guard && !await guard.CanLeaveAsync())
+            return;
+
+        // leaving the exercise ends it: there is no going back to it
+        _exerciseView = null;
+
+        CurrentSection = section;
+        Show(SectionView(section));
+    }
+
+    /// <summary>
+    /// Opens an exercise, in place of the one open before, or shows its results in place of it.
+    /// </summary>
+    public void ShowExercise(View view)
+    {
+        _exerciseView = view;
+        CurrentSection = AppSection.Exercise;
+        Show(view);
+    }
+
+    /// <summary>
+    /// Closes the exercise and goes back home.
+    /// </summary>
+    public void CloseExercise()
+    {
+        _exerciseView = null;
+        CurrentSection = AppSection.Home;
+        Show(SectionView(AppSection.Home));
+    }
+
+    private void Show(View view)
+    {
+        if (view != CurrentView)
+        {
+            (CurrentView as IViewLifecycle)?.OnDisappearing();
+
+            CurrentView = view;
+            CurrentViewChanged?.Invoke(view);
+
+            (view as IViewLifecycle)?.OnAppearing();
+        }
+
+        StateChanged?.Invoke();
+    }
+}

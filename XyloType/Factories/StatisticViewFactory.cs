@@ -39,7 +39,7 @@ public class StatisticViewFactory : IStatisticViewFactory
         _dialogService = dialogService;
     }
 
-    public async Task<Result<ContentPage>> Create(
+    public async Task<Result<ContentView>> Create(
         TypingSessionResult result,
         INavigationService navigationService)
     {
@@ -67,6 +67,6 @@ public class StatisticViewFactory : IStatisticViewFactory
 
         StatisticView vieww = new(vmadapter);
 
-        return Result<ContentPage>.Ok(vieww);
+        return Result<ContentView>.Ok(vieww);
     }
 }

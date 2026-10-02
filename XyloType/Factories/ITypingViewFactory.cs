@@ -5,6 +5,6 @@ namespace XyloType.Factories
 {
     public interface ITypingViewFactory
     {
-        Task<Result<ContentPage>> CreateTypingViewAsync(IStringsProvider stringProvider, INavigationService navigationService);
+        Task<Result<ContentView>> CreateTypingViewAsync(IStringsProvider stringProvider, INavigationService navigationService);
     }
 }

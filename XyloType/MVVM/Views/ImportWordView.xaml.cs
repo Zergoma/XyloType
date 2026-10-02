@@ -1,8 +1,9 @@
+using XyloType.Navigation;
 using VM = XyloType.ViewModels.Import;
 
 namespace XyloType.MVVM.Views;
 
-public partial class ImportWordView : ContentPage
+public partial class ImportWordView : ContentView, IViewLifecycle
 {
     private readonly VM.ImportWordViewModel _vm;
 
@@ -12,9 +13,12 @@ public partial class ImportWordView : ContentPage
 		BindingContext = _vm = vm;
 	}
 
-    protected override async void OnAppearing()
+    public async void OnAppearing()
     {
-        base.OnAppearing();
         await _vm.LoadHistoryAsync();
+    }
+
+    public void OnDisappearing()
+    {
     }
 }
