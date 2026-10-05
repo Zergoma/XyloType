@@ -119,7 +119,7 @@ public partial class TypingView : ContentView, IViewLifecycle
             await vm.RefreshTypingThemeAsync();
     }
 
-    // the live speed also falls when no key is typed
+    // every half second: the live speed (it also falls when no key is typed), and the pause when idle
     private IDispatcherTimer? _liveSpeedTimer;
 
     private void StartLiveSpeedTimer()
@@ -130,7 +130,15 @@ public partial class TypingView : ContentView, IViewLifecycle
             _liveSpeedTimer.Interval = TimeSpan.FromMilliseconds(500);
             _liveSpeedTimer.Tick += (_, _) =>
             {
-                if (BindingContext is TypingViewModel vm && vm.ShowLiveSpeed)
+                if (BindingContext is not TypingViewModel vm)
+                    return;
+
+                // no key for a while: the user is doing something else, the typing pauses
+                // (losing the focus shows "Reprendre la saisie")
+                if (vm.PauseIfInactive() && HiddenInput.IsFocused)
+                    HiddenInput.Unfocus();
+
+                if (vm.ShowLiveSpeed)
                     vm.RefreshLiveSpeed();
             };
         }

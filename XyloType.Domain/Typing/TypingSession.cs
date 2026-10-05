@@ -26,7 +26,34 @@ public class TypingSession
     // Time of the whole session, from the first key press to the last character
     private readonly Stopwatch _sessionStopwatch = new();
 
-    public TimeSpan Duration => _sessionStopwatch.Elapsed;
+    // Time since the user last did something: a key, or coming back to the exercise (focus)
+    private readonly Stopwatch _sinceLastActivity = new();
+
+    // Idle time taken off the clocks (see PauseIfInactive)
+    private TimeSpan _sessionDeduction;
+    private TimeSpan _characterDeduction;
+
+    /// <summary>
+    /// Time of the session, pauses and idle time excluded.
+    /// </summary>
+    public TimeSpan Duration => NotBelowZero(_sessionStopwatch.Elapsed - _sessionDeduction);
+
+    // Time spent on the current character, idle time excluded
+    private TimeSpan CharacterElapsed => NotBelowZero(_stopwatch.Elapsed - _characterDeduction);
+
+    /// <summary>
+    /// Without any key for this long, the user is doing something else: the session pauses.
+    /// </summary>
+    public TimeSpan InactivityLimit { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Idle time kept in the clocks when the session pauses by itself, the rest is taken off
+    /// (all of it could be used to cheat: think for free before each key).
+    /// </summary>
+    public TimeSpan InactivityKept { get; set; } = TimeSpan.FromSeconds(1);
+
+    private static TimeSpan NotBelowZero(TimeSpan time)
+        => time < TimeSpan.Zero ? TimeSpan.Zero : time;
 
     /// <summary>
     /// Part of the text already typed, from 0 to 1.
@@ -96,6 +123,9 @@ public class TypingSession
         _isPaused = false;
         _stopwatch.Reset();
         _sessionStopwatch.Reset();
+        _sinceLastActivity.Reset();
+        _sessionDeduction = TimeSpan.Zero;
+        _characterDeduction = TimeSpan.Zero;
     }
 
 
@@ -258,11 +288,13 @@ public class TypingSession
     {
         // a key press always means the user is typing again
         Resume();
+        _sinceLastActivity.Restart();
 
         if(_isFirstChar)
         {
             _isFirstChar = false;
             _stopwatch.Restart();
+            _characterDeduction = TimeSpan.Zero;
             _sessionStopwatch.Restart();
         }
 
@@ -293,7 +325,7 @@ public class TypingSession
             return TypingStatus.Ended;
         }
 
-        bool success = current.ChallengeValue(mapper(input), _stopwatch.Elapsed);
+        bool success = current.ChallengeValue(mapper(input), CharacterElapsed);
 
         HitKeyStatusChanged?.Invoke(success ? HitKeyStatus.Success : HitKeyStatus.Fail);
 
@@ -302,6 +334,7 @@ public class TypingSession
             if(MoveForward())
             {
                 _stopwatch.Restart();
+                _characterDeduction = TimeSpan.Zero;
             }
             else
             {
@@ -320,6 +353,9 @@ public class TypingSession
     /// </summary>
     public void Pause()
     {
+        // away from the exercise: no inactivity check until the user comes back
+        _sinceLastActivity.Reset();
+
         if (_isFirstChar || _isEnded || _isPaused)
             return;
 
@@ -329,10 +365,43 @@ public class TypingSession
     }
 
     /// <summary>
+    /// Pauses the session when the user did nothing for <see cref="InactivityLimit"/> (no key since the last one,
+    /// or since coming back to the exercise): they are doing something else.
+    /// Once typing started, the idle time is taken off the clocks, but <see cref="InactivityKept"/>.
+    /// True when the session just paused (the view lets the typing area lose the focus).
+    /// </summary>
+    public bool PauseIfInactive()
+    {
+        if (_isEnded || _isPaused || !_sinceLastActivity.IsRunning)
+            return false;
+
+        TimeSpan idle = _sinceLastActivity.Elapsed;
+        if (idle < InactivityLimit)
+            return false;
+
+        // no more check until the user comes back (a key, or the focus again)
+        _sinceLastActivity.Reset();
+
+        // before the first key the clocks do not run yet: nothing to take off
+        if (!_isFirstChar)
+        {
+            TimeSpan unused = idle - InactivityKept;
+            _sessionDeduction += unused;
+            _characterDeduction += unused;
+            Pause();
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Restarts the clocks after a <see cref="Pause"/>.
     /// </summary>
     public void Resume()
     {
+        // coming back counts as activity, even before the first key (the exercise is shown)
+        _sinceLastActivity.Restart();
+
         if (!_isPaused)
             return;
 

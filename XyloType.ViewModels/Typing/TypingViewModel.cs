@@ -966,6 +966,13 @@ public partial class TypingViewModel : ObservableObject
     public void PauseTyping()
         => Session.Pause();
 
+    /// <summary>
+    /// No key for a while: the user is doing something else, the exercise pauses (idle time taken off the clocks).
+    /// True when it just paused.
+    /// </summary>
+    public bool PauseIfInactive()
+        => Session.PauseIfInactive();
+
     public void ResumeTyping()
         => Session.Resume();
 
