@@ -44,7 +44,7 @@ public partial class WordsExplorerView : ContentView, IViewLifecycle
             ClearHighlight(_hoveredRow);
 
         _hoveredRow = row;
-        row.Stroke = new SolidColorBrush(Resource("Accent"));
+        row.Stroke = new SolidColorBrush(Resource(Xylocopadream.UI.Maui.XdKeys.Accent));
         row.Content?.SetAppThemeColor(BackgroundColorProperty, Resource("RowHoverBgLight"), Resource("RowHoverBgDark"));
     }
 

@@ -19,7 +19,7 @@
             <Setter Property="CharacterSpacing" Value="0.6"/>
             <Setter Property="LineBreakMode" Value="TailTruncation"/>
             <Setter Property="VerticalOptions" Value="Center"/>
-            <Setter Property="TextColor" Value="{DynamicResource AccentOnSurface}"/>
+            <Setter Property="TextColor" Value="{DynamicResource Xd.AccentOnSurface}"/>
         </Style>
 
         <!-- hands and language of a word, as small pills -->
@@ -29,14 +29,14 @@
             <Setter Property="Padding" Value="7,2,7,3"/>
             <Setter Property="HorizontalOptions" Value="Center"/>
             <Setter Property="VerticalOptions" Value="Center"/>
-            <Setter Property="BackgroundColor" Value="{DynamicResource AccentSurface}"/>
+            <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentSurface}"/>
         </Style>
 
         <Style TargetType="Label" Class="words_pill_text">
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="LineBreakMode" Value="TailTruncation"/>
             <Setter Property="MaxLines" Value="1"/>
-            <Setter Property="TextColor" Value="{DynamicResource AccentOnSurface}"/>
+            <Setter Property="TextColor" Value="{DynamicResource Xd.AccentOnSurface}"/>
         </Style>
     </ContentView.Resources>
 
@@ -55,9 +55,10 @@
         <!-- filters -->
         <Border Grid.Row="1" Grid.Column="0"
                 StyleClass="BorderTypingRounded10, BorderBgStd"
-                Padding="18,16">
+                Padding="18,16,4,16">
+            <!-- the scroll bar is drawn over the content: a gutter on the right keeps it off the fields -->
             <ScrollView>
-                <VerticalStackLayout Spacing="12">
+                <VerticalStackLayout Spacing="12" Padding="0,0,14,0">
 
                     <Label Text="Filtres" StyleClass="label_section_title"/>
 
@@ -182,7 +183,7 @@
                         Padding="12,8"
                         StrokeShape="RoundRectangle 8"
                         StrokeThickness="0"
-                        BackgroundColor="{DynamicResource AccentSurface}">
+                        BackgroundColor="{DynamicResource Xd.AccentSurface}">
                     <Grid  ColumnSpacing="10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{Binding Word, Source={StaticResource TableColumns}, x:DataType=controls:WordsTableColumns}"/>
@@ -355,7 +356,7 @@
                 <HorizontalStackLayout Spacing="14">
                     <!-- spinning: shows the app is working, not frozen -->
                     <ActivityIndicator IsRunning="{Binding IsLoading}"
-                                       Color="{DynamicResource Accent}"
+                                       Color="{DynamicResource Xd.Accent}"
                                        WidthRequest="28"
                                        HeightRequest="28"
                                        VerticalOptions="Center"/>
@@ -376,7 +377,7 @@
                 VerticalOptions="Start"
                 StrokeShape="RoundRectangle 8"
                 StrokeThickness="2"
-                Stroke="{DynamicResource Accent}"
+                Stroke="{DynamicResource Xd.Accent}"
                 BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgStdLight}, Dark={StaticResource FloatingBarBgDark}}"
                 ZIndex="10">
             <Border.Shadow>

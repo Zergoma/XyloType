@@ -20,7 +20,7 @@
     </Style>
     
     <Style TargetType="Border" Class="BorderBgDescription">
-        <Setter Property="BackgroundColor" Value="{DynamicResource AccentSurface}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentSurface}" />
     </Style>
 
 

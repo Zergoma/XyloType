@@ -9,29 +9,6 @@ namespace XyloType.Tests.ViewModels;
 
 public class AccentColorViewModelTests
 {
-    [Theory]
-    [InlineData("#2f6feb", "#2F6FEB")]
-    [InlineData("2F6FEB", "#2F6FEB")]
-    [InlineData(" #abc ", "#AABBCC")]
-    [InlineData("#12345", null)]
-    [InlineData("#GGGGGG", null)]
-    [InlineData("", null)]
-    public void NormalizeHex_AcceptsTheUsualWritings(string text, string? expected)
-        => ColorMath.NormalizeHex(text).Should().Be(expected);
-
-    [Theory]
-    [InlineData("#FF0000")]
-    [InlineData("#2F6FEB")]
-    [InlineData("#7C3AED")]
-    [InlineData("#16A34A")]
-    [InlineData("#808080")]
-    public void HexAndHsv_GoBothWays(string hex)
-    {
-        var (hue, saturation, value) = ColorMath.HexToHsv(hex);
-
-        ColorMath.HsvToHex(hue, saturation, value).Should().Be(hex);
-    }
-
     private static (AccentColorViewModel Vm, IAccentColorService Service) Create(string accent = "#2F6FEB")
     {
         IAccentColorService service = Substitute.For<IAccentColorService>();
@@ -41,44 +18,30 @@ public class AccentColorViewModelTests
     }
 
     [Fact]
-    public void Preset_IsAppliedAtOnce()
+    public void StartsOnTheRememberedColor_WithoutApplyingItAgain()
     {
-        var (vm, service) = Create();
-
-        vm.SelectPreset(vm.Presets.Single(p => p.Name == "Violet"));
+        var (vm, service) = Create("#7C3AED");
 
         vm.Accent.Should().Be("#7C3AED");
-        vm.HexText.Should().Be("#7C3AED");
-        service.Received().SetAccent("#7C3AED");
+        service.DidNotReceive().SetAccent(Arg.Any<string>());
     }
 
     [Fact]
-    public void HexCode_IsAppliedOnlyWhenItIsAColor()
+    public void PickedColor_IsAppliedAtOnce()
     {
         var (vm, service) = Create();
 
-        vm.HexText = "#16A3";
-        vm.IsHexValid.Should().BeFalse();
-        service.DidNotReceive().SetAccent(Arg.Any<string>());
+        vm.Accent = "#16A34A";
 
-        vm.HexText = "#16A34A";
-        vm.Accent.Should().Be("#16A34A");
         service.Received().SetAccent("#16A34A");
     }
 
     [Fact]
-    public void PickedHueAndShade_GiveTheColor()
+    public void Presets_AreDistinctColors()
     {
-        var (vm, service) = Create();
+        var (vm, _) = Create();
 
-        vm.PickHue(0);
-        vm.PickShade(1, 1);
-
-        vm.Accent.Should().Be("#FF0000");
-        vm.HueColor.Should().Be("#FF0000");
-        service.Received().SetAccent("#FF0000");
-
-        vm.ResetToDefault();
-        vm.Accent.Should().Be("#2F6FEB");
+        vm.Presets.Select(p => p.Hex).Should().OnlyHaveUniqueItems();
+        vm.Presets.Should().Contain(p => p.Hex == vm.DefaultAccent);
     }
 }

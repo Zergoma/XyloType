@@ -91,8 +91,8 @@
     </Style>
 
     <Style TargetType="Button" Class="ButtonHoverAddExercice">
-        <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
-        <Setter Property="TextColor" Value="{DynamicResource AccentForeground}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource Xd.Accent}" />
+        <Setter Property="TextColor" Value="{DynamicResource Xd.AccentForeground}" />
 
         <Setter Property="VisualStateManager.VisualStateGroups">
 
@@ -102,22 +102,22 @@
 
                     <VisualState Name="Normal">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
-                            <Setter Property="TextColor" Value="{DynamicResource AccentForeground}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Xd.Accent}" />
+                            <Setter Property="TextColor" Value="{DynamicResource Xd.AccentForeground}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="PointerOver">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentHover}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentHover}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentPressed}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentPressed}" />
                             <Setter Property="Scale" Value="0.98" />
-                            <Setter Property="TextColor" Value="{DynamicResource AccentForeground}" />
+                            <Setter Property="TextColor" Value="{DynamicResource Xd.AccentForeground}" />
                         </VisualState.Setters>
                     </VisualState>
 
@@ -137,20 +137,20 @@
 
     <!-- selected exercise tile, in the main color (shade on hover) -->
     <Style TargetType="Border" Class="tile_selected">
-        <Setter Property="BackgroundColor" Value="{DynamicResource AccentSoft}"/>
-        <Setter Property="Stroke" Value="{DynamicResource Accent}"/>
+        <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentSoft}"/>
+        <Setter Property="Stroke" Value="{DynamicResource Xd.Accent}"/>
         <Setter Property="StrokeThickness" Value="2"/>
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup Name="CommonStates">
                     <VisualState Name="Normal">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentSoft}"/>
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentSoft}"/>
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState Name="PointerOver">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentSoftHover}"/>
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentSoftHover}"/>
                         </VisualState.Setters>
                     </VisualState>
                 </VisualStateGroup>
@@ -159,7 +159,7 @@
     </Style>
 
     <Style TargetType="Border" Class="BorderHoverLaunch">
-        <Setter Property="BackgroundColor" Value="{DynamicResource AccentTile}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentTile}" />
 
 
         <Setter Property="VisualStateManager.VisualStateGroups">
@@ -170,19 +170,19 @@
 
                     <VisualState Name="Normal">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentTile}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentTile}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="PointerOver">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentTileHover}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentTileHover}" />
                         </VisualState.Setters>
                     </VisualState>
 
                     <VisualState Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{DynamicResource AccentTilePressed}" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Xd.AccentTilePressed}" />
                             <Setter Property="Scale" Value="0.98" />
                         </VisualState.Setters>
                     </VisualState>

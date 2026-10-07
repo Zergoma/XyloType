@@ -96,7 +96,7 @@ public partial class TypingViewModel : ObservableObject
         foreach (Score score in scoreCatalog.GetAll())
             ScoreOptions.Add(new ScoreOptionViewModel(score, !disabled.Contains(score.Id), OnScoreEnabledChanged));
 
-        RebuildScoreGroups();
+        BuildScoreGroups();
 
         Session.BackReturnEnable = typingPreference.GetBackReturnEnable();
         Session.StopOnError = typingPreference.GetStopOnError();
@@ -155,7 +155,6 @@ public partial class TypingViewModel : ObservableObject
             _okSoundMode = value.Value;
             _typingPreference.SetOkSoundMode(_okSoundMode);
 
-            RebuildScoreGroups();
             if (IsScoreMode)
                 PickScore();
             else
@@ -163,6 +162,8 @@ public partial class TypingViewModel : ObservableObject
 
             _ = PreloadOkSoundsAsync();
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsSongMode));
+            OnPropertyChanged(nameof(ScoreCategoryGroups));
             OnScoreChanged();
         }
     }
@@ -426,26 +427,37 @@ public partial class TypingViewModel : ObservableObject
     public ObservableCollection<ScoreOptionViewModel> ScoreOptions { get; } = [];
 
     /// <summary>
-    /// The pieces grouped by kind of music, for the settings.
+    /// Settings: the instrumental pieces grouped by kind of music, in display order.
     /// </summary>
-    public ObservableCollection<ScoreCategoryViewModel> ScoreCategoryGroups { get; } = [];
+    public IReadOnlyList<ScoreCategoryViewModel> InstrumentalScoreGroups { get; private set; } = [];
 
     /// <summary>
-    /// Settings: one folded group per kind of music, in display order, with the pieces of the current mode only.
+    /// Settings: the songs grouped by kind of music, in display order.
     /// </summary>
-    private void RebuildScoreGroups()
-    {
-        foreach (ScoreCategoryViewModel group in ScoreCategoryGroups)
-            group.Detach();
-        ScoreCategoryGroups.Clear();
+    public IReadOnlyList<ScoreCategoryViewModel> SongScoreGroups { get; private set; } = [];
 
-        foreach (string category in ScoreCategories.DisplayOrder)
-        {
-            ScoreOptionViewModel[] pieces = [.. ScoreOptions.Where(o => o.Score.Category == category && IsOfMode(o.Score))];
-            if (pieces.Length > 0)
-                ScoreCategoryGroups.Add(new ScoreCategoryViewModel(category, pieces));
-        }
+    /// <summary>
+    /// The groups of the current mode.
+    /// </summary>
+    public IReadOnlyList<ScoreCategoryViewModel> ScoreCategoryGroups => IsSongMode ? SongScoreGroups : InstrumentalScoreGroups;
+
+    public bool IsSongMode => _okSoundMode == OkSoundMode.Song;
+
+    /// <summary>
+    /// Both lists are built once and the view only shows one of them: rebuilding the list at each change of mode
+    /// removed views (switches, expanders) still bound to the pieces, and WinUI threw on their disconnected handlers.
+    /// </summary>
+    private void BuildScoreGroups()
+    {
+        InstrumentalScoreGroups = GroupByCategory(isSong: false);
+        SongScoreGroups = GroupByCategory(isSong: true);
     }
+
+    private ScoreCategoryViewModel[] GroupByCategory(bool isSong)
+        => [.. ScoreCategories.DisplayOrder
+            .Select(category => ScoreOptions.Where(o => o.Score.Category == category && o.Score.IsSong == isSong).ToArray())
+            .Where(pieces => pieces.Length > 0)
+            .Select(pieces => new ScoreCategoryViewModel(pieces[0].Score.Category, pieces))];
 
     public string CurrentScoreText
         => _melody is null

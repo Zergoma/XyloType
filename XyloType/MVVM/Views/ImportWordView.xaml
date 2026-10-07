@@ -65,7 +65,7 @@
                 <VerticalStackLayout Spacing="6" IsVisible="{Binding IsImporting}">
                     <ProgressBar Progress="{Binding ProgressValue}"
                                  HeightRequest="8"
-                                 ProgressColor="{DynamicResource Accent}"/>
+                                 ProgressColor="{DynamicResource Xd.Accent}"/>
                     <Grid ColumnDefinitions="*,auto" ColumnSpacing="12">
                         <Label Text="{Binding ProgressText}" StyleClass="label_muted" VerticalOptions="Center"/>
                         <Button Grid.Column="1"
