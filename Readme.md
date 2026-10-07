@@ -24,7 +24,7 @@ You will have to select the letters you want, text you want or dynamically gener
 ## Features
 
 - **Layout**: a single window laid out like a JetBrains IDE: a navigation rail on the left (home, exercises editor, words, import; the open exercise or its results at the top), the theme and the main color on a right rail, a status bar at the bottom; tooltips show at once
-- **Home**: choose an exercise among cards (keyboard picker); generated exercises carry a badge ("Mots inventés" or "Vrais mots"), a fixed text shows its first 20 lines; a pulsing launch button
+- **Home**: choose an exercise among cards (keyboard picker); generated exercises carry a badge ("Mots inventés" or "Vrais mots", in two colors derived from the main color), a fixed text shows its first 20 lines; a pulsing launch button
 - **Typing screen**: live coloring of each character (pending, current, correct, corrected, wrong), following the light or dark theme even when it changes during the exercise; under the current letter, the live speed (words per minute over the last 10 seconds) and a small progress bar
 - **Automatic pause**: with no key for 5 seconds (at the start too), the typing pauses ("Reprendre la saisie"); 4 of these 5 seconds are taken off the clocks, 1 is kept so that waiting brings no advantage
 - **Sound feedback**: on a correct key, a note played on a synthesized xylophone or on real recordings (University of Iowa Musical Instrument Samples: xylophone, piano, marimba, vibraphone, glockenspiel), or a random instrument at each exercise: a random note, or the next note of one of 48 pieces in the public domain, either instrumental pieces or songs, grouped by kind (classical, traditional, ragtime, Christmas, American folk). Pieces follow the catalog order or a random one, and a random instrument can change with each piece. The piece (its title in a bar showing its progress) and the instrument are shown under the text, with buttons for the previous, next, random, and to never use them again; a mark on the text shows where the piece changes. On an error, a low "fat" note of the same instrument. A volume per sound
@@ -35,7 +35,8 @@ You will have to select the letters you want, text you want or dynamically gener
 - **Word import**: import a text file (compound words kept, French and Italian elisions such as "l'" dropped), each word is analyzed for the keyboard (rows, fingers, hands, dead keys) and stored in a local SQLite database; the import can be cancelled at any time and nothing is written before the end (one transaction); dynamic exercises with the "Words" source then pick real words (language, length, allowed letters, frequent words more often)
 - **Import history**: each import is recorded (title, SHA-256 of the normalized text, counts); importing the same text again or a close title asks for confirmation
 - **Words**: explore the imported words (contains, only these letters, language, length, occurrence range, hands, excluded), sorted on any column and paged, with the total count; columns fit the window, a cut word shows in full when hovered; exclude a word (never used in exercises, kept excluded on re-import) or restore it
-- **Themes**: light, dark or system, and a main color (presets, hue and shade picking, or a hex code) applied to the whole app
+- **Themes**: light, dark or system, and a main color (presets, hue and shade picking, or a hex code) applied to the whole app: selections, buttons, badges and status bar follow it
+- **Shared UI library**: the rails, buttons, segmented controls, color picker, tooltips and the theme colors come from [Xylocopadream.UI.Maui](https://www.nuget.org/packages/Xylocopadream.UI.Maui) (on nuget.org, source: [Zergoma/Xylocopadream.UI](https://github.com/Zergoma/Xylocopadream.UI))
 
 ---
 ## Statistics
@@ -90,6 +91,7 @@ MAUI 11.0.0-preview.6
 | Project | Package | Version | Usage |
 |---|---|---|---|
 | XyloType (MAUI) | CommunityToolkit.Maui | 14.2.2 | Expander, behaviors |
+| | Xylocopadream.UI.Maui | 0.1.5-preview | Rider-like controls (rails, icon buttons, segmented control, color picker, tooltips), theme and accent colors |
 | | CommunityToolkit.Mvvm | 8.4.2 | Observable properties, relay commands |
 | | NAudio.Wasapi | 3.1.0 | Low-latency typing sounds (WASAPI output + mixer) |
 | | Serilog | 4.3.1 | Application logging |
