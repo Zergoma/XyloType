@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:controls="clr-namespace:XyloType.MVVM.Controls"
+             xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
              xmlns:converters="clr-namespace:XyloType.Converters"
              xmlns:theme="clr-namespace:XyloType.ViewModels.Theme;assembly=XyloType.ViewModels"
              x:Class="XyloType.MainPage"
@@ -16,7 +16,8 @@
 
     <Grid RowDefinitions="*,26" ColumnDefinitions="60,*,60">
 
-        <controls:NavRail x:Name="Rail"/>
+        <!-- sections at the bottom, the open exercise at the top (see MainPage.xaml.cs) -->
+        <xd:NavRail x:Name="Rail"/>
 
         <!-- the views of the sections stay in place, only the current one is visible
              (WinUI does not like a view taken out and put back); exercises and results come and go -->
@@ -41,7 +42,7 @@
                     <!-- spinning: shows the app is working, not frozen -->
                     <ActivityIndicator x:Name="BusySpinner"
                                        IsRunning="False"
-                                       Color="{DynamicResource Accent}"
+                                       Color="{DynamicResource Xd.Accent}"
                                        WidthRequest="28"
                                        HeightRequest="28"
                                        VerticalOptions="Center"/>
@@ -52,56 +53,22 @@
             </Border>
         </Border>
 
-        <!-- right rail: the theme (three linked choices), then the main color -->
-        <Grid Grid.Column="2"
-              BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgStdLight}, Dark={StaticResource BorderBgStdDark}}">
+        <!-- right rail: the theme (three linked choices, the pill slides to the one chosen), then the main color -->
+        <Grid Grid.Column="2" BackgroundColor="{DynamicResource Xd.PanelBackground}">
             <VerticalStackLayout Spacing="10" Padding="7,14,7,0" VerticalOptions="Start">
-                <!-- the pill slides to the theme chosen (like the settings sections); the rounded corners fit:
-                     container radius = pill radius (10) + padding (2) + stroke (1) -->
-                <Border x:Name="ThemeGroup"
-                        x:DataType="theme:ThemeViewModel"
-                        HorizontalOptions="Center"
-                        StrokeShape="RoundRectangle 13"
-                        StrokeThickness="1"
-                        Stroke="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"
-                        Padding="2">
-                    <Grid>
-                    <Border x:Name="ThemePill"
-                            WidthRequest="40"
-                            HeightRequest="40"
-                            VerticalOptions="Start"
-                            StrokeShape="RoundRectangle 10"
-                            StrokeThickness="0"
-                            BackgroundColor="{DynamicResource Accent}"
-                            InputTransparent="True"/>
-                    <VerticalStackLayout x:Name="ThemeButtons" Spacing="2" HorizontalOptions="Center">
-                        <controls:NavRailButton x:Name="LightThemeButton"
-                                                UsesActiveBackground="False"
-                                                Icon="{x:Static controls:Icons.Sun}"
-                                                IsActive="{Binding IsThemeLight}"
-                                                Clicked="LightTheme_Clicked"/>
-                        <controls:NavRailButton x:Name="DarkThemeButton"
-                                                UsesActiveBackground="False"
-                                                Icon="{x:Static controls:Icons.Moon}"
-                                                IsActive="{Binding IsThemeDark}"
-                                                Clicked="DarkTheme_Clicked"/>
-                        <controls:NavRailButton x:Name="SystemThemeButton"
-                                                UsesActiveBackground="False"
-                                                Icon="{x:Static controls:Icons.Monitor}"
-                                                IsActive="{Binding IsThemeSystem}"
-                                                Clicked="SystemTheme_Clicked"/>
-                    </VerticalStackLayout>
-                    </Grid>
-                </Border>
+                <xd:RailChoiceGroup x:Name="ThemeGroup" ToolTipPlacement="Left">
+                    <xd:RailChoice Icon="{x:Static xd:XdIcons.Sun}" ToolTip="Thème clair"/>
+                    <xd:RailChoice Icon="{x:Static xd:XdIcons.Moon}" ToolTip="Thème sombre"/>
+                    <xd:RailChoice Icon="{x:Static xd:XdIcons.Monitor}" ToolTip="Thème du système"/>
+                </xd:RailChoiceGroup>
 
-                <BoxView HeightRequest="1"
-                         Margin="8,0"
-                         Color="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"/>
+                <BoxView HeightRequest="1" Margin="8,0" Color="{DynamicResource Xd.Border}"/>
 
-                <controls:NavRailButton x:Name="AccentButton"
-                                        HorizontalOptions="Center"
-                                        Icon="{x:Static controls:Icons.Palette}"
-                                        Clicked="AccentButton_Clicked"/>
+                <xd:NavRailButton HorizontalOptions="Center"
+                                  Icon="{x:Static xd:XdIcons.Palette}"
+                                  Clicked="AccentButton_Clicked"
+                                  xd:InstantToolTip.Text="Couleur principale"
+                                  xd:InstantToolTip.Placement="Left"/>
             </VerticalStackLayout>
         </Grid>
 
@@ -109,7 +76,7 @@
         <Grid Grid.Row="1" Grid.ColumnSpan="3"
               ColumnDefinitions="*,auto"
               Padding="14,0"
-              BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgStdLight}, Dark={StaticResource BorderBgStdDark}}">
+              BackgroundColor="{DynamicResource Xd.PanelBackground}">
             <Label VerticalOptions="Center" FontSize="12">
                 <Label.FormattedText>
                     <FormattedString>
@@ -117,7 +84,7 @@
                               TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"/>
                         <Span Text="Zergoma"
                               FontAttributes="Bold"
-                              TextColor="{AppThemeBinding Light={StaticResource BrandVioletLight}, Dark={StaticResource BrandVioletDark}}"/>
+                              TextColor="{DynamicResource Xd.AccentText}"/>
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
@@ -126,7 +93,7 @@
                     <FormattedString>
                         <Span Text="Xylocopa"
                               FontAttributes="Bold"
-                              TextColor="{AppThemeBinding Light={StaticResource BrandVioletLight}, Dark={StaticResource BrandVioletDark}}"/>
+                              TextColor="{DynamicResource Xd.AccentText}"/>
                         <Span Text="dream.de"
                               TextColor="{AppThemeBinding Light={StaticResource TextMutedLight}, Dark={StaticResource TextMutedDark}}"/>
                     </FormattedString>
@@ -135,174 +102,21 @@
         </Grid>
 
         <!-- main color picker: opened by the palette button, closed by a click outside -->
-        <Grid x:Name="AccentPickerLayer"
-              Grid.ColumnSpan="3"
-              Grid.RowSpan="2"
-              IsVisible="False"
-              BackgroundColor="Transparent"
-              ZIndex="3">
-            <Grid.GestureRecognizers>
-                <TapGestureRecognizer Tapped="AccentPickerLayer_Tapped"/>
-            </Grid.GestureRecognizers>
+        <xd:Popover x:Name="AccentPopover"
+                    Grid.RowSpan="2"
+                    Grid.ColumnSpan="3"
+                    PanelHorizontalOptions="End"
+                    PanelVerticalOptions="Start"
+                    PanelMargin="0,150,68,0"
+                    PanelWidth="264">
+            <xd:ColorPicker x:Name="AccentPicker"
+                            x:DataType="theme:AccentColorViewModel"
+                            Title="Couleur principale"
+                            ResetText="Par défaut"
+                            SelectedColor="{Binding Accent, Converter={StaticResource stringToColor}}"/>
+        </xd:Popover>
 
-            <Border x:Name="AccentPicker"
-                    x:DataType="theme:AccentColorViewModel"
-                    HorizontalOptions="End"
-                    VerticalOptions="Start"
-                    Margin="0,150,68,0"
-                    WidthRequest="264"
-                    Padding="16,14"
-                    StrokeShape="RoundRectangle 12"
-                    StrokeThickness="1"
-                    Stroke="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgStdLight}, Dark={StaticResource FloatingBarBgDark}}">
-                <Border.Shadow>
-                    <Shadow Brush="Black" Offset="0,6" Radius="18" Opacity="0.25"/>
-                </Border.Shadow>
-                <!-- clicks inside the picker must not close it -->
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer/>
-                </Border.GestureRecognizers>
-
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Couleur principale" FontAttributes="Bold" FontSize="15"/>
-
-                    <!-- nice colors -->
-                    <!-- two rows of six (the flex layout measures itself too tall without a height) -->
-                    <FlexLayout Wrap="Wrap" AlignContent="Start" HeightRequest="76" BindableLayout.ItemsSource="{Binding Presets}">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="theme:AccentPreset">
-                                <Border WidthRequest="28"
-                                        HeightRequest="28"
-                                        Margin="0,0,10,10"
-                                        StrokeShape="RoundRectangle 14"
-                                        StrokeThickness="0"
-                                        BackgroundColor="{Binding Hex, Converter={StaticResource stringToColor}}"
-                                        ToolTipProperties.Text="{Binding Name}">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding BindingContext.SelectPresetCommand, Source={x:Reference AccentPicker}, x:DataType=Border}"
-                                                              CommandParameter="{Binding .}"/>
-                                    </Border.GestureRecognizers>
-                                </Border>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </FlexLayout>
-
-                    <!-- shade: saturation from left to right, brightness from bottom to top -->
-                    <Grid x:Name="ShadeSquare" HeightRequest="130">
-                        <Grid.GestureRecognizers>
-                            <PointerGestureRecognizer PointerPressed="ShadeSquare_PointerPressed"
-                                                      PointerMoved="ShadeSquare_PointerMoved"
-                                                      PointerReleased="Picker_PointerReleased"
-                                                      PointerExited="Picker_PointerReleased"/>
-                        </Grid.GestureRecognizers>
-                        <BoxView Color="{Binding HueColor, Converter={StaticResource stringToColor}}" CornerRadius="6"/>
-                        <BoxView CornerRadius="6">
-                            <BoxView.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Offset="0" Color="White"/>
-                                    <GradientStop Offset="1" Color="#00FFFFFF"/>
-                                </LinearGradientBrush>
-                            </BoxView.Background>
-                        </BoxView>
-                        <BoxView CornerRadius="6">
-                            <BoxView.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Offset="0" Color="#00000000"/>
-                                    <GradientStop Offset="1" Color="Black"/>
-                                </LinearGradientBrush>
-                            </BoxView.Background>
-                        </BoxView>
-                        <Ellipse x:Name="ShadeMarker"
-                                 WidthRequest="14"
-                                 HeightRequest="14"
-                                 Stroke="White"
-                                 StrokeThickness="2"
-                                 HorizontalOptions="Start"
-                                 VerticalOptions="Start"
-                                 InputTransparent="True"/>
-                    </Grid>
-
-                    <!-- hue -->
-                    <Grid x:Name="HueBar" HeightRequest="14">
-                        <Grid.GestureRecognizers>
-                            <PointerGestureRecognizer PointerPressed="HueBar_PointerPressed"
-                                                      PointerMoved="HueBar_PointerMoved"
-                                                      PointerReleased="Picker_PointerReleased"
-                                                      PointerExited="Picker_PointerReleased"/>
-                        </Grid.GestureRecognizers>
-                        <BoxView CornerRadius="7">
-                            <BoxView.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Offset="0" Color="#FF0000"/>
-                                    <GradientStop Offset="0.167" Color="#FFFF00"/>
-                                    <GradientStop Offset="0.333" Color="#00FF00"/>
-                                    <GradientStop Offset="0.5" Color="#00FFFF"/>
-                                    <GradientStop Offset="0.667" Color="#0000FF"/>
-                                    <GradientStop Offset="0.833" Color="#FF00FF"/>
-                                    <GradientStop Offset="1" Color="#FF0000"/>
-                                </LinearGradientBrush>
-                            </BoxView.Background>
-                        </BoxView>
-                        <Border x:Name="HueMarker"
-                                WidthRequest="8"
-                                HeightRequest="18"
-                                Margin="0,-2"
-                                HorizontalOptions="Start"
-                                StrokeShape="RoundRectangle 3"
-                                StrokeThickness="2"
-                                Stroke="White"
-                                BackgroundColor="Transparent"
-                                InputTransparent="True"/>
-                    </Grid>
-
-                    <!-- exact color, by its code -->
-                    <Grid ColumnDefinitions="auto,*,auto" ColumnSpacing="10">
-                        <Border WidthRequest="28"
-                                HeightRequest="28"
-                                StrokeShape="RoundRectangle 6"
-                                StrokeThickness="0"
-                                BackgroundColor="{Binding Accent, Converter={StaticResource stringToColor}}"/>
-                        <Entry Grid.Column="1"
-                               Text="{Binding HexText}"
-                               MaxLength="7"
-                               FontSize="14"
-                               StyleClass="entry_no_spell_no_prediction"/>
-                        <Button Grid.Column="2"
-                                Text="Par défaut"
-                                StyleClass="button_hover"
-                                FontSize="12"
-                                Padding="10,0"
-                                HeightRequest="30"
-                                MinimumHeightRequest="30"
-                                CornerRadius="15"
-                                Command="{Binding ResetToDefaultCommand}"/>
-                    </Grid>
-                </VerticalStackLayout>
-            </Border>
-        </Grid>
-
-        <!-- tooltip of the rail buttons: beside them, level with them, shown at once -->
-        <Border x:Name="RailTooltip"
-                Grid.ColumnSpan="3"
-                IsVisible="False"
-                InputTransparent="True"
-                HorizontalOptions="Start"
-                VerticalOptions="Start"
-                HeightRequest="30"
-                Padding="10,0"
-                StrokeShape="RoundRectangle 6"
-                StrokeThickness="1"
-                Stroke="{AppThemeBinding Light={StaticResource BorderTypingRounded10BorderLight}, Dark={StaticResource BorderTypingRounded10BorderDark}}"
-                BackgroundColor="{AppThemeBinding Light={StaticResource BorderBgStdLight}, Dark={StaticResource FloatingBarBgDark}}"
-                ZIndex="2">
-            <Border.Shadow>
-                <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.2"/>
-            </Border.Shadow>
-            <Label x:Name="RailTooltipText"
-                   FontSize="13"
-                   VerticalOptions="Center"
-                   TextColor="{AppThemeBinding Light={StaticResource TextTitleLight}, Dark={StaticResource TextTitleDark}}"/>
-        </Border>
+        <!-- tooltips of the rails: beside the buttons, level with them, shown at once -->
+        <xd:InstantToolTipHost Grid.RowSpan="2" Grid.ColumnSpan="3"/>
     </Grid>
 </ContentPage>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
              xmlns:vm="clr-namespace:XyloType.ViewModels.ExercisesManager;assembly=XyloType.ViewModels"
              xmlns:behaviors="clr-namespace:XyloType.Behaviors"
-             xmlns:controls="clr-namespace:XyloType.MVVM.Controls"
              x:Class="XyloType.MVVM.Views.ExercisesManagerView"
              x:DataType="vm:ExercisesManagerViewModel"
              x:Name="RootPage">
@@ -126,7 +126,7 @@
                                                 Margin="0,0,-12,0"
                                                 StrokeShape="RoundRectangle 10"
                                                 StrokeThickness="2"
-                                                Stroke="{DynamicResource Accent}"
+                                                Stroke="{DynamicResource Xd.Accent}"
                                                 BackgroundColor="Transparent"
                                                 InputTransparent="True"/>
                                     </Grid>
@@ -169,27 +169,26 @@
                                     VerticalOptions="Center"
                                     StrokeShape="RoundRectangle 11"
                                     StrokeThickness="0"
-                                    Padding="9,3,10,4"
-                                    BackgroundColor="{AppThemeBinding Light={StaticResource BadgePseudoWordsBgLight}, Dark={StaticResource BadgePseudoWordsBgDark}}"
+                                    BackgroundColor="{DynamicResource Xd.AccentAlternate1}"
                                     ToolTipProperties.Text="Nouveaux mots à chaque partie">
-                                <Border.Triggers>
-                                    <DataTrigger TargetType="Border" Binding="{Binding IsRealWords}" Value="True">
-                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource BadgeRealWordsBgLight}, Dark={StaticResource BadgeRealWordsBgDark}}"/>
-                                    </DataTrigger>
-                                </Border.Triggers>
-                                <HorizontalStackLayout Spacing="5">
-                                    <Path Data="{x:Static controls:Icons.Shuffle}"
-                                          Fill="White"
-                                          Aspect="Uniform"
-                                          WidthRequest="11"
-                                          HeightRequest="11"
-                                          VerticalOptions="Center"/>
-                                    <Label Text="{Binding BadgeText}"
-                                           TextColor="White"
-                                           FontSize="12"
-                                           FontAttributes="Bold"
-                                           VerticalOptions="Center"/>
-                                </HorizontalStackLayout>
+                                <!-- colors derived from the main one: invented words, covered for real words
+                                     (a layer: a trigger does not take a dynamic resource back) -->
+                                <Grid>
+                                    <BoxView Color="{DynamicResource Xd.AccentAlternate2}" IsVisible="{Binding IsRealWords}"/>
+                                    <HorizontalStackLayout Spacing="5" Margin="9,3,10,4">
+                                        <Path Data="{x:Static xd:XdIcons.Shuffle}"
+                                              Fill="White"
+                                              Aspect="Uniform"
+                                              WidthRequest="11"
+                                              HeightRequest="11"
+                                              VerticalOptions="Center"/>
+                                        <Label Text="{Binding BadgeText}"
+                                               TextColor="White"
+                                               FontSize="12"
+                                               FontAttributes="Bold"
+                                               VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                </Grid>
                             </Border>
 
                             <Button Grid.Column="2"

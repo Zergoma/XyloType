@@ -21,15 +21,6 @@ public partial class ScoreCategoryViewModel : ObservableObject
             piece.PropertyChanged += OnPiecePropertyChanged;
     }
 
-    /// <summary>
-    /// Stops following the pieces (the group is replaced).
-    /// </summary>
-    public void Detach()
-    {
-        foreach (ScoreOptionViewModel piece in Pieces)
-            piece.PropertyChanged -= OnPiecePropertyChanged;
-    }
-
     public string Name { get; }
 
     public IReadOnlyList<ScoreOptionViewModel> Pieces { get; }
