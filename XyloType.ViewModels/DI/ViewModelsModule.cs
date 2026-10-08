@@ -15,6 +15,7 @@ public static class ViewModelsModule
     {
         services.AddTransient<ImportBookViewModel>();
         services.AddTransient<ImportWordViewModel>();
+        services.AddTransient<WordPacksViewModel>();
         services.AddTransient<TypingLauncherViewModel>();
         services.AddTransient<ExercisesManagerViewModel>();
         services.AddTransient<WordsExplorerViewModel>();

@@ -32,8 +32,12 @@ public partial class ImportWordViewModel : ObservableObject
         IKeyBoardLayoutAvailableService keyboardLayoutAvailableService,
         IImportDuplicateChecker duplicateChecker,
         IImportedSourceRepository sourceRepository,
-        IUserDialogService dialogService)
+        IUserDialogService dialogService,
+        WordPacksViewModel wordPacks)
     {
+        WordPacks = wordPacks;
+        wordPacks.Imported += async (_, _) => await LoadHistoryAsync();
+
         _choosePathPresenter = choosePathPresnter;
         _wordImportOrchestrator = wordImportService;
         _keyboardKeyLocatorManager = keyboardKeyLocatorManager;
@@ -44,6 +48,11 @@ public partial class ImportWordViewModel : ObservableObject
         _dialogService = dialogService;
     }
 
+
+    /// <summary>
+    /// The word packs ready to download, above the import of a file.
+    /// </summary>
+    public WordPacksViewModel WordPacks { get; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsFileSelected))]

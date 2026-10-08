@@ -22,7 +22,8 @@ public sealed class WordBatchProcessorOrchestrator : IWordBatchProcessorOrchestr
         IReadOnlyDictionary<string, int> batch,
         IReadOnlyDictionary<string, Word> existingWords,
         string languageCode,
-        IKeyboardKeysLocator keyBoardLocator)
+        IKeyboardKeysLocator keyBoardLocator,
+        OccurrenceMerge merge = OccurrenceMerge.Add)
     {
         List <Word> newWordsList = [];
         List<Word> updatedWordsList = [];
@@ -35,7 +36,9 @@ public sealed class WordBatchProcessorOrchestrator : IWordBatchProcessorOrchestr
 
             if (existingWords.TryGetValue(text, out Word? word))
             {
-                word.OccurrenceCount += count;
+                word.OccurrenceCount = merge == OccurrenceMerge.KeepHighest
+                    ? Math.Max(word.OccurrenceCount, count)
+                    : word.OccurrenceCount + count;
 
                 if (!word.AnalyseExists(keyBoardLocator.GetKeyboardType))
                 {

@@ -32,6 +32,15 @@ The [Release workflow](.github/workflows/release.yml) builds, tests and publishe
 The AI runtimes brought by the Windows App SDK (`onnxruntime.dll`, `DirectML.dll`, 38 MB) are left out: the app uses
 no Windows AI API. The SDK is pinned by `global.json` (.NET 11 preview 6).
 
+### Word packs
+
+The words ready to use (Import > Mots, offered at the first start when the database is empty) are the assets of the
+pre-release [`words`](https://github.com/Zergoma/XyloType/releases/tag/words): one `words-<language>.tsv.gz` per language
+("word TAB occurrences", gzip, most frequent first) and the catalog `word-packs.json` (version, SHA-256, word count,
+source books). `tools\publish-word-packs.ps1` builds them from a XyloType database (read only, excluded words left out,
+`tools/XyloType.WordPackBuilder`) and replaces the assets of the release (`-DryRun` builds them only); no new version
+of the app is needed.
+
 
 ---
 ## Exercices
@@ -53,6 +62,7 @@ You will have to select the letters you want, text you want or dynamically gener
 - **Chaining**: from the results, retry the exercise (new words for generated exercises), go to the next one, or back home — the last played exercise stays selected
 - **Exercises editor**: create, edit, delete and reorder (drag and drop) the exercises of a keyboard; a fixed text can be generated from pseudo-words or from imported words and scrolls in its own box; changes stay in memory until you save, cancel restores the saved file
 - **Word import**: import a text file (compound words kept, French and Italian elisions such as "l'" dropped), each word is analyzed for the keyboard (rows, fingers, hands, dead keys) and stored in a local SQLite database; the import can be cancelled at any time and nothing is written before the end (one transaction); dynamic exercises with the "Words" source then pick real words (language, length, allowed letters, frequent words more often)
+- **Word packs**: ready-to-use words taken from public domain books (French, English), downloaded from GitHub and checked (SHA-256), then imported for the chosen keyboard; offered at the first start when the database is empty. Importing a pack again, or a newer one, keeps the highest count of each word instead of adding them, and excluded words stay excluded
 - **Import history**: each import is recorded (title, SHA-256 of the normalized text, counts); importing the same text again or a close title asks for confirmation
 - **Words**: explore the imported words (contains, only these letters, language, length, occurrence range, hands, excluded), sorted on any column and paged, with the total count; columns fit the window, a cut word shows in full when hovered; exclude a word (never used in exercises, kept excluded on re-import) or restore it
 - **Themes**: light, dark or system, and a main color (presets, hue and shade picking, or a hex code) applied to the whole app: selections, buttons, badges and status bar follow it

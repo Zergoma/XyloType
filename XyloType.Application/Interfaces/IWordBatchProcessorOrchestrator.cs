@@ -10,6 +10,7 @@ namespace XyloType.Application.Interfaces
             IReadOnlyDictionary<string, int> batch,
             IReadOnlyDictionary<string, Word> existingWords,
             string languageCode,
-            IKeyboardKeysLocator layout);
+            IKeyboardKeysLocator layout,
+            Models.OccurrenceMerge merge = Models.OccurrenceMerge.Add);
     }
 }
