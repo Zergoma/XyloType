@@ -14,6 +14,26 @@ Select you exercice, type then look at your stats.
 
 
 ---
+## Download
+
+Each version is published on the [Releases](https://github.com/Zergoma/XyloType/releases) page: download
+`XyloType-vX.Y-win-x64.zip`, unzip it anywhere and run `XyloType.exe` (Windows 10 1809 or later, x64; nothing to install).
+The executable is not signed yet: Windows SmartScreen asks for a confirmation the first time
+("More info", then "Run anyway").
+
+### How releases are made
+
+The [Release workflow](.github/workflows/release.yml) builds, tests and publishes the app on GitHub Actions:
+
+- on `develop`, the app is kept for 30 days as an artifact of the run (test build);
+- on `main`, a release `vX.Y` is created with the zip, `X.Y` being `ApplicationDisplayVersion` of `XyloType.csproj`:
+  raise it before merging on `main`, a version that already has its release is refused.
+
+The AI runtimes brought by the Windows App SDK (`onnxruntime.dll`, `DirectML.dll`, 38 MB) are left out: the app uses
+no Windows AI API. The SDK is pinned by `global.json` (.NET 11 preview 6).
+
+
+---
 ## Exercices
 
 You can design your own exercices  
