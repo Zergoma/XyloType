@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace XyloType.Navigation;
 
 /// <summary>
@@ -17,14 +19,16 @@ public class AppNavigator
     };
 
     private readonly IServiceProvider _services;
+    private readonly ILogger<AppNavigator> _logger;
     private readonly Dictionary<AppSection, View> _sectionViews = [];
 
     // the exercise, then its results (shown in place of the exercise)
     private View? _exerciseView;
 
-    public AppNavigator(IServiceProvider services)
+    public AppNavigator(IServiceProvider services, ILogger<AppNavigator> logger)
     {
         _services = services;
+        _logger = logger;
     }
 
     /// <summary>
@@ -93,23 +97,37 @@ public class AppNavigator
         if (CurrentView is INavigationGuard guard && !await guard.CanLeaveAsync())
             return;
 
+        try
+        {
+            // first visit: the view is created, which takes a while
+            if (!_sectionViews.ContainsKey(section))
+            {
+                await RunBusyAsync(() =>
+                {
+                    ShowSection(section);
+                    return Task.CompletedTask;
+                });
+                return;
+            }
+
+            ShowSection(section);
+        }
+        catch (Exception ex)
+        {
+            // the section stays the previous one: a click on its button tries again
+            _logger.LogError(ex, "Unable to show the section {Section}", section);
+        }
+    }
+
+    private void ShowSection(AppSection section)
+    {
+        // created before anything changes: if it fails, the app stays where it was
+        View view = SectionView(section);
+
         // leaving the exercise ends it: there is no going back to it
         _exerciseView = null;
-
-        // first visit: the view is created, which takes a while
-        if (!_sectionViews.ContainsKey(section))
-        {
-            await RunBusyAsync(() =>
-            {
-                CurrentSection = section;
-                Show(SectionView(section));
-                return Task.CompletedTask;
-            });
-            return;
-        }
-
         CurrentSection = section;
-        Show(SectionView(section));
+        Show(view);
     }
 
     /// <summary>

@@ -21,7 +21,15 @@ public partial class MainPage : ContentPage
     // top of the rail: the open exercise, only while it is shown
     private readonly NavRailItem _exerciseItem = new() { Icon = XdIcons.Keyboard, Key = AppSection.Exercise, IsVisible = false };
 
-    public MainPage(AppNavigator navigator, ThemeViewModel theme, AccentColorViewModel accent)
+    // the word packs are offered once, at the first start with an empty database
+    private const string WordPacksOfferedKey = "word_packs_offered";
+
+    public MainPage(
+        AppNavigator navigator,
+        ThemeViewModel theme,
+        AccentColorViewModel accent,
+        ViewModels.Import.WordPacksViewModel wordPacks,
+        Application.Interfaces.IUserDialogService dialogs)
     {
         InitializeComponent();
 
@@ -57,6 +65,34 @@ public partial class MainPage : ContentPage
         navigator.BusyChanged += ShowBusy;
 
         navigator.Start();
+
+        Loaded += async (_, _) => await OfferWordPacksAsync(navigator, wordPacks, dialogs);
+    }
+
+    /// <summary>
+    /// First start, no word yet: the exercises of real words would be empty, the packs make the app ready at once.
+    /// Asked once; the packs stay in Import > Mots.
+    /// </summary>
+    private static async Task OfferWordPacksAsync(
+        AppNavigator navigator,
+        ViewModels.Import.WordPacksViewModel wordPacks,
+        Application.Interfaces.IUserDialogService dialogs)
+    {
+        if (Preferences.Default.Get(WordPacksOfferedKey, false) || !await wordPacks.HasNoWordsAsync())
+            return;
+
+        Preferences.Default.Set(WordPacksOfferedKey, true);
+
+        bool download = await dialogs.ConfirmAsync(
+            "Bienvenue dans XyloType",
+            "La base de mots est vide. Voulez-vous télécharger un pack de mots prêt à l'emploi " +
+            "(des dizaines de milliers de mots tirés de livres du domaine public) ?\n\n" +
+            "Vous pourrez aussi le faire plus tard dans Import > Mots.",
+            "Voir les packs",
+            "Plus tard");
+
+        if (download)
+            await navigator.GoToSectionAsync(AppSection.Import);
     }
 
     private void ShowView(AppNavigator navigator, View view)

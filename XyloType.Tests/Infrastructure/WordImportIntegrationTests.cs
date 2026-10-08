@@ -54,6 +54,7 @@ public sealed class WordImportIntegrationTests : IDisposable
             new DactyloRepository(_factory, NullLogger<DactyloRepository>.Instance),
             new WordBatchProcessorOrchestrator(new KeyboardAnalyzerService()),
             new TextFileWordReader(),
+            new WordPackReader(),
             new NormalizedTextHasher(),
             NullLogger<WordImportOrchestrator>.Instance);
 
@@ -366,6 +367,67 @@ public sealed class WordImportIntegrationTests : IDisposable
             await CreateOrchestrator().ImportAsync(Path.Combine(_folder, "missing.txt"), "fr", new AzertyKeysLocator());
 
         result.Success.Should().BeFalse();
+    }
+
+    private async Task<(string Path, WordPackInfo Info)> WritePackAsync(params (string Text, int Occurrences)[] words)
+    {
+        string path = Path.Combine(_folder, WordPackFormat.FileNameFor("fr"));
+        var (sha256, size, count) = await WordPackWriter.WriteAsync(path, words, ["test pack"]);
+        return (path, new WordPackInfo("fr", "Mots français", "2026.10.08", Path.GetFileName(path), sha256, size, count, ["Test"]));
+    }
+
+    [Fact]
+    public async Task ImportPack_StoresTheWordsWithTheirCountsAndAnalysis()
+    {
+        var (path, pack) = await WritePackAsync(("de", 120), ("chat", 7), ("cœur", 3));
+
+        Result<WordImportSummary> result = await CreateOrchestrator().ImportPackAsync(path, pack, new AzertyKeysLocator());
+
+        result.Success.Should().BeTrue(result.Error);
+        result.GetValue.WordsRead.Should().Be(3, "one line per word");
+        result.GetValue.NewWords.Should().Be(2);
+        result.GetValue.IgnoredWords.Should().Be(1, "œ is not on the keyboard");
+
+        using DactyloDbContext ctx = _factory.CreateDbContext();
+        Word chat = await ctx.Words.Include(w => w.Analyses).SingleAsync(w => w.Text == "chat");
+        chat.OccurrenceCount.Should().Be(7);
+        chat.Analyses.Should().ContainSingle(a => a.Layout == KeyboardLayout.AzertyFr);
+
+        ImportedSource source = await ctx.ImportedSources.SingleAsync();
+        source.ContentHash.Should().Be(pack.Sha256, "the pack is recognized in the history");
+        source.Title.Should().Be("Mots français (2026.10.08)");
+    }
+
+    [Fact]
+    public async Task ImportPack_KeepsTheHighestCount_SoThatImportingItAgainCountsNothingTwice()
+    {
+        // "chat" twice in a text, 7 times in the pack; "chien" more often in the text than in the pack
+        await CreateOrchestrator().ImportAsync(WriteText("chat chat chien chien chien chien"), "fr", new AzertyKeysLocator());
+        var (path, pack) = await WritePackAsync(("chat", 7), ("chien", 1));
+
+        await CreateOrchestrator().ImportPackAsync(path, pack, new AzertyKeysLocator());
+        Result<WordImportSummary> again = await CreateOrchestrator().ImportPackAsync(path, pack, new AzertyKeysLocator());
+
+        again.Success.Should().BeTrue(again.Error);
+        again.GetValue.NewWords.Should().Be(0);
+
+        using DactyloDbContext ctx = _factory.CreateDbContext();
+        (await ctx.Words.SingleAsync(w => w.Text == "chat")).OccurrenceCount.Should().Be(7);
+        (await ctx.Words.SingleAsync(w => w.Text == "chien")).OccurrenceCount.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task ImportPack_KeepsTheExcludedWordsExcluded()
+    {
+        await CreateOrchestrator().ImportAsync(WriteText("chat"), "fr", new AzertyKeysLocator());
+        using (DactyloDbContext ctx = _factory.CreateDbContext())
+            await CreateRepository().SetExcludedAsync((await ctx.Words.SingleAsync()).Id, true);
+
+        var (path, pack) = await WritePackAsync(("chat", 50));
+        await CreateOrchestrator().ImportPackAsync(path, pack, new AzertyKeysLocator());
+
+        using DactyloDbContext check = _factory.CreateDbContext();
+        (await check.Words.SingleAsync(w => w.Text == "chat")).IsExcluded.Should().BeTrue();
     }
 
     private sealed class TestDbContextFactory(string dbPath) : IDbContextFactory<DactyloDbContext>

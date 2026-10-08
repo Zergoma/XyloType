@@ -13,6 +13,8 @@ internal static class InfrastructureIoModule
     public static IServiceCollection AddIo(this IServiceCollection services)
     {
         services.AddTransient<IWordStreamReader, TextFileWordReader>();
+        services.AddTransient<IWordPackReader, WordPackReader>();
+        services.AddSingleton<IWordPackSource, GitHubWordPackSource>();
         services.AddTransient<IContentHasher, NormalizedTextHasher>();
 
         services.AddSingleton<AssetThemesLoader>();

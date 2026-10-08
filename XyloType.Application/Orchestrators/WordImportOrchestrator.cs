@@ -12,6 +12,7 @@ public class WordImportOrchestrator : IWordImportOrchestrator
     private readonly IDactyloRepository _repository;
     private readonly IWordBatchProcessorOrchestrator _wordBatchProcessorOrchestrator;
     private readonly IWordStreamReader _wordStreamingService;
+    private readonly IWordPackReader _packReader;
     private readonly IContentHasher _hasher;
     private readonly ILogger<WordImportOrchestrator> _logger;
 
@@ -25,26 +26,86 @@ public class WordImportOrchestrator : IWordImportOrchestrator
         IDactyloRepository dactyloRepository,
         IWordBatchProcessorOrchestrator processor,
         IWordStreamReader wordStreamingService,
+        IWordPackReader packReader,
         IContentHasher hasher,
         ILogger<WordImportOrchestrator> logger)
     {
         _repository = dactyloRepository;
         _wordBatchProcessorOrchestrator = processor;
         _wordStreamingService = wordStreamingService;
+        _packReader = packReader;
         _hasher = hasher;
         _logger = logger;
     }
 
-    public async Task<Result<WordImportSummary>> ImportAsync(
+    public Task<Result<WordImportSummary>> ImportAsync(
         string filePath,
         string languageCode,
         IKeyboardKeysLocator layout,
         IProgress<WordImportProgress>? progress = null,
         CancellationToken cancellationToken = default)
+        => RunAsync(
+            filePath,
+            ct => ImportCoreAsync(
+                // each word of the text counts once
+                fileProgress => CountOnce(_wordStreamingService.ReadWordsAsync(filePath, languageCode, fileProgress, ct)),
+                languageCode,
+                layout,
+                OccurrenceMerge.Add,
+                async summary => new ImportedSource
+                {
+                    Title = Path.GetFileNameWithoutExtension(filePath),
+                    FileName = Path.GetFileName(filePath),
+                    ContentHash = await _hasher.HashTextFileAsync(filePath, ct),
+                    LanguageCode = languageCode,
+                    ImportedAtUtc = DateTime.UtcNow,
+                    WordsRead = summary.WordsRead,
+                    NewWords = summary.NewWords,
+                    UpdatedWords = summary.UpdatedWords,
+                    IgnoredWords = summary.IgnoredWords
+                },
+                progress,
+                ct),
+            cancellationToken);
+
+    public Task<Result<WordImportSummary>> ImportPackAsync(
+        string packFilePath,
+        WordPackInfo pack,
+        IKeyboardKeysLocator layout,
+        IProgress<WordImportProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+        => RunAsync(
+            packFilePath,
+            ct => ImportCoreAsync(
+                fileProgress => _packReader.ReadAsync(packFilePath, fileProgress, ct),
+                pack.LanguageCode,
+                layout,
+                OccurrenceMerge.KeepHighest,
+                summary => Task.FromResult(new ImportedSource
+                {
+                    Title = $"{pack.Title} ({pack.Version})",
+                    FileName = pack.FileName,
+                    // the checksum of the pack: the same pack is recognized in the history
+                    ContentHash = pack.Sha256,
+                    LanguageCode = pack.LanguageCode,
+                    ImportedAtUtc = DateTime.UtcNow,
+                    WordsRead = summary.WordsRead,
+                    NewWords = summary.NewWords,
+                    UpdatedWords = summary.UpdatedWords,
+                    IgnoredWords = summary.IgnoredWords
+                }),
+                progress,
+                ct),
+            cancellationToken);
+
+    private async Task<Result<WordImportSummary>> RunAsync(
+        string filePath,
+        Func<CancellationToken, Task<Result<WordImportSummary>>> import,
+        CancellationToken cancellationToken)
     {
         try
         {
-            return await ImportCoreAsync(filePath, languageCode, layout, progress, cancellationToken);
+            return await import(cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -60,10 +121,24 @@ public class WordImportOrchestrator : IWordImportOrchestrator
         }
     }
 
+    private static async IAsyncEnumerable<(string Text, int Occurrences)> CountOnce(IAsyncEnumerable<string> words)
+    {
+        await foreach (string word in words)
+            yield return (word, 1);
+    }
+
+    /// <summary>
+    /// Reads the words (with their occurrences), analyzes them by batches for the keyboard, then writes
+    /// the new and updated words and the history entry at once.
+    /// </summary>
+    /// <param name="read">The words, from a progress receiving the share of the file read</param>
+    /// <param name="describeSource">The history entry, from the summary</param>
     private async Task<Result<WordImportSummary>> ImportCoreAsync(
-        string filePath,
+        Func<IProgress<double>, IAsyncEnumerable<(string Text, int Occurrences)>> read,
         string languageCode,
         IKeyboardKeysLocator layout,
+        OccurrenceMerge merge,
+        Func<WordImportSummary, Task<ImportedSource>> describeSource,
         IProgress<WordImportProgress>? progress,
         CancellationToken cancellationToken)
     {
@@ -88,19 +163,19 @@ public class WordImportOrchestrator : IWordImportOrchestrator
         InlineProgress<double> fileProgress =
             new(fraction => progress?.Report(new WordImportProgress(WordImportPhase.Reading, state.WordsRead, fraction)));
 
-        await foreach (string word in _wordStreamingService.ReadWordsAsync(filePath, languageCode, fileProgress, cancellationToken))
+        await foreach ((string word, int occurrences) in read(fileProgress))
         {
             state.WordsRead++;
 
             if (state.NoMapWords.Contains(word))
                 continue;
 
-            if (!batch.TryAdd(word, 1))
-                batch[word]++;
+            if (!batch.TryAdd(word, occurrences))
+                batch[word] += occurrences;
 
             if (batch.Count >= BatchSize)
             {
-                Result<bool> batchResult = ProcessBatch(batch, languageCode, layout, state);
+                Result<bool> batchResult = ProcessBatch(batch, languageCode, layout, merge, state);
                 batch.Clear();
                 if (!batchResult.Success)
                     return Result<WordImportSummary>.Fail(batchResult.Error);
@@ -111,7 +186,7 @@ public class WordImportOrchestrator : IWordImportOrchestrator
 
         if (batch.Count > 0)
         {
-            Result<bool> batchResult = ProcessBatch(batch, languageCode, layout, state);
+            Result<bool> batchResult = ProcessBatch(batch, languageCode, layout, merge, state);
             if (!batchResult.Success)
                 return Result<WordImportSummary>.Fail(batchResult.Error);
         }
@@ -125,18 +200,7 @@ public class WordImportOrchestrator : IWordImportOrchestrator
             IgnoredWords: state.NoMapWords.Count,
             IgnoredSample: [.. state.NoMapWords.Order().Take(IgnoredSampleSize)]);
 
-        ImportedSource source = new()
-        {
-            Title = Path.GetFileNameWithoutExtension(filePath),
-            FileName = Path.GetFileName(filePath),
-            ContentHash = await _hasher.HashTextFileAsync(filePath, cancellationToken),
-            LanguageCode = languageCode,
-            ImportedAtUtc = DateTime.UtcNow,
-            WordsRead = summary.WordsRead,
-            NewWords = summary.NewWords,
-            UpdatedWords = summary.UpdatedWords,
-            IgnoredWords = summary.IgnoredWords
-        };
+        ImportedSource source = await describeSource(summary);
 
         InlineProgress<double> saveProgress =
             new(fraction => progress?.Report(new WordImportProgress(WordImportPhase.Saving, state.WordsRead, fraction)));
@@ -150,8 +214,8 @@ public class WordImportOrchestrator : IWordImportOrchestrator
             cancellationToken);
 
         _logger.LogInformation(
-            "Word import done for {FilePath}: {WordsRead} read, {NewWords} new, {UpdatedWords} updated, {IgnoredWords} ignored",
-            filePath, summary.WordsRead, summary.NewWords, summary.UpdatedWords, summary.IgnoredWords);
+            "Word import done for {Source}: {WordsRead} read, {NewWords} new, {UpdatedWords} updated, {IgnoredWords} ignored",
+            source.FileName, summary.WordsRead, summary.NewWords, summary.UpdatedWords, summary.IgnoredWords);
 
         return Result<WordImportSummary>.Ok(summary);
     }
@@ -163,10 +227,11 @@ public class WordImportOrchestrator : IWordImportOrchestrator
         Dictionary<string, int> batch,
         string languageCode,
         IKeyboardKeysLocator layout,
+        OccurrenceMerge merge,
         ImportState state)
     {
         Result<WordProcessResult> resultProcess =
-            _wordBatchProcessorOrchestrator.Process(batch, state.ExistingWords, languageCode, layout);
+            _wordBatchProcessorOrchestrator.Process(batch, state.ExistingWords, languageCode, layout, merge);
 
         if (!resultProcess.Success)
         {

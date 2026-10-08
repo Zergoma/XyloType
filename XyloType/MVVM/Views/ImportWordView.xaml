@@ -2,11 +2,117 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="XyloType.MVVM.Views.ImportWordView"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:XyloType.ViewModels.Import;assembly=XyloType.ViewModels"
              x:DataType="vm:ImportWordViewModel">
 
+    <ContentView.Resources>
+        <toolkit:IsStringNotNullOrEmptyConverter x:Key="hasText"/>
+    </ContentView.Resources>
+
     <ScrollView>
       <VerticalStackLayout Padding="30" Spacing="20" HorizontalOptions="Center" VerticalOptions="Center">
+
+        <!-- word packs ready to use: downloaded from the GitHub repository -->
+        <Border x:Name="PacksCard"
+                BindingContext="{Binding WordPacks}"
+                x:DataType="vm:WordPacksViewModel"
+                StyleClass="BorderTypingRounded10, BorderBgStd"
+                Padding="30,24"
+                WidthRequest="560">
+            <VerticalStackLayout Spacing="14">
+
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Packs de mots" StyleClass="label_page_title"/>
+                    <Label Text="Des mots prêts à l'emploi, tirés de livres du domaine public : téléchargez-les pour commencer tout de suite."
+                           StyleClass="label_muted"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Clavier" StyleClass="label_field"/>
+                    <Picker ItemsSource="{Binding KeyboardLayoutAvailable}"
+                            SelectedItem="{Binding SelectedKeyboard}"
+                            StyleClass="picker_themed"
+                            HorizontalOptions="Start"
+                            MinimumWidthRequest="240"/>
+                </VerticalStackLayout>
+
+                <!-- the catalog: loading, not available (no connection?), or the packs -->
+                <HorizontalStackLayout Spacing="10" IsVisible="{Binding IsLoading}">
+                    <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                       Color="{DynamicResource Xd.Accent}"
+                                       WidthRequest="20"
+                                       HeightRequest="20"/>
+                    <Label Text="Chargement de la liste des packs…" StyleClass="label_muted" VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+
+                <Grid ColumnDefinitions="*,auto" ColumnSpacing="12" IsVisible="{Binding HasLoadError}">
+                    <Label Text="{Binding LoadError}" StyleClass="label_error" VerticalOptions="Center"/>
+                    <Button Grid.Column="1"
+                            Text="Réessayer"
+                            StyleClass="button_hover"
+                            Padding="16,0"
+                            HeightRequest="32"
+                            MinimumHeightRequest="32"
+                            CornerRadius="16"
+                            Command="{Binding LoadCommand}"/>
+                </Grid>
+
+                <VerticalStackLayout Spacing="12" IsVisible="{Binding HasPacks}" BindableLayout.ItemsSource="{Binding Packs}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:WordPackItem">
+                            <Grid ColumnDefinitions="*,auto" ColumnSpacing="16">
+                                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding Title}" FontAttributes="Bold"/>
+                                    <Label Text="{Binding Details}" StyleClass="label_muted" FontSize="12"/>
+                                    <Label Text="{Binding SourcesText}" StyleClass="label_muted" FontSize="12"
+                                           LineBreakMode="WordWrap" MaxLines="2"/>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                    <Label Text="Déjà importé"
+                                           StyleClass="label_success"
+                                           FontSize="12"
+                                           HorizontalOptions="End"
+                                           IsVisible="{Binding IsImported}"/>
+                                    <Button Text="{Binding ActionText}"
+                                            StyleClass="button_hover"
+                                            Padding="16,0"
+                                            HeightRequest="34"
+                                            MinimumHeightRequest="34"
+                                            CornerRadius="17"
+                                            Command="{Binding BindingContext.ImportPackCommand, Source={x:Reference PacksCard}, x:DataType=Border}"
+                                            CommandParameter="{Binding .}"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6" IsVisible="{Binding IsImporting}">
+                    <ProgressBar Progress="{Binding ProgressValue}"
+                                 HeightRequest="8"
+                                 ProgressColor="{DynamicResource Xd.Accent}"/>
+                    <Grid ColumnDefinitions="*,auto" ColumnSpacing="12">
+                        <Label Text="{Binding ProgressText}" StyleClass="label_muted" VerticalOptions="Center"/>
+                        <Button Grid.Column="1"
+                                Text="Annuler"
+                                StyleClass="button_hover"
+                                Padding="16,0"
+                                HeightRequest="32"
+                                MinimumHeightRequest="32"
+                                CornerRadius="16"
+                                Command="{Binding ImportPackCancelCommand}"/>
+                    </Grid>
+                </VerticalStackLayout>
+
+                <!-- shown only with a message: empty, they would leave a gap -->
+                <Label Text="{Binding SuccessImport}" StyleClass="label_success"
+                       IsVisible="{Binding SuccessImport, Converter={StaticResource hasText}}"/>
+                <Label Text="{Binding ErrorImport}" StyleClass="label_error"
+                       IsVisible="{Binding ErrorImport, Converter={StaticResource hasText}}"/>
+            </VerticalStackLayout>
+        </Border>
+
         <Border StyleClass="BorderTypingRounded10, BorderBgStd"
                 Padding="30,24"
                 WidthRequest="560">
@@ -14,9 +120,9 @@
             <VerticalStackLayout Spacing="16">
 
                 <VerticalStackLayout Spacing="4">
-                    <Label Text="Import mots"
+                    <Label Text="Importer un texte"
                            StyleClass="label_page_title"/>
-                    <Label Text="Choisissez un fichier de mots, sa langue et le clavier cible."
+                    <Label Text="Ajoutez les mots d'un livre ou d'une liste : choisissez le fichier, sa langue et le clavier cible."
                            StyleClass="label_muted"/>
                 </VerticalStackLayout>
 

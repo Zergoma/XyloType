@@ -16,6 +16,7 @@ public partial class ImportWordView : ContentView, IViewLifecycle
     public async void OnAppearing()
     {
         await _vm.LoadHistoryAsync();
+        await _vm.WordPacks.LoadAsync();
     }
 
     public void OnDisappearing()

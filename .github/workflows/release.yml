@@ -1,4 +1,4 @@
-# Builds, tests and publishes the app for Windows x64, self-contained (nothing to install), in a zip:
+﻿# Builds, tests and publishes the app for Windows x64, self-contained (nothing to install), in a zip:
 # - on develop: the zip is kept as an artifact of the run (test build),
 # - on main: a release is published with the zip.
 # The version is ApplicationDisplayVersion of XyloType.csproj: raise it before merging on main, the workflow refuses
@@ -92,4 +92,5 @@ jobs:
           gh release create "${{ steps.version.outputs.tag }}" "${{ steps.zip.outputs.file }}" `
             --target "${{ github.sha }}" `
             --title "XyloType ${{ steps.version.outputs.version }}" `
-            --generate-notes
+            --generate-notes `
+            --latest

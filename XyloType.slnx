@@ -4,6 +4,9 @@
     <File Path="icones_themes_codes.png" />
     <File Path="Readme.md" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/XyloType.WordPackBuilder/XyloType.WordPackBuilder.csproj" />
+  </Folder>
   <Folder Name="/UI/">
     <Project Path="XyloType/XyloType.csproj" />
   </Folder>
