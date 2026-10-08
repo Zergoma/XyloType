@@ -7,7 +7,7 @@ name: Release
 
 on:
   push:
-    branches: [main, develop, feature/release-workflow]
+    branches: [main, develop]
   workflow_dispatch:
 
 permissions:
