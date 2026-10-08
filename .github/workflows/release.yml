@@ -1,0 +1,95 @@
+# Builds, tests and publishes the app for Windows x64, self-contained (nothing to install), in a zip:
+# - on develop: the zip is kept as an artifact of the run (test build),
+# - on main: a release is published with the zip.
+# The version is ApplicationDisplayVersion of XyloType.csproj: raise it before merging on main, the workflow refuses
+# a version that already has its release (a release is never replaced).
+name: Release
+
+on:
+  push:
+    branches: [main, develop, feature/release-workflow]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      IS_RELEASE: ${{ github.ref == 'refs/heads/main' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version
+        id: version
+        run: |
+          $csproj = Get-Content XyloType/XyloType.csproj -Raw
+          $version = [regex]::Match($csproj, '<ApplicationDisplayVersion>([^<]+)</ApplicationDisplayVersion>').Groups[1].Value
+          if (-not $version) { throw 'No ApplicationDisplayVersion in XyloType.csproj.' }
+          $tag = "v$version"
+          if ($env:IS_RELEASE -eq 'true') {
+            git ls-remote --exit-code --tags origin "refs/tags/$tag" | Out-Null
+            if ($LASTEXITCODE -eq 0) {
+              throw "Release $tag already exists: raise ApplicationDisplayVersion in XyloType.csproj."
+            }
+          }
+          else {
+            $tag = "$tag-build.${{ github.run_number }}"
+          }
+          $global:LASTEXITCODE = 0
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      # the SDK of global.json (a preview of .NET 11) and the MAUI workload for Windows
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: MAUI workload
+        run: dotnet workload install maui-windows
+
+      - name: Tests
+        run: dotnet test XyloType.Tests -c Release
+
+      - name: Publish
+        run: |
+          dotnet publish XyloType/XyloType.csproj -f net11.0-windows10.0.19041.0 -c Release -r win-x64 `
+            --self-contained -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true -o publish
+          if ($LASTEXITCODE -ne 0) { throw 'Publish failed.' }
+
+          # AI runtimes brought by the Windows App SDK, not used by the app (38 MB)
+          Remove-Item publish/onnxruntime.dll, publish/DirectML.dll
+
+      - name: Zip
+        id: zip
+        run: |
+          $zip = "XyloType-${{ steps.version.outputs.tag }}-win-x64.zip"
+          Compress-Archive -Path publish/* -DestinationPath $zip
+          "file=$zip" >> $env:GITHUB_OUTPUT
+
+      - name: Test build
+        if: env.IS_RELEASE != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: XyloType-${{ steps.version.outputs.tag }}-win-x64
+          path: publish/
+          retention-days: 30
+
+      - name: Release
+        if: env.IS_RELEASE == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" "${{ steps.zip.outputs.file }}" `
+            --target "${{ github.sha }}" `
+            --title "XyloType ${{ steps.version.outputs.version }}" `
+            --generate-notes
