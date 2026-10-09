@@ -6,9 +6,10 @@
              x:DataType="vm:ImportBookViewModel">
 
     <ScrollView>
+        <!-- the top margin leaves room for the floating selector of the import section -->
         <Border StyleClass="BorderTypingRounded10, BorderBgStd"
                 Padding="30,24"
-                Margin="30"
+                Margin="30,88,30,30"
                 MaximumWidthRequest="560"
                 HorizontalOptions="Center"
                 VerticalOptions="Center">

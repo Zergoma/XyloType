@@ -1,4 +1,5 @@
-﻿using XyloType.Application.Interfaces;
+using XyloType.Application.Interfaces;
+using XyloType.Application.Models;
 
 namespace XyloType.Application.Services;
 
@@ -11,21 +12,24 @@ public class TypingExerciseWordNumberService : ITypingExerciseWordNumberService
         _typingPreference = typingPreference;
     }
 
+    /// <summary>
+    /// The saved number of words per line, within the limits (a value saved before they existed may be bigger).
+    /// </summary>
     public int ItemNumber
     {
         get
         {
             int saved = _typingPreference.GetWordNumber();
-            return saved > 0 ? saved : IUserTypingPreferenceService.DefaultWordNumber;
+            return saved > 0 ? ExerciseSizeLimits.ClampWordsPerLine(saved) : IUserTypingPreferenceService.DefaultWordNumber;
         }
     }
 
     public Result<bool> SetItemNumber(int itemNumber)
     {
-        if (itemNumber <= 0)
+        if (itemNumber < 1 || itemNumber > ExerciseSizeLimits.MaxWordsPerLine)
         {
             return Result<bool>
-                .Fail("Le nombre de mots doit être supérieur à 0");
+                .Fail($"Le nombre de mots par ligne doit être entre 1 et {ExerciseSizeLimits.MaxWordsPerLine}");
         }
 
         _typingPreference.SetWordNumber(itemNumber);

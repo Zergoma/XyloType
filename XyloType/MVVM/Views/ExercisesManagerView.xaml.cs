@@ -175,6 +175,11 @@ public partial class ExercisesManagerView : ContentView, IViewLifecycle, INaviga
     private static void InsertTextInEditor(string text, Editor editor)
     {
         string currentText = editor.Text ?? string.Empty;
+
+        // the limit of the text holds for the marks too
+        if (editor.MaxLength >= 0 && currentText.Length + text.Length > editor.MaxLength)
+            return;
+
         int cursorPosition = Math.Clamp(editor.CursorPosition, 0, currentText.Length);
 
         editor.Text = currentText.Insert(cursorPosition, text);

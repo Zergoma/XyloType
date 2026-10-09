@@ -337,13 +337,46 @@ public partial class ExercisesManagerViewModel : ObservableObject
         => IsStatic ? "Texte fixe" : "Texte généré à chaque partie";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TextLengthText))]
+    [NotifyPropertyChangedFor(nameof(IsTextTooLong))]
     public partial string GeneratedText { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Characters of the fixed text out of the limit, e.g. "1 234 / 4 000".
+    /// </summary>
+    public string TextLengthText => $"{GeneratedText.Length:N0} / {ExerciseSizeLimits.MaxTextLength:N0}";
+
+    /// <summary>
+    /// A text saved before the limit may be longer: it is shown, the user shortens it (saving is refused until then).
+    /// </summary>
+    public bool IsTextTooLong => GeneratedText.Length > ExerciseSizeLimits.MaxTextLength;
+
+    /// <summary>
+    /// Limit of the text field: the limit, or the length of a longer text loaded (the field would cut it).
+    /// </summary>
+    [ObservableProperty]
+    public partial int TextMaxLength { get; set; } = ExerciseSizeLimits.MaxTextLength;
 
     [ObservableProperty]
     public partial int LineCount { get; set; } = 3;
 
     [ObservableProperty]
     public partial int WordsPerLine { get; set; } = 8;
+
+    // a value out of the limits is brought back at once: the field shows what will be generated
+    partial void OnLineCountChanged(int value)
+    {
+        int clamped = ExerciseSizeLimits.ClampLines(value);
+        if (clamped != value)
+            LineCount = clamped;
+    }
+
+    partial void OnWordsPerLineChanged(int value)
+    {
+        int clamped = ExerciseSizeLimits.ClampWordsPerLine(value);
+        if (clamped != value)
+            WordsPerLine = clamped;
+    }
 
     [ObservableProperty]
     public partial int MinLengthWord { get; set; } = 3;
@@ -387,6 +420,10 @@ public partial class ExercisesManagerViewModel : ObservableObject
 
     partial void OnGeneratedTextChanged(string value)
     {
+        // an exercise loaded: its text is never cut, even when longer than the limit
+        if (_isLoadingEditor)
+            TextMaxLength = Math.Max(ExerciseSizeLimits.MaxTextLength, value.Length);
+
         // letters typed in the text are added to the allowed letters
         if (!_isLoadingEditor)
         {
@@ -411,8 +448,8 @@ public partial class ExercisesManagerViewModel : ObservableObject
     [RelayCommand]
     public async Task GenerateWords()
     {
-        int lineCount = Math.Clamp(LineCount, 1, 50);
-        int wordsPerLine = Math.Clamp(WordsPerLine, 1, 50);
+        int lineCount = ExerciseSizeLimits.ClampLines(LineCount);
+        int wordsPerLine = ExerciseSizeLimits.ClampWordsPerLine(WordsPerLine);
         int count = lineCount * wordsPerLine;
         int minLength = Math.Min(MinLengthWord, MaxLengthWord);
         int maxLength = Math.Max(MinLengthWord, MaxLengthWord);
@@ -428,10 +465,12 @@ public partial class ExercisesManagerViewModel : ObservableObject
             return;
         }
 
-        // real line breaks (the editor ones), not ↵: a ↵ is a key to type and stays up to the user
+        // real line breaks (the editor ones), not ↵: a ↵ is a key to type and stays up to the user;
+        // very long words may go beyond the limit: the last lines are left out, no word is cut
+        string separator = _editorSplitCharProvider.GetSplitCharacter().ToString();
         GeneratedText = string.Join(
-            _editorSplitCharProvider.GetSplitCharacter(),
-            result.GetValue.Chunk(wordsPerLine).Select(line => string.Join(' ', line)));
+            separator,
+            ExerciseSizeLimits.FitLines(result.GetValue.Chunk(wordsPerLine).Select(line => string.Join(' ', line)), separator));
         SetStatus(string.Empty);
     }
 

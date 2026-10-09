@@ -20,6 +20,12 @@ public interface IDactyloRepository
     Task<List<Word>> SearchAsync(WordSearchCriteria criteria, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Only the text and the occurrences of the words matching the criteria (no analysis, no tracking):
+    /// what a random pick needs, many times faster than <see cref="SearchAsync"/> on thousands of words.
+    /// </summary>
+    Task<List<WordFrequency>> SearchFrequenciesAsync(WordSearchCriteria criteria, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// One sorted page of the words matching the criteria, with the total count.
     /// </summary>
     Task<WordSearchPage> SearchPageAsync(WordSearchCriteria criteria, WordSort sort, int skip, int take);

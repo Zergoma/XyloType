@@ -5,11 +5,24 @@
              x:Class="XyloType.MVVM.Views.ImportView">
 
     <!-- import section: words or a book, one at a time -->
-    <Grid RowDefinitions="auto,*">
-        <xd:SegmentedControl x:Name="KindSelector"
-                                   HorizontalOptions="Center"
-                                   Margin="0,16,0,0"/>
-        <!-- both views stay in place, only the selected one is visible (WinUI does not like a view taken out and put back) -->
-        <Grid Grid.Row="1" x:Name="KindHost"/>
+    <Grid>
+        <!-- both views stay in place, only the selected one is visible (WinUI does not like a view taken out and put back);
+             they take the whole height and scroll under the selector (their content starts below it) -->
+        <Grid x:Name="KindHost"/>
+
+        <!-- the selector floats at the top, in a container fitting it: radius = its own (18) + padding (4) + stroke (1) -->
+        <Border HorizontalOptions="Center"
+                VerticalOptions="Start"
+                Margin="0,14,0,0"
+                Padding="4"
+                StrokeShape="RoundRectangle 23"
+                StrokeThickness="1"
+                StyleClass="BorderBgStd"
+                Stroke="{DynamicResource Xd.Border}">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.18"/>
+            </Border.Shadow>
+            <xd:SegmentedControl x:Name="KindSelector"/>
+        </Border>
     </Grid>
 </ContentView>
