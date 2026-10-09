@@ -77,6 +77,11 @@ public enum WordSortField
 /// <summary>
 /// Sort of a word search: a column and a direction.
 /// </summary>
+/// <summary>
+/// A word and its number of occurrences, without its keyboard analyses.
+/// </summary>
+public record WordFrequency(string Text, int OccurrenceCount);
+
 public record WordSort(WordSortField Field, bool Descending)
 {
     /// <summary>

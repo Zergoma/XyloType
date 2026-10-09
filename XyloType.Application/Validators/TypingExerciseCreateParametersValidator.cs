@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 
+using XyloType.Application.Models;
 using XyloType.Application.Models.Typing.Exercices;
 using XyloType.Application.UseCases;
 
@@ -30,7 +31,9 @@ public class TypingTextDataStaticValidator : AbstractValidator<TypingTextDataSta
     public TypingTextDataStaticValidator()
     {
         RuleFor(x => x.GeneratedText)
-            .NotEmpty();
+            .NotEmpty()
+            .MaximumLength(ExerciseSizeLimits.MaxTextLength)
+            .WithMessage(x => $"Le texte fait {x.GeneratedText.Length:N0} caractères : raccourcissez-le à {ExerciseSizeLimits.MaxTextLength:N0} au plus.");
     }
 }
 

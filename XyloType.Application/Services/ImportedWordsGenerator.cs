@@ -1,6 +1,5 @@
 ﻿using XyloType.Application.Interfaces;
 using XyloType.Application.Models;
-using XyloType.Domain.Entities;
 
 namespace XyloType.Application.Services;
 
@@ -30,11 +29,12 @@ public class ImportedWordsGenerator : IImportedWordsGenerator
         if (languages.Length > 0)
             query.WithLanguages(languages);
 
-        List<Word> candidates = await _repository.SearchAsync(query.Build());
+        // text and occurrences only: loading the words with their analyses took most of the time
+        List<WordFrequency> candidates = await _repository.SearchFrequenciesAsync(query.Build());
 
         // words are stored lower case: compare with the lower case allowed letters
         HashSet<char> allowed = [.. options.AllowedLetters.ToLowerInvariant()];
-        List<Word> words = [.. candidates.Where(w => w.Text.All(allowed.Contains))];
+        List<WordFrequency> words = [.. candidates.Where(w => w.Text.All(allowed.Contains))];
 
         if (words.Count == 0)
         {
@@ -55,11 +55,11 @@ public class ImportedWordsGenerator : IImportedWordsGenerator
     /// </summary>
     private sealed class WeightedPicker
     {
-        private readonly List<Word> _words;
+        private readonly List<WordFrequency> _words;
         private readonly int[] _cumulative;
         private readonly IGetNextInRange _random;
 
-        public WeightedPicker(List<Word> words, IGetNextInRange random)
+        public WeightedPicker(List<WordFrequency> words, IGetNextInRange random)
         {
             _words = words;
             _random = random;

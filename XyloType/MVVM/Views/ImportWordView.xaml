@@ -11,7 +11,8 @@
     </ContentView.Resources>
 
     <ScrollView>
-      <VerticalStackLayout Padding="30" Spacing="20" HorizontalOptions="Center" VerticalOptions="Center">
+      <!-- the top padding leaves room for the floating selector of the import section -->
+      <VerticalStackLayout Padding="30,88,30,30" Spacing="20" HorizontalOptions="Center" VerticalOptions="Center">
 
         <!-- word packs ready to use: downloaded from the GitHub repository -->
         <Border x:Name="PacksCard"

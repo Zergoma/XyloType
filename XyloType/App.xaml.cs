@@ -23,6 +23,10 @@ public partial class App : MauiAppNS.Application
         _ = Task.Run(() => _serviceProvider.GetRequiredService<Application.Interfaces.Typing.ITypingThemeProvider>()
             .GetThemeAsync(ViewModels.Typing.TypingViewModel.TypingThemeName, Application.Models.Themes.ThemeState.Light));
 
+        // a first pick of real words compiles the query (about a second): the first exercise does not wait for it
+        _ = Task.Run(() => _serviceProvider.GetRequiredService<Application.Interfaces.IImportedWordsGenerator>()
+            .GenerateAsync(new Application.Models.ImportedWordsOptions(["fr"], "a", 1, 1, Domain.Enums.KeyboardLayout.AzertyFr), 1));
+
         Window win = new Window(_serviceProvider.GetRequiredService<MainPage>());
 #if WINDOWS
         win.Height = 800;

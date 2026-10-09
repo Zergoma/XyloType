@@ -90,6 +90,18 @@ public class DactyloRepository : IDactyloRepository
         return await BuildQuery(ctx, criteria).ToListAsync(cancellationToken);
     }
 
+    public async Task<List<WordFrequency>> SearchFrequenciesAsync(WordSearchCriteria criteria, CancellationToken cancellationToken = default)
+    {
+        await using var ctx =
+            await _factory.CreateDbContextAsync(cancellationToken);
+
+        // the analyses only filter (EXISTS in SQL): nothing else than two columns is read
+        return await BuildQuery(ctx, criteria, loadAnalyses: false)
+            .AsNoTracking()
+            .Select(w => new WordFrequency(w.Text, w.OccurrenceCount))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<WordSearchPage> SearchPageAsync(WordSearchCriteria criteria, WordSort sort, int skip, int take)
     {
         await using var ctx =
@@ -156,17 +168,17 @@ public class DactyloRepository : IDactyloRepository
         return ordered.ThenBy(w => w.Text);
     }
 
-    private static IQueryable<Word> BuildQuery(DactyloDbContext ctx, WordSearchCriteria criteria)
+    private static IQueryable<Word> BuildQuery(DactyloDbContext ctx, WordSearchCriteria criteria, bool loadAnalyses = true)
     {
         IQueryable<Word> query = ctx.Words
             .AsQueryable();
 
-        bool needsAnalyses =
+        bool needsAnalyses = loadAnalyses && (
             criteria.IncludeAnalyses ||
             criteria.FingerMask.HasValue ||
             criteria.RowMask.HasValue ||
             criteria.Layout.HasValue ||
-            criteria.ExternalAccent.HasValue;
+            criteria.ExternalAccent.HasValue);
 
         if (needsAnalyses)
         {

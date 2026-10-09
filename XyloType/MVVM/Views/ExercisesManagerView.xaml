@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:limits="clr-namespace:XyloType.Application.Models;assembly=XyloType.Application"
              xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
              xmlns:vm="clr-namespace:XyloType.ViewModels.ExercisesManager;assembly=XyloType.ViewModels"
              xmlns:behaviors="clr-namespace:XyloType.Behaviors"
@@ -290,7 +291,8 @@
                                    WidthRequest="60"
                                    IsVisible="{Binding IsStatic}"
                                    StyleClass="entry_no_spell_no_prediction, entry_small"
-                                   Text="{Binding LineCount}">
+                                   Text="{Binding LineCount}"
+                                   ToolTipProperties.Text="{x:Static limits:ExerciseSizeLimits.LinesHint}">
                                 <Entry.Behaviors>
                                     <behaviors:DigitsOnlyBehavior />
                                 </Entry.Behaviors>
@@ -301,7 +303,8 @@
                                    WidthRequest="60"
                                    IsVisible="{Binding IsStatic}"
                                    StyleClass="entry_no_spell_no_prediction, entry_small"
-                                   Text="{Binding WordsPerLine}">
+                                   Text="{Binding WordsPerLine}"
+                                   ToolTipProperties.Text="{x:Static limits:ExerciseSizeLimits.WordsPerLineHint}">
                                 <Entry.Behaviors>
                                     <behaviors:DigitsOnlyBehavior />
                                 </Entry.Behaviors>
@@ -313,11 +316,24 @@
 
                         <!-- static text -->
                         <Grid Grid.Row="1" RowDefinitions="auto,*" RowSpacing="6" IsVisible="{Binding IsStatic}">
-                            <Grid ColumnDefinitions="*,auto">
+                            <Grid ColumnDefinitions="*,auto,auto" ColumnSpacing="12">
                                 <Label Text="Texte (clic droit : ↵ retour à la ligne, ⟶ tabulation)"
                                        StyleClass="label_field"
                                        VerticalOptions="End"/>
-                                <Button Grid.Column="1"
+                                <!-- characters out of the limit; in red when a text saved before is too long -->
+                                <Label Grid.Column="1"
+                                       Text="{Binding TextLengthText}"
+                                       StyleClass="label_muted"
+                                       FontSize="12"
+                                       VerticalOptions="End"
+                                       ToolTipProperties.Text="{x:Static limits:ExerciseSizeLimits.TextHint}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsTextTooLong}" Value="True">
+                                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextErrorLight}, Dark={StaticResource TextErrorDark}}"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Button Grid.Column="2"
                                         Text="Générer"
                                         StyleClass="ButtonHoverAddExercice"
                                         Padding="14,0"
@@ -329,6 +345,7 @@
                             <Editor x:Name="EditorGeneratedText"
                                     Grid.Row="1"
                                     Text="{Binding GeneratedText}"
+                                    MaxLength="{Binding TextMaxLength}"
                                     StyleClass="editor_no_spell_no_prediction"
                                     MinimumHeightRequest="120"
                                     FontSize="20"
