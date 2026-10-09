@@ -1,4 +1,5 @@
-﻿# Builds, tests and publishes the app for Windows x64, self-contained (nothing to install), in a zip:
+﻿# Builds, tests and publishes the app for Windows x64, self-contained (nothing to install), in a zip, and its desktop
+# version (Avalonia, XyloType.Desktop) in a second zip:
 # - on develop: the zip is kept as an artifact of the run (test build),
 # - on main: a release is published with the zip.
 # The version is ApplicationDisplayVersion of XyloType.csproj: raise it before merging on main, the workflow refuses
@@ -69,12 +70,26 @@ jobs:
           # AI runtimes brought by the Windows App SDK, not used by the app (38 MB)
           Remove-Item publish/onnxruntime.dll, publish/DirectML.dll
 
+      # the desktop version (Avalonia), same version number
+      - name: Publish desktop
+        run: |
+          dotnet publish XyloType.Desktop/XyloType.Desktop.csproj -c Release -r win-x64 --self-contained `
+            -p:Version=${{ steps.version.outputs.version }} -o publish-desktop
+          if ($LASTEXITCODE -ne 0) { throw 'Desktop publish failed.' }
+
+          # debug symbols, of the native Skia and HarfBuzz libraries above all (100 MB)
+          Remove-Item publish-desktop/*.pdb
+
       - name: Zip
         id: zip
         run: |
           $zip = "XyloType-${{ steps.version.outputs.tag }}-win-x64.zip"
           Compress-Archive -Path publish/* -DestinationPath $zip
           "file=$zip" >> $env:GITHUB_OUTPUT
+
+          $desktopZip = "XyloType.Desktop-${{ steps.version.outputs.tag }}-win-x64.zip"
+          Compress-Archive -Path publish-desktop/* -DestinationPath $desktopZip
+          "desktop=$desktopZip" >> $env:GITHUB_OUTPUT
 
       - name: Test build
         if: env.IS_RELEASE != 'true'
@@ -84,12 +99,20 @@ jobs:
           path: publish/
           retention-days: 30
 
+      - name: Test build (desktop)
+        if: env.IS_RELEASE != 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: XyloType.Desktop-${{ steps.version.outputs.tag }}-win-x64
+          path: publish-desktop/
+          retention-days: 30
+
       - name: Release
         if: env.IS_RELEASE == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ steps.version.outputs.tag }}" "${{ steps.zip.outputs.file }}" `
+          gh release create "${{ steps.version.outputs.tag }}" "${{ steps.zip.outputs.file }}" "${{ steps.zip.outputs.desktop }}" `
             --target "${{ github.sha }}" `
             --title "XyloType ${{ steps.version.outputs.version }}" `
             --generate-notes `
