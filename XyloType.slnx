@@ -8,6 +8,7 @@
     <Project Path="tools/XyloType.WordPackBuilder/XyloType.WordPackBuilder.csproj" />
   </Folder>
   <Folder Name="/UI/">
+    <Project Path="XyloType.Desktop/XyloType.Desktop.csproj" />
     <Project Path="XyloType/XyloType.csproj" />
   </Folder>
   <Project Path="XyloType.Application/XyloType.Application.csproj" Id="e15f431e-30c8-448a-998d-5afca8dbd6c0" />

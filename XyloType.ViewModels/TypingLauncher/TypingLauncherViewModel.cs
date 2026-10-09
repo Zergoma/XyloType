@@ -11,6 +11,7 @@ using XyloType.Application.Interfaces;
 using XyloType.Application.Interfaces.Typing;
 using XyloType.Application.Models.Typing.Engine;
 using XyloType.Application.Models.Typing.Exercices;
+using XyloType.Domain.Typing.Analysis;
 
 namespace XyloType.ViewModels.TypingLauncher;
 
@@ -32,6 +33,13 @@ public partial class TypingLauncherViewModel : ObservableObject
     private readonly ITypingExerciseLineNumberService _typingExerciceLineNumberService;
 
     public ObservableCollection<ExerciceItemViewModel> AllExercice { get; set; } = [];
+
+    /// <summary>
+    /// The exercises by section, as shown: a title, then the tiles.
+    /// </summary>
+    public ObservableCollection<ExerciseGroupViewModel> Groups { get; } = [];
+
+    private readonly IExerciseProgressService _progress;
     private readonly List<KeyBoardLayoutDto> _keyboardLayoutAvailableElem;
 
 
@@ -43,8 +51,15 @@ public partial class TypingLauncherViewModel : ObservableObject
         IKeyBoardLayoutAvailableService keyboardLayoutAvailableService,
         ILogger<TypingLauncherViewModel> logger,
         ITypingExerciseWordNumberService typingExerciceWordNumberService,
-        ITypingExerciseLineNumberService typingExerciceLineNumberService)
+        ITypingExerciseLineNumberService typingExerciceLineNumberService,
+        IExerciseProgressService progress,
+        ICurrentUserService users)
     {
+        _progress = progress;
+
+        // another user: other results
+        users.Changed += async (_, _) => await RefreshProgressAsync();
+
         _typingExerciceStorage = typingExerciceStorage;
         _navigation = navigation;
         _runService = runService;
@@ -167,6 +182,17 @@ public partial class TypingLauncherViewModel : ObservableObject
                 AllExercice.Add(new ExerciceItemViewModel(exercises[i], i));
             }
 
+            // the exercises are in the order of their sections: a group per section, the empty ones left out
+            Groups.Clear();
+            foreach (ExerciseSection section in _loadedExercises.Sections)
+            {
+                List<ExerciceItemViewModel> items = [.. AllExercice.Where(e => e.SectionId == section.Id)];
+                if (items.Count > 0)
+                    Groups.Add(new ExerciseGroupViewModel(section.Title, items));
+            }
+
+            await RefreshProgressAsync();
+
             ExerciceItemViewModel? previous = AllExercice.FirstOrDefault(e => e.Guid == toReselect);
             if (previous is not null)
             {
@@ -181,6 +207,20 @@ public partial class TypingLauncherViewModel : ObservableObject
             .Fail(exercicesListLoadedResult.Error);
     }
 
+
+    /// <summary>
+    /// Reads the results of the current user: done or not, scores.
+    /// </summary>
+    public async Task RefreshProgressAsync()
+    {
+        IReadOnlyDictionary<Guid, ScoreSummary> progress = await _progress.GetProgressAsync();
+
+        foreach (ExerciceItemViewModel item in AllExercice)
+            item.Progress = progress.GetValueOrDefault(item.Guid);
+
+        foreach (ExerciseGroupViewModel group in Groups)
+            group.RefreshProgress();
+    }
 
     public bool IsSelectedExercice => ExerciceSelected != null;
     public bool IsNoSelection => !IsSelectedExercice;

@@ -11,13 +11,9 @@ public static class PresenterModule
         services.AddTransient<IChoosePath, MauiChooseFilePresenter>();
         services.AddTransient<IThemeChangerService, MauiThemeChangerService>();
 
+        // the settings of the user, in the MAUI preferences (the services reading them are in the Application layer)
+        services.AddSingleton<ISettingsStore, MauiSettingsStore>();
 
-        // TODO
-        // move or delete
-        // Preferences are not as flexible as expected
-        // need more standar way, completely out of maui
-        services.AddTransient<IUserKeyboardLayoutPreferenceService, MauiUserKeyboardLayoutPreferenceService>();
-        services.AddTransient<IUserTypingPreferenceService, MauiUserTypingPreferenceService>();
         return services;
     }
 }

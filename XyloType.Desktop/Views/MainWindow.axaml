@@ -1,0 +1,128 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
+        xmlns:users="clr-namespace:XyloType.ViewModels.Users;assembly=XyloType.ViewModels"
+        x:Class="XyloType.Desktop.Views.MainWindow"
+        Title="XyloType"
+        Icon="/Resources/avalonia-logo.ico"
+        Width="1100" Height="800"
+        MinWidth="900" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Xd.EditorBackground}">
+
+    <!-- laid out like a JetBrains IDE: stripe of the sections on the left, the view being shown,
+         a stripe on the right (user, theme, main color), a status bar at the bottom -->
+    <Grid RowDefinitions="*,24" ColumnDefinitions="44,*,44">
+
+        <!-- left stripe: the open exercise at the top, the sections at the bottom -->
+        <Border Classes="rail rail-left">
+            <DockPanel Margin="0,8">
+                <ToggleButton x:Name="ExerciseButton"
+                              DockPanel.Dock="Top"
+                              Classes="stripe"
+                              IsVisible="False"
+                              IsChecked="True"
+                              HorizontalAlignment="Center"
+                              Click="ExerciseButton_Click">
+                    <Path x:Name="ExerciseIcon" Classes="icon" Data="{StaticResource App.Icon.Keyboard}" />
+                </ToggleButton>
+                <StackPanel x:Name="SectionButtons" DockPanel.Dock="Bottom" Spacing="6" VerticalAlignment="Bottom">
+                    <ToggleButton Classes="stripe" Tag="Home" ToolTip.Tip="Accueil"
+                                  HorizontalAlignment="Center" Click="Section_Click">
+                        <Path Classes="icon" Data="{StaticResource App.Icon.Home}" />
+                    </ToggleButton>
+                    <ToggleButton Classes="stripe" Tag="Exercises" ToolTip.Tip="Exercices"
+                                  HorizontalAlignment="Center" Click="Section_Click">
+                        <Path Classes="icon" Data="{StaticResource App.Icon.List}" />
+                    </ToggleButton>
+                    <ToggleButton Classes="stripe" Tag="Words" ToolTip.Tip="Mots"
+                                  HorizontalAlignment="Center" Click="Section_Click">
+                        <Path Classes="icon" Data="{StaticResource App.Icon.Words}" />
+                    </ToggleButton>
+                    <ToggleButton Classes="stripe" Tag="Import" ToolTip.Tip="Import"
+                                  HorizontalAlignment="Center" Click="Section_Click">
+                        <Path Classes="icon" Data="{StaticResource Xd.Icon.Import}" />
+                    </ToggleButton>
+                </StackPanel>
+                <Panel />
+            </DockPanel>
+        </Border>
+
+        <!-- the view being shown -->
+        <ContentControl x:Name="ViewHost" Grid.Column="1" />
+
+        <!-- loading: the next view is being created, or packs installed -->
+        <Border x:Name="BusyVeil" Grid.Column="1" IsVisible="False" Background="{DynamicResource App.Veil}">
+            <Border Classes="card" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="24,16">
+                <StackPanel Orientation="Horizontal" Spacing="14">
+                    <ProgressBar IsIndeterminate="True" Width="80" VerticalAlignment="Center" />
+                    <TextBlock x:Name="BusyText" Text="Chargement…" Classes="section-title" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- right stripe: who is typing, the theme, the main color -->
+        <Border Grid.Column="2" Classes="rail rail-right">
+            <StackPanel Spacing="8" Margin="0,8" HorizontalAlignment="Center">
+                <Button x:Name="UserButton"
+                        x:DataType="users:UsersViewModel"
+                        Classes="tool"
+                        Padding="2"
+                        ToolTip.Tip="{Binding CurrentUserName}"
+                       
+                        Click="UserButton_Click">
+                    <Border Classes="avatar" Width="28" Height="28" CornerRadius="14">
+                        <TextBlock Text="{Binding CurrentUserInitials}" FontSize="12" />
+                    </Border>
+                    <Button.Flyout>
+                        <Flyout Placement="LeftEdgeAlignedTop">
+                            <StackPanel Width="230" Spacing="2" Margin="2">
+                                <TextBlock Text="Qui tape ?" Classes="section-title" Margin="8,4,8,8" />
+                                <ItemsControl ItemsSource="{Binding Users}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="users:UserItemViewModel">
+                                            <Button Classes="tool" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                    Padding="8,6" Click="UserItem_Click">
+                                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                                    <Border Classes="avatar" Width="24" Height="24" CornerRadius="12">
+                                                        <TextBlock Text="{Binding Initials}" FontSize="10" />
+                                                    </Border>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <Path Grid.Column="2" Classes="icon" Data="{StaticResource Xd.Icon.Check}"
+                                                          Stroke="{DynamicResource App.AccentInk}" IsVisible="{Binding IsCurrent}" />
+                                                </Grid>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Separator Margin="4,4" />
+                                <Button Classes="tool" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                        Padding="8,6" Click="ManageUsers_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <Path Classes="icon" Data="{StaticResource App.Icon.People}" />
+                                        <TextBlock Text="Gérer les utilisateurs…" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+
+                <Border Classes="rail-separator" />
+                <xd:ThemeSwitcher x:Name="Themes" HorizontalAlignment="Center" />
+                <Border Classes="rail-separator" />
+                <xd:AccentColorButton Classes.color-filled="True" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- status bar -->
+        <Border Grid.Row="1" Grid.ColumnSpan="3" Classes="rail" Padding="12,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <!-- the runs on one line: a line break between them would be a space -->
+                <TextBlock VerticalAlignment="Center" FontSize="12"><Run Text="Powered by " Foreground="{DynamicResource Xd.TextSecondary}" /><Run Text="Zergoma" FontWeight="Bold" Foreground="{DynamicResource Xd.Link}" /></TextBlock>
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="12"><Run Text="Xylocopa" FontWeight="Bold" Foreground="{DynamicResource Xd.Link}" /><Run Text="dream.de" Foreground="{DynamicResource Xd.TextSecondary}" /></TextBlock>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

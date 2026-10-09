@@ -2,6 +2,7 @@
 
 using XyloType.Application.Models.Typing;
 using XyloType.Application.Models.Typing.Exercices;
+using XyloType.Domain.Typing.Analysis;
 
 namespace XyloType.ViewModels.TypingLauncher;
 
@@ -31,6 +32,8 @@ public partial class ExerciceItemViewModel : ObservableObject
     public string Name => _exercice.Name;
 
     public Guid Guid => _exercice.Id;
+
+    public Guid SectionId => _exercice.SectionId;
 
     public string Desciption => _exercice.Description;
 
@@ -79,5 +82,38 @@ public partial class ExerciceItemViewModel : ObservableObject
     /// Badge of the generated exercises: new words at each game.
     /// </summary>
     public string BadgeText => IsRealWords ? "Vrais mots" : IsPseudoWords ? "Mots inventés" : string.Empty;
+
+    #region Results of the current user
+
+    /// <summary>
+    /// Scores of the attempts of the current user, null if the exercise was never typed to the end.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDone))]
+    [NotifyPropertyChangedFor(nameof(IsNotDone))]
+    [NotifyPropertyChangedFor(nameof(BestText))]
+    [NotifyPropertyChangedFor(nameof(AttemptsText))]
+    [NotifyPropertyChangedFor(nameof(WorstText))]
+    [NotifyPropertyChangedFor(nameof(MedianText))]
+    public partial ScoreSummary? Progress { get; set; }
+
+    public bool IsDone => Progress is not null;
+
+    public bool IsNotDone => !IsDone;
+
+    public string BestText => Progress is ScoreSummary p ? $"{p.Best:N1}" : string.Empty;
+
+    public string WorstText => Progress is ScoreSummary p ? $"{p.Worst:N1}" : string.Empty;
+
+    public string MedianText => Progress is ScoreSummary p ? $"{p.Median:N1}" : string.Empty;
+
+    public string AttemptsText => Progress?.Attempts switch
+    {
+        null => "Pas encore fait",
+        1 => "Fait 1 fois",
+        int n => $"Fait {n} fois",
+    };
+
+    #endregion
 
 }

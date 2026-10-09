@@ -11,6 +11,8 @@ internal static class InfrastructureRepositoriesModule
     {
         services.AddTransient<IDactyloRepository, DactyloRepository>();
         services.AddTransient<IImportedSourceRepository, ImportedSourceRepository>();
+        services.AddTransient<IUserRepository, UserRepository>();
+        services.AddTransient<IExerciseAttemptRepository, ExerciseAttemptRepository>();
         return services;
     }
 }

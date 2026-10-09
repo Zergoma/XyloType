@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- XyloType for the desktop, with Avalonia: the same layers as the MAUI app (domain, application,
+	     infrastructure, view models), only the views and the services of the framework are its own -->
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net11.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>preview</LangVersion>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+		<AssemblyName>XyloType.Desktop</AssemblyName>
+		<Product>XyloType</Product>
+		<Version>0.1.0</Version>
+		<!-- the icon of the program (explorer); the window takes the same one (title bar, taskbar) -->
+		<ApplicationIcon>Resources\avalonia-logo.ico</ApplicationIcon>
+		<!-- the views are created by the dependency injection, with their view model: not by the runtime loader -->
+		<NoWarn>$(NoWarn);AVLN3001</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.3" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="Serilog" Version="4.3.1" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+		<PackageReference Include="Xylocopadream.UI.Avalonia" Version="0.1.18" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\XyloType.Infrastructure\XyloType.Infrastructure.csproj" />
+		<ProjectReference Include="..\XyloType.ViewModels\XyloType.ViewModels.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AvaloniaResource Include="Resources\avalonia-logo.ico" />
+	</ItemGroup>
+
+	<!-- the sounds, scores and themes of the MAUI app, shared: copied next to the program -->
+	<ItemGroup>
+		<None Include="..\XyloType\Resources\Raw\**\*" Exclude="..\XyloType\Resources\Raw\AboutAssets.txt"
+		      LinkBase="Assets" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+</Project>

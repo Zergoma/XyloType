@@ -14,14 +14,9 @@ namespace XyloType.Infrastructure.IO;
 /// </summary>
 public sealed class GitHubWordPackSource : IWordPackSource
 {
-    public const string BaseUrl = "https://github.com/Zergoma/XyloType/releases/download/words/";
+    public static readonly string BaseUrl = GitHubReleases.AssetsUrl("words");
 
-    // one client for the app: sockets are reused
-    private static readonly HttpClient s_http = new()
-    {
-        Timeout = TimeSpan.FromMinutes(5),
-        DefaultRequestHeaders = { { "User-Agent", "XyloType" } },
-    };
+    private static HttpClient s_http => GitHubReleases.Http;
 
     private readonly ILogger<GitHubWordPackSource> _logger;
 

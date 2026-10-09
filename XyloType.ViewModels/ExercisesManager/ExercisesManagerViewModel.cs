@@ -78,9 +78,14 @@ public partial class ExercisesManagerViewModel : ObservableObject
         _ = SwitchKeyboardAsync(oldValue, newValue);
     }
 
-    public ObservableCollection<ExerciseListItemViewModel> Items { get; } = [];
+    /// <summary>
+    /// The exercises, by section.
+    /// </summary>
+    public ObservableCollection<ExerciseSectionViewModel> Sections { get; } = [];
 
-    public bool HasItems => Items.Count > 0;
+    private IEnumerable<ExerciseListItemViewModel> AllItems => Sections.SelectMany(s => s.Items);
+
+    public bool HasItems => Sections.Count > 0;
     public bool HasNoItems => !HasItems;
 
     [ObservableProperty]
@@ -131,6 +136,19 @@ public partial class ExercisesManagerViewModel : ObservableObject
         await OpenKeyboardAsync(keyboard);
     }
 
+    /// <summary>
+    /// Reads the saved exercises again (after a pack was imported), when nothing is being edited.
+    /// </summary>
+    public async Task ReloadAsync()
+    {
+        if (KeyboardLayoutSelected is null || _session.HasChanges)
+            return;
+
+        Guid? selectedId = SelectedItem?.Id;
+        await _session.OpenAsync(KeyboardLayoutSelected);
+        RebuildItems(selectedId);
+    }
+
     private async Task SwitchKeyboardAsync(KeyBoardLayoutDto? previous, KeyBoardLayoutDto next)
     {
         if (!await ConfirmDiscardChangesAsync())
@@ -151,22 +169,60 @@ public partial class ExercisesManagerViewModel : ObservableObject
         SetStatus(string.Empty);
     }
 
+    /// <summary>
+    /// Builds the sections and their exercises again from the session.
+    /// </summary>
     private void RebuildItems(Guid? selectId)
     {
         SelectItem(null);
-        Items.Clear();
+        Sections.Clear();
 
-        foreach (TypingExercise exercise in _session.Exercises)
-            Items.Add(new ExerciseListItemViewModel(exercise));
+        foreach (ExerciseSection section in _session.Sections)
+        {
+            ExerciseSectionViewModel sectionVm = new(section);
+            sectionVm.LevelChanged += (_, _) =>
+            {
+                _session.MarkChanged();
+                HasChanges = _session.HasChanges;
+            };
+            foreach (TypingExercise exercise in _session.Exercises.Where(e => e.SectionId == section.Id))
+                sectionVm.Items.Add(new ExerciseListItemViewModel(exercise));
 
+            // an exercise moved in the list (drag and drop of the view, or Move): the same move in the session
+            sectionVm.Items.CollectionChanged += (_, e) =>
+            {
+                if (e.Action != System.Collections.Specialized.NotifyCollectionChangedAction.Move)
+                    return;
+
+                _session.Move(sectionVm.Id, e.OldStartingIndex, e.NewStartingIndex);
+                HasChanges = _session.HasChanges;
+            };
+
+            Sections.Add(sectionVm);
+        }
+
+        UpdateSectionPlaces();
         OnPropertyChanged(nameof(HasItems));
         OnPropertyChanged(nameof(HasNoItems));
         HasChanges = _session.HasChanges;
 
-        ExerciseListItemViewModel? toSelect = Items.FirstOrDefault(i => i.Id == selectId);
+        ExerciseListItemViewModel? toSelect = AllItems.FirstOrDefault(i => i.Id == selectId);
         if (toSelect is not null)
             SelectItem(toSelect);
     }
+
+    private void UpdateSectionPlaces()
+    {
+        for (int i = 0; i < Sections.Count; i++)
+        {
+            Sections[i].IsFirst = i == 0;
+            Sections[i].IsLast = i == Sections.Count - 1;
+            Sections[i].Refresh();
+        }
+    }
+
+    private ExerciseSectionViewModel? SectionOf(ExerciseListItemViewModel? item)
+        => item is null ? null : Sections.FirstOrDefault(s => s.Items.Contains(item));
 
     [RelayCommand]
     public void Select(ExerciseListItemViewModel item)
@@ -185,40 +241,37 @@ public partial class ExercisesManagerViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Moves an exercise in the list (drag and drop).
+    /// Moves an exercise inside its section (drag and drop), indexes in the section;
+    /// the session follows the list (see <see cref="RebuildItems"/>).
     /// </summary>
-    public void Move(int fromIndex, int toIndex)
+    public void Move(ExerciseSectionViewModel section, int fromIndex, int toIndex)
     {
-        if (!_session.Move(fromIndex, toIndex).Success || fromIndex == toIndex)
+        if (fromIndex == toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= section.Items.Count || toIndex >= section.Items.Count)
             return;
 
-        Items.Move(fromIndex, toIndex);
-        HasChanges = _session.HasChanges;
+        section.Items.Move(fromIndex, toIndex);
     }
 
     [RelayCommand]
     public void NewExercise()
     {
-        Result<TypingExercise> createResult = _session.CreateNew("Nouvel exercice");
+        // in the section of the exercise being edited, else the last one
+        Guid? sectionId = SectionOf(SelectedItem)?.Id;
+
+        Result<TypingExercise> createResult = _session.CreateNew("Nouvel exercice", sectionId);
         if (!createResult.Success)
         {
             SetStatus(createResult.Error, isError: true);
             return;
         }
 
-        ExerciseListItemViewModel item = new(createResult.GetValue);
-        Items.Add(item);
-        OnPropertyChanged(nameof(HasItems));
-        OnPropertyChanged(nameof(HasNoItems));
-        HasChanges = _session.HasChanges;
-
-        SelectItem(item);
+        RebuildItems(createResult.GetValue.Id);
     }
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
     public async Task DeleteExercise()
     {
-        if (SelectedItem is not ExerciseListItemViewModel item)
+        if (SelectedItem is not ExerciseListItemViewModel item || SectionOf(item) is not ExerciseSectionViewModel section)
             return;
 
         bool confirmed = await _dialogService.ConfirmAsync(
@@ -230,17 +283,111 @@ public partial class ExercisesManagerViewModel : ObservableObject
         if (!confirmed || !_session.Remove(item.Id).Success)
             return;
 
-        int index = Items.IndexOf(item);
+        int index = section.Items.IndexOf(item);
         SelectItem(null);
-        Items.Remove(item);
-        OnPropertyChanged(nameof(HasItems));
-        OnPropertyChanged(nameof(HasNoItems));
+        section.Items.Remove(item);
+        section.Refresh();
         HasChanges = _session.HasChanges;
 
         // select the neighbour to keep editing smoothly
-        if (Items.Count > 0)
-            SelectItem(Items[Math.Min(index, Items.Count - 1)]);
+        if (section.Items.Count > 0)
+            SelectItem(section.Items[Math.Min(index, section.Items.Count - 1)]);
     }
+
+    #region Sections
+
+    [RelayCommand]
+    public async Task NewSection()
+    {
+        string? title = await _dialogService.PromptAsync(
+            "Nouvelle section",
+            "Titre de la section :",
+            "Créer",
+            "Annuler",
+            string.Empty,
+            SectionTitleMaxLength);
+
+        if (string.IsNullOrWhiteSpace(title))
+            return;
+
+        Result<ExerciseSection> result = _session.AddSection(title);
+        if (!result.Success)
+        {
+            SetStatus(result.Error, isError: true);
+            return;
+        }
+
+        RebuildItems(SelectedItem?.Id);
+    }
+
+    [RelayCommand]
+    public async Task RenameSection(ExerciseSectionViewModel section)
+    {
+        string? title = await _dialogService.PromptAsync(
+            "Renommer la section",
+            "Titre de la section :",
+            "Renommer",
+            "Annuler",
+            section.Title,
+            SectionTitleMaxLength);
+
+        if (title is null || title.Trim() == section.Title)
+            return;
+
+        Result<bool> result = _session.RenameSection(section.Id, title);
+        if (!result.Success)
+        {
+            SetStatus(result.Error, isError: true);
+            return;
+        }
+
+        section.Refresh();
+        HasChanges = _session.HasChanges;
+    }
+
+    [RelayCommand]
+    public async Task DeleteSection(ExerciseSectionViewModel section)
+    {
+        string exercises = section.Items.Count switch
+        {
+            0 => string.Empty,
+            1 => " et son exercice",
+            int n => $" et ses {n} exercices",
+        };
+
+        bool confirmed = await _dialogService.ConfirmAsync(
+            "Supprimer la section",
+            $"Supprimer « {section.Title} »{exercises} ? La suppression sera effective à l'enregistrement.",
+            "Supprimer",
+            "Annuler");
+
+        if (!confirmed || !_session.RemoveSection(section.Id).Success)
+            return;
+
+        Guid? selectedId = SectionOf(SelectedItem) == section ? null : SelectedItem?.Id;
+        RebuildItems(selectedId);
+    }
+
+    [RelayCommand]
+    public void MoveSectionUp(ExerciseSectionViewModel section) => MoveSection(section, -1);
+
+    [RelayCommand]
+    public void MoveSectionDown(ExerciseSectionViewModel section) => MoveSection(section, +1);
+
+    private void MoveSection(ExerciseSectionViewModel section, int offset)
+    {
+        if (!_session.MoveSection(section.Id, offset).Success)
+            return;
+
+        int index = Sections.IndexOf(section);
+        Sections.Move(index, index + offset);
+        UpdateSectionPlaces();
+        HasChanges = _session.HasChanges;
+    }
+
+    private const int SectionTitleMaxLength = 60;
+
+    #endregion
 
     [RelayCommand(CanExecute = nameof(HasChanges))]
     public async Task Save()
@@ -313,6 +460,23 @@ public partial class ExercisesManagerViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string ExerciseName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The section of the exercise being edited: another one moves it to the end of that section.
+    /// </summary>
+    [ObservableProperty]
+    public partial ExerciseSectionViewModel? EditorSection { get; set; }
+
+    partial void OnEditorSectionChanged(ExerciseSectionViewModel? value)
+    {
+        if (_isLoadingEditor || value is null || SelectedItem is not ExerciseListItemViewModel item || SectionOf(item) == value)
+            return;
+
+        if (!_session.MoveToSection(item.Id, value.Id).Success)
+            return;
+
+        RebuildItems(item.Id);
+    }
 
     [ObservableProperty]
     public partial string Description { get; set; } = string.Empty;
@@ -502,6 +666,7 @@ public partial class ExercisesManagerViewModel : ObservableObject
         try
         {
             ExerciseName = exercise?.Name ?? string.Empty;
+            EditorSection = Sections.FirstOrDefault(s => s.Id == exercise?.SectionId);
             Description = exercise?.Description ?? string.Empty;
             AllowedChars = exercise?.AllowedCharacters ?? string.Empty;
 

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 
 using XyloType.Application;
 using XyloType.Application.Interfaces;
+using XyloType.Application.Models;
 using XyloType.Domain.Typing.Analysis;
 
 namespace XyloType.ViewModels.Statistic;
@@ -13,6 +14,7 @@ public partial class StatisticViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IUserDialogService _dialogService;
     private readonly IUserTypingPreferenceService _typingPreference;
+    private readonly IExerciseProgressService _progress;
 
     [ObservableProperty]
     public partial Dictionary<char, CharStats> Statistics { get; set; }
@@ -22,19 +24,39 @@ public partial class StatisticViewModel : ObservableObject
     /// </summary>
     public TimeSpan Duration { get; }
 
+    /// <summary>
+    /// The figures of the session.
+    /// </summary>
+    public TypingSessionResult Result { get; }
+
+    /// <summary>
+    /// What is good at the level of the exercise.
+    /// </summary>
+    public TypingTargets Targets { get; }
+
+    /// <summary>
+    /// E.g. "Repères du niveau Débutant".
+    /// </summary>
+    public string LevelText { get; }
+
     public StatisticViewModel(
         TypingSessionResult result,
         ITypingExerciseRunService runService,
         INavigationService navigationService,
         IUserTypingPreferenceService typingPreference,
-        IUserDialogService dialogService)
+        IUserDialogService dialogService,
+        IExerciseProgressService progress)
     {
+        Result = result;
+        Targets = TypingTargets.For(runService.CurrentLevel);
+        LevelText = $"Repères du niveau {TypingLevelNames.Of(runService.CurrentLevel)}";
         Statistics = result.CharStats;
         Duration = result.Duration;
         _runService = runService;
         _navigationService = navigationService;
         _dialogService = dialogService;
         _typingPreference = typingPreference;
+        _progress = progress;
 
         ShowSpeed = typingPreference.GetShowSpeedResult();
         ShowResponseTime = typingPreference.GetShowResponseTimeResult();
@@ -48,6 +70,43 @@ public partial class StatisticViewModel : ObservableObject
 
     public bool HasExerciseName
         => !string.IsNullOrWhiteSpace(ExerciseName);
+
+    #region Score: kept for the current user, compared with its best
+
+    public string ScoreText => $"{Result.Score:N1}";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasScoreComment))]
+    public partial string ScoreComment { get; set; } = string.Empty;
+
+    public bool HasScoreComment => ScoreComment.Length > 0;
+
+    [ObservableProperty]
+    public partial bool IsRecord { get; set; }
+
+    /// <summary>
+    /// Keeps the result for the current user (once, when the results are shown).
+    /// </summary>
+    public async Task RecordAsync()
+    {
+        if (_runService.CurrentExerciseId is not Guid exerciseId)
+            return;
+
+        Result<ExerciseAttemptOutcome> outcome = await _progress.RecordAsync(exerciseId, Result);
+        if (!outcome.Success)
+            return;
+
+        ExerciseAttemptOutcome attempt = outcome.GetValue;
+        IsRecord = attempt.IsRecord;
+        ScoreComment = attempt.PreviousBest switch
+        {
+            null => "Premier essai : c'est votre score de référence",
+            double best when attempt.IsRecord => $"Nouveau record ! (ancien : {best:N1})",
+            double best => $"Votre meilleur : {best:N1}",
+        };
+    }
+
+    #endregion
 
     #region Sections: each one can be folded (remembered, same settings as on the typing page)
 

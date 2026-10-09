@@ -12,6 +12,10 @@ public class DactyloDbContext : DbContext
 
     public DbSet<ImportedSource> ImportedSources => Set<ImportedSource>();
 
+    public DbSet<UserProfile> Users => Set<UserProfile>();
+
+    public DbSet<ExerciseAttempt> ExerciseAttempts => Set<ExerciseAttempt>();
+
     public DactyloDbContext(
         DbContextOptions<DactyloDbContext> options)
         : base(options)
@@ -137,10 +141,45 @@ public class DactyloDbContext : DbContext
         });
     }
 
+    private static void ConfigureUser(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserProfile>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Name)
+                .IsRequired()
+                .HasMaxLength(UserProfile.NameMaxLength);
+
+            // RELATION: the results go with their user
+            entity.HasMany(x => x.Attempts)
+                .WithOne(a => a.User)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureExerciseAttempt(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ExerciseAttempt>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            // INDEX: the results of a user, per exercise
+            entity.HasIndex(x => new
+            {
+                x.UserId,
+                x.ExerciseId
+            });
+        });
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureWord(modelBuilder);
         ConfigureWordAnalysis(modelBuilder);
         ConfigureImportedSource(modelBuilder);
+        ConfigureUser(modelBuilder);
+        ConfigureExerciseAttempt(modelBuilder);
     }
 }

@@ -12,6 +12,10 @@ public class TypingExercise
     public string AllowedCharacters { get; set; } = string.Empty;
     public TypingTextData TextDataType { get; set; }
 
+    /// <summary>
+    /// The section the exercise belongs to (see <see cref="TypingExercices.Sections"/>).
+    /// </summary>
+    public Guid SectionId { get; set; }
 
 }
 

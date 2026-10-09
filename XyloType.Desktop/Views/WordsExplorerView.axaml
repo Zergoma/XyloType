@@ -1,0 +1,161 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.WordsExplorer;assembly=XyloType.ViewModels"
+             x:Class="XyloType.Desktop.Views.WordsExplorerView"
+             x:DataType="vm:WordsExplorerViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button.header">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="2" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.header:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Xd.Hover}" />
+        </Style>
+        <!-- hands and language of a word, as small pills -->
+        <Style Selector="Border.word-pill">
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="7,2,7,3" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="{DynamicResource Xd.Selected}" />
+        </Style>
+        <Style Selector="ListBox.words ListBoxItem">
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="MinHeight" Value="40" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style Selector="TextBlock.excluded">
+            <Setter Property="TextDecorations" Value="Strikethrough" />
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*" ColumnDefinitions="300,*" ColumnSpacing="20" Margin="20,16,20,20">
+
+        <!-- header -->
+        <StackPanel Grid.ColumnSpan="2" Spacing="2" Margin="0,0,0,14">
+            <TextBlock Text="Mots" Classes="page-title" />
+            <TextBlock Text="{Binding DatabaseText}" Foreground="{DynamicResource Xd.TextSecondary}" />
+        </StackPanel>
+
+        <!-- filters -->
+        <Border Grid.Row="1" Classes="card" Padding="18,16,6,16">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Margin="0,0,14,0">
+                    <TextBlock Text="Filtres" Classes="section-title" />
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Contient" Classes="secondary" />
+                        <TextBox Text="{Binding SearchText}" PlaceholderText="ex. ch" />
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Uniquement ces lettres" Classes="secondary" />
+                        <TextBox Text="{Binding OnlyLetters}" PlaceholderText="ex. azertqsdf" />
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Langue" Classes="secondary" />
+                        <ComboBox ItemsSource="{Binding LanguageOptions}" SelectedItem="{Binding LanguageSelected}" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Longueur min" Classes="secondary" />
+                            <TextBox Text="{Binding MinLength}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="max" Classes="secondary" />
+                            <TextBox Text="{Binding MaxLength}" />
+                        </StackPanel>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Occurrences min" Classes="secondary" />
+                            <TextBox Text="{Binding MinOccurrences}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="max" Classes="secondary" />
+                            <TextBox Text="{Binding MaxOccurrences}" />
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Mains" Classes="secondary" />
+                        <ComboBox ItemsSource="{Binding HandsOptions}" SelectedItem="{Binding HandsSelected}" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Afficher" Classes="secondary" />
+                        <ComboBox ItemsSource="{Binding ExclusionOptions}" SelectedItem="{Binding ExclusionSelected}" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                    <Button Content="Réinitialiser les filtres" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Command="{Binding ResetFiltersCommand}" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- results -->
+        <Border Grid.Row="1" Grid.Column="1" Classes="card" Padding="16,14">
+            <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding TotalText}" Classes="section-title" VerticalAlignment="Center" />
+                    <ProgressBar Grid.Column="1" IsIndeterminate="True" Width="60" IsVisible="{Binding IsSearching}" VerticalAlignment="Center" />
+                </Grid>
+                <TextBlock Grid.Row="1" Text="{Binding ErrorText}" Classes="error" TextWrapping="Wrap"
+                           IsVisible="{Binding ErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                <!-- the columns, the same for the header and the rows: the word first, the others centered;
+                     column headers: outside the list, they stay visible when scrolling; a click sorts -->
+                <Border x:Name="TableHeader" Grid.Row="2" Background="{DynamicResource Xd.Selected}" CornerRadius="8" Padding="12,6" Margin="0,0,14,0">
+                    <Grid ColumnDefinitions="3*,100,1*,1*,1.3*,1*" ColumnSpacing="10">
+                        <Button Classes="header" HorizontalAlignment="Left" Content="{Binding TextHeader}" Command="{Binding SortByCommand}" CommandParameter="Text" />
+                        <Button Grid.Column="1" Classes="header" Content="{Binding ExcludedHeader}" Command="{Binding SortByCommand}" CommandParameter="Excluded" />
+                        <Button Grid.Column="2" Classes="header" Content="{Binding OccurrencesHeader}" Command="{Binding SortByCommand}" CommandParameter="Occurrences"
+                                ToolTip.Tip="Occurrences : nombre de fois où le mot a été lu" />
+                        <Button Grid.Column="3" Classes="header" Content="{Binding LengthHeader}" Command="{Binding SortByCommand}" CommandParameter="Length"
+                                ToolTip.Tip="Longueur du mot" />
+                        <Button Grid.Column="4" Classes="header" Content="{Binding HandsHeader}" Command="{Binding SortByCommand}" CommandParameter="Hands"
+                                ToolTip.Tip="Main(s) nécessaires pour taper le mot" />
+                        <Button Grid.Column="5" Classes="header" Content="{Binding LanguageHeader}" Command="{Binding SortByCommand}" CommandParameter="Language"
+                                ToolTip.Tip="Langue" />
+                    </Grid>
+                </Border>
+
+                <!-- the rows, loaded by pages as the list scrolls down -->
+                <ListBox x:Name="Rows" Grid.Row="3" Classes="words" ItemsSource="{Binding Items}" Background="Transparent">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:WordItemViewModel">
+                            <Grid ColumnDefinitions="3*,100,1*,1*,1.3*,1*" ColumnSpacing="10" Margin="0,0,4,0">
+                                <TextBlock Text="{Binding Text}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Text}" Classes.excluded="{Binding IsExcluded}" />
+                                <!-- exclude / restore -->
+                                <Button Grid.Column="1" Content="Exclure" FontSize="12" HorizontalAlignment="Center" IsVisible="{Binding IsActive}"
+                                        Command="{Binding $parent[ListBox].((vm:WordsExplorerViewModel)DataContext).ToggleExcludedCommand}" CommandParameter="{Binding}" />
+                                <Button Grid.Column="1" Classes="accent" Content="Restaurer" FontSize="12" HorizontalAlignment="Center" IsVisible="{Binding IsExcluded}"
+                                        Command="{Binding $parent[ListBox].((vm:WordsExplorerViewModel)DataContext).ToggleExcludedCommand}" CommandParameter="{Binding}" />
+                                <TextBlock Grid.Column="2" Text="{Binding Occurrences, StringFormat='{}{0:N0}'}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="3" Text="{Binding Length}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border Grid.Column="4" Classes="word-pill" IsVisible="{Binding HasHands}" ToolTip.Tip="{Binding HandsTooltip}">
+                                    <TextBlock Text="{Binding HandsText}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                </Border>
+                                <Border Grid.Column="5" Classes="word-pill">
+                                    <TextBlock Text="{Binding LanguageLabel}" FontSize="12" FontWeight="Bold" />
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <!-- loading: a veil over the results -->
+        <Border Grid.Row="1" Grid.Column="1" IsVisible="{Binding IsLoading}" Background="{DynamicResource App.Veil}" CornerRadius="10">
+            <Border Classes="card" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="24,16">
+                <StackPanel Orientation="Horizontal" Spacing="14">
+                    <ProgressBar IsIndeterminate="True" Width="60" VerticalAlignment="Center" />
+                    <TextBlock Text="Chargement des mots…" Classes="section-title" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>

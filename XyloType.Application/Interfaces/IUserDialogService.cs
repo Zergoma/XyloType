@@ -12,4 +12,10 @@ public interface IUserDialogService
     /// Shows an information or error message.
     /// </summary>
     Task AlertAsync(string title, string message);
+
+    /// <summary>
+    /// Asks the user for a text.
+    /// </summary>
+    /// <returns>The text entered, null if the user cancelled</returns>
+    Task<string?> PromptAsync(string title, string message, string accept, string cancel, string initialValue, int maxLength);
 }

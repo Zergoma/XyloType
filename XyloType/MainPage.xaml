@@ -4,6 +4,7 @@
              xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
              xmlns:converters="clr-namespace:XyloType.Converters"
              xmlns:theme="clr-namespace:XyloType.ViewModels.Theme;assembly=XyloType.ViewModels"
+             xmlns:users="clr-namespace:XyloType.ViewModels.Users;assembly=XyloType.ViewModels"
              x:Class="XyloType.MainPage"
              StyleClass="xylotype_page_bg">
 
@@ -46,7 +47,8 @@
                                        WidthRequest="28"
                                        HeightRequest="28"
                                        VerticalOptions="Center"/>
-                    <Label Text="Chargement…"
+                    <Label x:Name="BusyLabel"
+                           Text="Chargement…"
                            StyleClass="label_section_title"
                            VerticalOptions="Center"/>
                 </HorizontalStackLayout>
@@ -56,6 +58,29 @@
         <!-- right rail: the theme (three linked choices, the pill slides to the one chosen), then the main color -->
         <Grid Grid.Column="2" BackgroundColor="{DynamicResource Xd.PanelBackground}">
             <VerticalStackLayout Spacing="10" Padding="7,14,7,0" VerticalOptions="Start">
+                <!-- the current user: its initials; a click opens the quick switch -->
+                <Border x:Name="UserAvatar"
+                        x:DataType="users:UsersViewModel"
+                        WidthRequest="38" HeightRequest="38"
+                        HorizontalOptions="Center"
+                        StrokeShape="RoundRectangle 19"
+                        StrokeThickness="0"
+                        BackgroundColor="{DynamicResource Xd.Accent}"
+                        xd:InstantToolTip.Text="{Binding CurrentUserName}"
+                        xd:InstantToolTip.Placement="Left">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="UserAvatar_Tapped"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding CurrentUserInitials}"
+                           TextColor="{DynamicResource Xd.AccentForeground}"
+                           FontAttributes="Bold"
+                           FontSize="15"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Border>
+
+                <BoxView HeightRequest="1" Margin="8,0" Color="{DynamicResource Xd.Border}"/>
+
                 <xd:RailChoiceGroup x:Name="ThemeGroup" ToolTipPlacement="Left">
                     <xd:RailChoice Icon="{x:Static xd:XdIcons.Sun}" ToolTip="Thème clair"/>
                     <xd:RailChoice Icon="{x:Static xd:XdIcons.Moon}" ToolTip="Thème sombre"/>
@@ -114,6 +139,75 @@
                             Title="Couleur principale"
                             ResetText="Par défaut"
                             SelectedColor="{Binding Accent, Converter={StaticResource stringToColor}}"/>
+        </xd:Popover>
+
+        <!-- quick switch of user: opened by the avatar, closed by a click outside -->
+        <xd:Popover x:Name="UserPopover"
+                    Grid.RowSpan="2"
+                    Grid.ColumnSpan="3"
+                    PanelHorizontalOptions="End"
+                    PanelVerticalOptions="Start"
+                    PanelMargin="0,10,68,0"
+                    PanelWidth="264">
+            <VerticalStackLayout x:Name="UserMenu" x:DataType="users:UsersViewModel" Spacing="4" Padding="4">
+                <Label Text="Qui tape ?" StyleClass="label_section_title" Margin="8,4,8,6"/>
+
+                <VerticalStackLayout Spacing="2" BindableLayout.ItemsSource="{Binding Users}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="users:UserItemViewModel">
+                            <Grid ColumnDefinitions="auto,*,auto" ColumnSpacing="10" Padding="8,6">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="UserMenuItem_Tapped" CommandParameter="{Binding .}"/>
+                                </Grid.GestureRecognizers>
+                                <!-- the current user: a shade behind its row -->
+                                <BoxView Grid.ColumnSpan="3" Margin="-8,-6" CornerRadius="8" Color="{DynamicResource Xd.Hover}" Opacity="0" InputTransparent="True">
+                                    <BoxView.Triggers>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding IsCurrent}" Value="True">
+                                            <Setter Property="Opacity" Value="1"/>
+                                        </DataTrigger>
+                                    </BoxView.Triggers>
+                                </BoxView>
+                                <Border WidthRequest="28" HeightRequest="28"
+                                        StrokeShape="RoundRectangle 14"
+                                        StrokeThickness="0"
+                                        BackgroundColor="{DynamicResource Xd.Accent}">
+                                    <Label Text="{Binding Initials}"
+                                           TextColor="{DynamicResource Xd.AccentForeground}"
+                                           FontAttributes="Bold"
+                                           FontSize="12"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"/>
+                                </Border>
+                                <Label Grid.Column="1" Text="{Binding Name}" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                                <Path Grid.Column="2"
+                                      IsVisible="{Binding IsCurrent}"
+                                      Data="{x:Static xd:XdIcons.Check}"
+                                      Fill="{DynamicResource Xd.AccentText}"
+                                      Aspect="Uniform"
+                                      WidthRequest="14"
+                                      HeightRequest="14"
+                                      VerticalOptions="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <BoxView HeightRequest="1" Margin="4,4" Color="{DynamicResource Xd.Border}"/>
+
+                <Grid ColumnDefinitions="auto,*" ColumnSpacing="10" Padding="8,6">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="ManageUsers_Tapped"/>
+                    </Grid.GestureRecognizers>
+                    <Path Data="{x:Static xd:XdIcons.Group}"
+                          Fill="{DynamicResource Xd.AccentText}"
+                          Aspect="Uniform"
+                          WidthRequest="18"
+                          HeightRequest="18"
+                          Margin="5,0"
+                          VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Gérer les utilisateurs…" VerticalOptions="Center"/>
+                </Grid>
+            </VerticalStackLayout>
         </xd:Popover>
 
         <!-- tooltips of the rails: beside the buttons, level with them, shown at once -->

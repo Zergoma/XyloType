@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.Users;assembly=XyloType.ViewModels"
+             x:Class="XyloType.Desktop.Views.UsersView"
+             x:DataType="vm:UsersViewModel">
+
+    <!-- the users of the app: who is typing; the results of the exercises are kept per user -->
+    <ScrollViewer>
+        <Border Classes="card" Width="560" Padding="28,22" Margin="30" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="18">
+
+                <!-- first start: nobody yet -->
+                <StackPanel Spacing="4" IsVisible="{Binding HasNoUser}">
+                    <TextBlock Text="Bienvenue dans XyloType" Classes="page-title" />
+                    <TextBlock Text="Qui va taper ? Créez votre profil : XyloType gardera vos résultats, exercice par exercice."
+                               Foreground="{DynamicResource Xd.TextSecondary}" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!-- nothing to change: back to where the user was (Escape too) -->
+                <StackPanel Spacing="4" IsVisible="{Binding HasUser}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="Utilisateurs" Classes="page-title" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Content="Fermer" ToolTip.Tip="Revenir où vous étiez (Échap)"
+                                VerticalAlignment="Center" Click="Close_Click" />
+                    </Grid>
+                    <TextBlock Text="Chacun a ses résultats : les exercices faits, et ses scores. Le dernier utilisateur est repris au démarrage."
+                               Foreground="{DynamicResource Xd.TextSecondary}" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!-- the users: the current one is marked, another one can be chosen -->
+                <ItemsControl ItemsSource="{Binding Users}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="8" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:UserItemViewModel">
+                            <Border Classes="inset">
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="10">
+                                    <Border Classes="avatar" Width="36" Height="36" CornerRadius="18">
+                                        <TextBlock Text="{Binding Initials}" FontSize="14" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding AttemptsText}" Classes="secondary small" />
+                                    </StackPanel>
+
+                                    <Border Grid.Column="2" Classes="pill" IsVisible="{Binding IsCurrent}" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <Path Classes="icon" Data="{StaticResource Xd.Icon.Check}" Stroke="{DynamicResource App.AccentInk}" />
+                                            <TextBlock Text="Actuel" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Button Grid.Column="2" Content="Choisir" IsVisible="{Binding IsNotCurrent}" VerticalAlignment="Center"
+                                            Command="{Binding $parent[ItemsControl].((vm:UsersViewModel)DataContext).SwitchToCommand}"
+                                            CommandParameter="{Binding}" />
+
+                                    <Button Grid.Column="3" Classes="tool" ToolTip.Tip="Renommer" VerticalAlignment="Center"
+                                            Command="{Binding $parent[ItemsControl].((vm:UsersViewModel)DataContext).RenameCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Path Classes="icon" Data="{StaticResource Xd.Icon.Rename}" />
+                                    </Button>
+                                    <Button Grid.Column="4" Classes="tool" ToolTip.Tip="Supprimer" VerticalAlignment="Center"
+                                            Command="{Binding $parent[ItemsControl].((vm:UsersViewModel)DataContext).DeleteCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Path Classes="icon" Data="{StaticResource Xd.Icon.Delete}" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- a new user -->
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Nouvel utilisateur" Classes="secondary" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <TextBox x:Name="NewUserBox"
+                                 Text="{Binding NewUserName}"
+                                 PlaceholderText="Prénom ou pseudo"
+                                 MaxLength="{Binding NameMaxLength}"
+                                 KeyDown="NewUserBox_KeyDown" />
+                        <Button Grid.Column="1" Classes="accent" Content="Ajouter" Command="{Binding CreateCommand}" />
+                    </Grid>
+                    <TextBlock Text="{Binding Error}" IsVisible="{Binding HasError}" Classes="error small" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>

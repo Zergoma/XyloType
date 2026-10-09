@@ -1,11 +1,12 @@
 <ContentView x:Class="XyloType.MVVM.Views.StatisticView"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm ="clr-namespace:XyloType.MVVM.ViewModels"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.Statistic;assembly=XyloType.ViewModels"
              xmlns:stat="clr-namespace:XyloType.ViewModels.Statistic;assembly=XyloType.ViewModels"
              xmlns:converters="clr-namespace:XyloType.Converters"
              xmlns:views="clr-namespace:XyloType.MVVM.Views"
-             x:DataType="vm:StatisticViewModelMauiAdapter">
+             xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
+             x:DataType="vm:StatisticChartsViewModel">
 
     <ContentView.Resources>
         <converters:StringToColorConverter x:Key="stringToColor"/>
@@ -57,14 +58,45 @@
                 Margin="{x:Static views:StatisticView.BarMargin}"
                 Padding="24,14"
                 ZIndex="1">
-            <VerticalStackLayout Spacing="2">
-                <Label Text="Résultats"
-                       StyleClass="label_page_title"/>
-                <Label Text="{Binding Core.ExerciseName}"
-                       IsVisible="{Binding Core.HasExerciseName}"
-                       StyleClass="label_muted"
-                       FontSize="16"/>
-            </VerticalStackLayout>
+            <Grid ColumnDefinitions="*,auto" ColumnSpacing="20">
+                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                    <Label Text="Résultats"
+                           StyleClass="label_page_title"/>
+                    <Label Text="{Binding Core.ExerciseName}"
+                           IsVisible="{Binding Core.HasExerciseName}"
+                           StyleClass="label_muted"
+                           FontSize="16"/>
+                </VerticalStackLayout>
+
+                <!-- the score (net words per minute), compared with the best of the user -->
+                <Grid Grid.Column="1" ColumnDefinitions="auto,auto" ColumnSpacing="12" VerticalOptions="Center"
+                      ToolTipProperties.Text="Score : la vitesse en mots par minute, diminuée de la part d'erreurs">
+                    <Path Data="{x:Static xd:XdIcons.Trophy}"
+                          IsVisible="{Binding Core.IsRecord}"
+                          Fill="{DynamicResource Xd.AccentText}"
+                          Aspect="Uniform"
+                          WidthRequest="28"
+                          HeightRequest="28"
+                          VerticalOptions="Center"/>
+                    <VerticalStackLayout Grid.Column="1" Spacing="0">
+                        <HorizontalStackLayout Spacing="8" HorizontalOptions="End">
+                            <Label Text="{Binding Core.ScoreText}"
+                                   StyleClass="label_stat_value"
+                                   TextColor="{DynamicResource Xd.AccentText}"
+                                   VerticalOptions="End"/>
+                            <Label Text="score"
+                                   StyleClass="label_muted"
+                                   VerticalOptions="End"
+                                   Margin="0,0,0,5"/>
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding Core.ScoreComment}"
+                               IsVisible="{Binding Core.HasScoreComment}"
+                               StyleClass="label_muted"
+                               FontSize="12"
+                               HorizontalOptions="End"/>
+                    </VerticalStackLayout>
+                </Grid>
+            </Grid>
         </Border>
 
         <ScrollView>
@@ -160,6 +192,23 @@
                                         VerticalOptions="Center"/>
                             </Grid>
 
+                            <!-- the colors at the level of the exercise -->
+                            <HorizontalStackLayout Spacing="16" Margin="0,-4,0,10">
+                                <Label Text="{Binding Core.LevelText}" StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                <HorizontalStackLayout Spacing="14" BindableLayout.ItemsSource="{Binding ResponseTimeLegend}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="stat:StatLegendItem">
+                                            <HorizontalStackLayout Spacing="6">
+                                                <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                                         VerticalOptions="Center"
+                                                         Color="{Binding ColorHex, Converter={StaticResource stringToColor}}"/>
+                                                <Label Text="{Binding Text}" StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                            </HorizontalStackLayout>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </HorizontalStackLayout>
+                            </HorizontalStackLayout>
+
                             <VerticalStackLayout Spacing="6"
                                                  BindableLayout.ItemsSource="{Binding ResponseTimeBars}"
                                                  BindableLayout.ItemTemplate="{StaticResource BarRowTemplate}"/>
@@ -239,6 +288,23 @@
                                             VerticalOptions="Center"/>
                                 </Grid>
 
+                                <!-- the colors at the level of the exercise -->
+                                <HorizontalStackLayout Spacing="16" Margin="0,-4,0,10">
+                                    <Label Text="{Binding Core.LevelText}" StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                    <HorizontalStackLayout Spacing="14" BindableLayout.ItemsSource="{Binding ErrorLegend}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="stat:StatLegendItem">
+                                                <HorizontalStackLayout Spacing="6">
+                                                    <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                                             VerticalOptions="Center"
+                                                             Color="{Binding ColorHex, Converter={StaticResource stringToColor}}"/>
+                                                    <Label Text="{Binding Text}" StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                                </HorizontalStackLayout>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </HorizontalStackLayout>
+                                </HorizontalStackLayout>
+
                                 <VerticalStackLayout Spacing="6"
                                                      BindableLayout.ItemsSource="{Binding ErrorBars}"
                                                      BindableLayout.ItemTemplate="{StaticResource BarRowTemplate}"/>
@@ -270,6 +336,7 @@
                         Command="{Binding Core.HomeCommand}"/>
 
                 <Button Grid.Column="2"
+                        x:Name="RetryButton"
                         Text="Refaire"
                         StyleClass="button_hover"
                         Padding="24,10"
@@ -277,6 +344,7 @@
                         Command="{Binding Core.RetryCommand}"/>
 
                 <Button Grid.Column="3"
+                        x:Name="NextButton"
                         Text="Suivant"
                         StyleClass="ButtonHoverLaunch"
                         FontAttributes="Bold"

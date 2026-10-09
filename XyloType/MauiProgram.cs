@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 
 
 using Serilog;
+using Serilog.Events;
 
 using XyloType.Application.DI;
 using XyloType.DI;
@@ -29,6 +30,8 @@ public static class MauiProgram
         Log.Logger =
             new LoggerConfiguration()
                 .MinimumLevel.Information()
+                // one line per SQL command (37 000 to install the words): only the problems
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("Application", "XyloType")
                 .WriteTo.Console()
@@ -66,7 +69,7 @@ public static class MauiProgram
         Log.Information(
         "Application started {ApplicationName} {Version}",
         "XyloType",
-        "1.0.0");
+        AppInfo.Current.VersionString);
 
 
         builder.Services
@@ -94,8 +97,6 @@ public static class MauiProgram
                 options.UseSqlite($"Data Source={databasePath}"));
 
         var app = builder.Build();
-
-        Log.Logger.Information("Fun {chat}", "sympa");
 
         // INFRASTRUCTURE
         // DB: init or upgrade according to the migration state (errors are logged)

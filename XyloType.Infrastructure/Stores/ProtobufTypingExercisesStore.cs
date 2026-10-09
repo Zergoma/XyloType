@@ -39,6 +39,9 @@ public class ProtobufTypingExercisesStore : IExerciseSettingsStore
             KeyboardLayout = keyboarddto,
         };
 
+        foreach (ProtoExerciseSection protoSection in exercicesList.Sections)
+            toReturnList.Sections.Add(ProtoTypingExercicePbToModelMapper.ToModel(protoSection));
+
         foreach (ProtoTypingExercice protoExerciceItem in exercicesList.Exercices)
         {
             Result<TypingExercise> typingExerciceResult

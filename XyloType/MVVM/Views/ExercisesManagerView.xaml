@@ -3,14 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:limits="clr-namespace:XyloType.Application.Models;assembly=XyloType.Application"
              xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:XyloType.ViewModels.ExercisesManager;assembly=XyloType.ViewModels"
              xmlns:behaviors="clr-namespace:XyloType.Behaviors"
              x:Class="XyloType.MVVM.Views.ExercisesManagerView"
              x:DataType="vm:ExercisesManagerViewModel"
              x:Name="RootPage">
 
+    <ContentView.Resources>
+        <toolkit:InvertedBoolConverter x:Key="invert"/>
+    </ContentView.Resources>
+
     <Grid RowDefinitions="auto,*,auto"
-          ColumnDefinitions="380,*"
+          ColumnDefinitions="5*,7*"
           ColumnSpacing="20"
           Padding="20,16,20,0">
 
@@ -20,7 +25,7 @@
               ColumnSpacing="12"
               Margin="0,0,0,16">
 
-            <Label Text="Éditeur d'exercices"
+            <Label Text="Exercices"
                    StyleClass="label_page_title"
                    VerticalOptions="Center"/>
 
@@ -44,12 +49,20 @@
 
             <Grid RowDefinitions="auto,*" RowSpacing="10">
 
-                <Grid ColumnDefinitions="*,auto">
+                <Grid ColumnDefinitions="*,auto,auto" ColumnSpacing="8">
                     <Label Text="Glisser pour réordonner"
                            StyleClass="label_muted"
                            FontSize="12"
                            VerticalOptions="Center"/>
                     <Button Grid.Column="1"
+                            Text="+ Section"
+                            StyleClass="button_hover"
+                            Padding="14,0"
+                            HeightRequest="34"
+                            MinimumHeightRequest="34"
+                            CornerRadius="17"
+                            Command="{Binding NewSectionCommand}"/>
+                    <Button Grid.Column="2"
                             Text="+ Nouveau"
                             StyleClass="ButtonHoverAddExercice"
                             Padding="14,0"
@@ -60,16 +73,68 @@
                 </Grid>
 
                 <Label Grid.Row="1"
-                       Text="Aucun exercice pour ce clavier. Crée-en un avec « + Nouveau »."
+                       Text="Aucun exercice pour ce clavier. Créez-en un avec « + Nouveau », ou importez un pack."
                        StyleClass="label_muted"
                        IsVisible="{Binding HasNoItems}"
                        HorizontalTextAlignment="Center"
                        Margin="0,30"/>
 
                 <ScrollView Grid.Row="1" x:Name="ListScrollView">
+                    <!-- a section: its title and its tools, then its exercises -->
+                    <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Sections}">
+                      <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ExerciseSectionViewModel">
+                          <VerticalStackLayout Spacing="6">
+                            <Grid ColumnDefinitions="*,auto,auto,auto,auto" ColumnSpacing="4" Margin="2,6,14,0">
+                                <Label Text="{Binding Title}"
+                                       StyleClass="label_section_title"
+                                       FontSize="15"
+                                       LineBreakMode="WordWrap"
+                                       MaxLines="2"
+                                       VerticalOptions="Center"/>
+                                <xd:IconButton Grid.Column="1"
+                                               Icon="{x:Static xd:XdIcons.Up}"
+                                               IsEnabled="{Binding IsFirst, Converter={StaticResource invert}}"
+                                               ToolTipProperties.Text="Monter la section"
+                                               Command="{Binding BindingContext.MoveSectionUpCommand, Source={x:Reference RootPage}, x:DataType=ContentView}"
+                                               CommandParameter="{Binding .}"/>
+                                <xd:IconButton Grid.Column="2"
+                                               Icon="{x:Static xd:XdIcons.Down}"
+                                               IsEnabled="{Binding IsLast, Converter={StaticResource invert}}"
+                                               ToolTipProperties.Text="Descendre la section"
+                                               Command="{Binding BindingContext.MoveSectionDownCommand, Source={x:Reference RootPage}, x:DataType=ContentView}"
+                                               CommandParameter="{Binding .}"/>
+                                <xd:IconButton Grid.Column="3"
+                                               Icon="{x:Static xd:XdIcons.Rename}"
+                                               ToolTipProperties.Text="Renommer la section"
+                                               Command="{Binding BindingContext.RenameSectionCommand, Source={x:Reference RootPage}, x:DataType=ContentView}"
+                                               CommandParameter="{Binding .}"/>
+                                <xd:IconButton Grid.Column="4"
+                                               Icon="{x:Static xd:XdIcons.Delete}"
+                                               ToolTipProperties.Text="Supprimer la section et ses exercices"
+                                               Command="{Binding BindingContext.DeleteSectionCommand, Source={x:Reference RootPage}, x:DataType=ContentView}"
+                                               CommandParameter="{Binding .}"/>
+                            </Grid>
+
+                            <!-- the level: the colors of the results follow it -->
+                            <HorizontalStackLayout Spacing="8" Margin="2,-2,14,2">
+                                <Label Text="Niveau" StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                <Picker ItemsSource="{x:Static vm:ExerciseSectionViewModel.LevelNames}"
+                                        SelectedItem="{Binding LevelName}"
+                                        StyleClass="picker_themed"
+                                        FontSize="12"
+                                        MinimumWidthRequest="130"
+                                        ToolTipProperties.Text="Les résultats de ses exercices sont jugés selon ce niveau"/>
+                            </HorizontalStackLayout>
+
+                            <Label Text="Section vide : choisissez-la dans la fiche d'un exercice pour l'y mettre."
+                                   IsVisible="{Binding IsEmpty}"
+                                   StyleClass="label_muted"
+                                   FontSize="12"
+                                   Margin="2,0,14,4"/>
+
                     <!-- transparent background: pointer moves are received between the items too -->
-                    <VerticalStackLayout x:Name="ExerciseList"
-                                         BackgroundColor="Transparent"
+                    <VerticalStackLayout BackgroundColor="Transparent"
                                          BindableLayout.ItemsSource="{Binding Items}">
 
                         <VerticalStackLayout.GestureRecognizers>
@@ -134,6 +199,10 @@
                                 </Border>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                          </VerticalStackLayout>
+                        </DataTemplate>
+                      </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>
                 </ScrollView>
             </Grid>
@@ -204,7 +273,7 @@
 
                         <!-- compact form: the fixed text below gets the room left -->
                         <!-- name and letters -->
-                        <Grid ColumnDefinitions="2*,3*" ColumnSpacing="12">
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="auto,auto" ColumnSpacing="12" RowSpacing="12">
                             <VerticalStackLayout Spacing="6">
                                 <Label Text="Nom" StyleClass="label_field"/>
                                 <Entry Text="{Binding ExerciseName}"
@@ -212,6 +281,13 @@
                                        Placeholder="Nom de l'exercice"/>
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Column="1" Spacing="6">
+                                <Label Text="Section" StyleClass="label_field"/>
+                                <Picker ItemsSource="{Binding Sections}"
+                                        ItemDisplayBinding="{Binding Title, x:DataType=vm:ExerciseSectionViewModel}"
+                                        SelectedItem="{Binding EditorSection}"
+                                        StyleClass="picker_themed"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="6">
                                 <Label Text="Lettres autorisées" StyleClass="label_field"/>
                                 <Entry Text="{Binding AllowedChars}"
                                        StyleClass="entry_no_spell_no_prediction"/>
@@ -228,18 +304,19 @@
                                     Placeholder="Description"/>
                         </VerticalStackLayout>
 
-                        <!-- static / dynamic, and where the words come from -->
-                        <Grid ColumnDefinitions="auto,*,auto" ColumnSpacing="12">
-                            <Switch IsToggled="{Binding IsDynamic}"
-                                    VerticalOptions="Center"/>
-                            <Label Grid.Column="1"
-                                   Text="{Binding StaticDynamicText}"
-                                   VerticalOptions="Center">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding SwitchStaticDynamicCommand}"/>
-                                </Label.GestureRecognizers>
-                            </Label>
-                            <HorizontalStackLayout Grid.Column="2" Spacing="10">
+                        <!-- static / dynamic, and where the words come from: the source goes below when the panel is narrow -->
+                        <FlexLayout Wrap="Wrap" AlignItems="Center">
+                            <HorizontalStackLayout Spacing="12" Margin="0,0,24,6">
+                                <Switch IsToggled="{Binding IsDynamic}"
+                                        VerticalOptions="Center"/>
+                                <Label Text="{Binding StaticDynamicText}"
+                                       VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SwitchStaticDynamicCommand}"/>
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="10" Margin="0,0,0,6">
                                 <!-- word source: drawn at each game (dynamic) or used by "Générer" (fixed text) -->
                                 <Label Text="Mots"
                                        StyleClass="label_field"
@@ -257,7 +334,7 @@
                                         MinimumWidthRequest="90"
                                         ToolTipProperties.Text="Langue des mots"/>
                             </HorizontalStackLayout>
-                        </Grid>
+                        </FlexLayout>
 
                         <!-- word length (generation and dynamic exercises), size of the generated text (fixed text only) -->
                         <!-- two groups, the second one goes below when the panel is narrow -->

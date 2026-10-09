@@ -1,0 +1,198 @@
+{
+  "format": 1,
+  "id": "azerty-fr-confirme",
+  "title": "Vitesse et textes",
+  "level": "Confirmé",
+  "description": "Les symboles, la vitesse et l'endurance : des mots au hasard le plus vite possible, puis des textes entiers.",
+  "layout": "AzertyFr",
+  "version": "2026.10.09.2",
+  "sections": [
+    {
+      "key": "symbols",
+      "title": "Confirmé · 1. Les symboles",
+      "exercises": [
+        {
+          "key": "quotes-parentheses",
+          "name": "Apostrophes, guillemets, parenthèses",
+          "description": "Sur la rangée des chiffres, sans Maj : \" sur le 3, ' sur le 4, ( sur le 5, - sur le 6 ; la ) est à droite du à.",
+          "text": [
+            "l'arbre l'eau l'homme l'été",
+            "Il a dit \"oui\" (enfin).",
+            "c'est-à-dire, peut-être, aujourd'hui",
+            "Le mot \"chat\" (masculin) prend un t muet."
+          ]
+        },
+        {
+          "key": "maths",
+          "name": "Calculs",
+          "description": "Le = est à droite de la ), le + avec Maj ; * est à droite du ù, / avec Maj et la touche :, % avec Maj et ù.",
+          "text": [
+            "2 + 2 = 4",
+            "10 - 3 = 7",
+            "6 * 7 = 42",
+            "100 / 4 = 25",
+            "50 % de remise",
+            "a < b et b > c"
+          ]
+        },
+        {
+          "key": "underscore-ampersand",
+          "name": "Tiret bas et esperluette",
+          "description": "Le _ est sur le 8, le & sur le 1, sans Maj.",
+          "text": [
+            "mon_fichier_final.txt",
+            "rapport-2026_v2.pdf",
+            "Pierre & Marie, Laurel & Hardy",
+            "photo_vacances_001.jpg"
+          ]
+        },
+        {
+          "key": "altgr",
+          "name": "Avec AltGr",
+          "description": "AltGr (à droite de l'espace) donne le troisième signe des touches : @ sur le à, € sur le e, # sur le \".",
+          "text": [
+            "prenom.nom@exemple.fr",
+            "Le livre coûte 12 €.",
+            "Il reste 5 € sur 20 €.",
+            "#bonjour #clavier"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "speed",
+      "title": "Confirmé · 2. La vitesse",
+      "exercises": [
+        {
+          "key": "speed-short",
+          "name": "Mots courts",
+          "description": "Des mots courts au hasard : le plus vite possible, sans faute (il faut avoir importé des mots, dans Import > Mots).",
+          "letters": "azertyuiopqsdfghjklmwxcvbnéèàçùâêîôûëïü",
+          "generator": { "source": "words", "lengthMin": 2, "lengthMax": 4, "languages": [ "fr" ] }
+        },
+        {
+          "key": "speed-mixed",
+          "name": "Mots de toutes longueurs",
+          "description": "Des mots de 3 à 9 lettres : garder le rythme quand la longueur change.",
+          "letters": "azertyuiopqsdfghjklmwxcvbnéèàçùâêîôûëïü",
+          "generator": { "source": "words", "lengthMin": 3, "lengthMax": 9, "languages": [ "fr" ] }
+        },
+        {
+          "key": "speed-long",
+          "name": "Mots longs",
+          "description": "Des mots de 8 lettres et plus : la régularité avant la vitesse.",
+          "letters": "azertyuiopqsdfghjklmwxcvbnéèàçùâêîôûëïü",
+          "generator": { "source": "words", "lengthMin": 8, "lengthMax": 14, "languages": [ "fr" ] }
+        },
+        {
+          "key": "speed-pseudo",
+          "name": "Mots inventés",
+          "description": "Des mots qui n'existent pas : impossible de deviner la suite, il faut lire chaque lettre.",
+          "letters": "azertyuiopqsdfghjklmwxcvbnéèà",
+          "generator": { "source": "pseudoWords", "lengthMin": 4, "lengthMax": 8 }
+        }
+      ]
+    },
+    {
+      "key": "texts",
+      "title": "Confirmé · 3. Des textes",
+      "exercises": [
+        {
+          "key": "text-autumn",
+          "name": "L'automne",
+          "description": "Un texte court, pour trouver son rythme.",
+          "text": [
+            "Les feuilles des platanes tombent une à une sur le trottoir.",
+            "Le vent les pousse contre les murs, où elles s'entassent en tas dorés.",
+            "Les enfants rentrent de l'école en courant, le cartable sur le dos ;",
+            "ils sautent à pieds joints dans les flaques et rient très fort.",
+            "Au coin de la rue, le marchand de marrons allume son brasero.",
+            "L'odeur de châtaigne grillée flotte jusqu'au bout de l'avenue."
+          ]
+        },
+        {
+          "key": "text-city",
+          "name": "La ville au matin",
+          "description": "Des phrases plus longues, avec des chiffres.",
+          "text": [
+            "À 6 h 30, la boulangerie de la place ouvre ses volets.",
+            "Le premier bus passe à 6 h 42 ; il est presque vide.",
+            "Un cycliste file vers la gare, son écharpe flottant derrière lui.",
+            "Au troisième étage, une fenêtre s'allume, puis une autre.",
+            "Le kiosque reçoit ses journaux : 40 quotidiens et 12 magazines.",
+            "Vers 8 h, les trottoirs sont pleins et la ville a repris son bruit."
+          ]
+        },
+        {
+          "key": "text-letter",
+          "name": "Une lettre",
+          "description": "Une lettre, avec ses majuscules, sa ponctuation et ses accents.",
+          "text": [
+            "Chère Hélène,",
+            "Merci pour ta lettre, qui m'a fait très plaisir !",
+            "Ici, tout va bien : le jardin a enfin donné ses premières tomates,",
+            "et le chat du voisin a décidé de dormir chez nous.",
+            "Viendras-tu cet été ? La chambre d'amis t'attend, comme toujours.",
+            "Je t'embrasse,",
+            "Julien"
+          ]
+        },
+        {
+          "key": "text-water",
+          "name": "Le cycle de l'eau",
+          "description": "Un texte documentaire, avec un vocabulaire plus riche.",
+          "text": [
+            "Chauffée par le soleil, l'eau des océans s'évapore lentement.",
+            "La vapeur monte, se refroidit, puis se condense en fines gouttelettes :",
+            "ce sont les nuages. Poussés par le vent, ils traversent les continents.",
+            "Quand les gouttes deviennent trop lourdes, elles tombent en pluie ou en neige.",
+            "Une partie ruisselle vers les rivières ; une autre s'infiltre dans le sol",
+            "et rejoint les nappes souterraines. Tôt ou tard, l'eau retourne à la mer,",
+            "et le cycle recommence, comme il le fait depuis des milliards d'années."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "endurance",
+      "title": "Confirmé · 4. L'endurance",
+      "exercises": [
+        {
+          "key": "text-journey",
+          "name": "Le voyage",
+          "description": "Un long texte : tenir la vitesse et la précision jusqu'au bout.",
+          "text": [
+            "Le train quitta la gare à l'heure exacte, dans un long soupir de freins relâchés.",
+            "Assise près de la fenêtre, Camille regardait défiler les entrepôts, puis les jardins",
+            "ouvriers, puis les premiers champs. Elle avait emporté un livre, mais ne l'ouvrit pas.",
+            "Le paysage suffisait : des collines douces, des haies, un clocher de temps en temps.",
+            "À Dijon, un vieil homme s'installa en face d'elle. Il portait un chapeau de feutre",
+            "et une valise si usée qu'on se demandait comment elle tenait encore fermée.",
+            "\"Vous allez loin ?\" demanda-t-il. \"Jusqu'à la mer\", répondit-elle en souriant.",
+            "Il hocha la tête, comme si c'était la meilleure réponse possible.",
+            "Ils parlèrent peu ; pourtant, quand il descendit à Lyon, elle eut l'impression",
+            "de quitter un ami. Le soir tombait. Les vitres renvoyaient son propre reflet,",
+            "et derrière lui, très loin, les lumières d'un village s'allumaient une à une.",
+            "Elle ouvrit enfin son livre, lut trois pages, puis s'endormit jusqu'à Marseille."
+          ]
+        },
+        {
+          "key": "text-workshop",
+          "name": "L'atelier",
+          "description": "Un long texte avec des chiffres et des symboles.",
+          "text": [
+            "L'atelier de M. Roux occupe le rez-de-chaussée du numéro 17, rue des Tanneurs.",
+            "On y répare tout : des horloges (surtout), des radios, et parfois un vélo.",
+            "Sur l'établi, une boîte contient 250 vis classées par taille, de 2 à 12 mm.",
+            "Le tarif est affiché près de la porte : 15 € l'heure, devis gratuit.",
+            "Les clients reviennent souvent ; certains depuis plus de 30 ans.",
+            "\"Une horloge, dit-il, c'est comme une personne : il faut l'écouter avant d'agir.\"",
+            "Il travaille lentement, mais il ne se trompe presque jamais : 99 % de réussite,",
+            "selon le petit carnet où il note chaque réparation depuis 1987.",
+            "Le samedi, il ferme à 12 h et va pêcher au bord du canal, seul et heureux."
+          ]
+        }
+      ]
+    }
+  ]
+}

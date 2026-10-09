@@ -9,7 +9,6 @@ public static class UiServicesModule
     {
         // depends on ViewFactoriesModule
         services.AddTransient<INavigationService, MauiNavigationService>();
-        services.AddSingleton<IPlaySoundSample, MauiPlaySoundSample>();
         services.AddTransient<IUserDialogService, MauiUserDialogService>();
         services.AddSingleton<MauiAccentColorService>();
         services.AddSingleton<IAccentColorService>(provider => provider.GetRequiredService<MauiAccentColorService>());

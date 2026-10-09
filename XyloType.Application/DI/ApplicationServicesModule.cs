@@ -22,9 +22,7 @@ internal static class ApplicationServicesModule
         services.AddTransient<IGenerationTypeSourceAvailableService, GenerationTypeSourceAvailableService>();
         services.AddTransient<IEditorSplitCharProvider, EditorSplitCharProvider>();
         services.AddTransient<IGuidProvider, GuidProvider>();
-        //services.AddTransient<IChartResponseTimeColorsProvider, ChartResponseTimeColorsBeginnerProvider>();
-        services.AddTransient<IChartResponseTimeColorsProvider, ChartResponseTimeColorIntermediateProvider>();
-        services.AddTransient<IChartErrorProvider, ChartErrorProvider>();
+        services.AddTransient<IStatColorScale, StatColorScale>();
 
 
         services.AddSingleton<ITypingExerciseWordNumberService, TypingExerciseWordNumberService>();
@@ -34,6 +32,19 @@ internal static class ApplicationServicesModule
         services.AddTransient<IImportedWordsGenerator, ImportedWordsGenerator>();
         services.AddTransient<IImportDuplicateChecker, ImportDuplicateChecker>();
         services.AddSingleton<IScoreCatalog, ScoreCatalog>();
+
+        // settings of the user, on the settings store of the app (ISettingsStore, given by the app)
+        services.AddTransient<IUserTypingPreferenceService, UserTypingPreferenceService>();
+        services.AddTransient<IUserKeyboardLayoutPreferenceService, UserKeyboardLayoutPreferenceService>();
+        services.AddTransient<ILastUserStore, LastUserStore>();
+
+        // users and their results
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<ICurrentUserService, CurrentUserService>();
+        services.AddTransient<IExerciseProgressService, ExerciseProgressService>();
+
+        // exercise packs
+        services.AddTransient<IExercisePackImporter, ExercisePackImporter>();
 
         // TODO
         // need to add qwerty etc keyboard keys locators

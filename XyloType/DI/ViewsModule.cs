@@ -13,6 +13,9 @@ public static class ViewsModule
         services.AddTransient<ExercisesManagerView>();
         services.AddTransient<WordsExplorerView>();
         services.AddTransient<ImportView>();
+        services.AddTransient<UsersView>();
+        services.AddTransient<ExercisePacksView>();
+        services.AddTransient<ExercisesView>();
 
         // the single page and its navigation
         services.AddSingleton<AppNavigator>();

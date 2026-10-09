@@ -13,9 +13,10 @@ public class AppNavigator
     private static readonly Dictionary<AppSection, Type> s_sectionViews = new()
     {
         [AppSection.Home] = typeof(MVVM.Views.TypingLauncherView),
-        [AppSection.Exercises] = typeof(MVVM.Views.ExercisesManagerView),
+        [AppSection.Exercises] = typeof(MVVM.Views.ExercisesView),
         [AppSection.Words] = typeof(MVVM.Views.WordsExplorerView),
         [AppSection.Import] = typeof(MVVM.Views.ImportView),
+        [AppSection.Users] = typeof(MVVM.Views.UsersView),
     };
 
     private readonly IServiceProvider _services;
@@ -49,6 +50,9 @@ public class AppNavigator
     public bool IsBusy { get; private set; }
 
     public AppSection CurrentSection { get; private set; } = AppSection.Home;
+
+    // where a side section (the users) goes back to when it is closed
+    private AppSection _returnSection = AppSection.Home;
 
     public View? CurrentView { get; private set; }
 
@@ -126,9 +130,19 @@ public class AppNavigator
 
         // leaving the exercise ends it: there is no going back to it
         _exerciseView = null;
+        // the users are opened from the side: closing them goes back to the section of the rail left
+        if (section == AppSection.Users && CurrentSection is not (AppSection.Users or AppSection.Exercise))
+            _returnSection = CurrentSection;
+
         CurrentSection = section;
         Show(view);
     }
+
+    /// <summary>
+    /// Closes the users section: back to the section shown before it.
+    /// </summary>
+    public Task CloseUsersAsync()
+        => CurrentSection == AppSection.Users ? GoToSectionAsync(_returnSection) : Task.CompletedTask;
 
     /// <summary>
     /// Opens an exercise, in place of the one open before, or shows its results in place of it.
@@ -148,6 +162,18 @@ public class AppNavigator
         _exerciseView = null;
         CurrentSection = AppSection.Home;
         Show(SectionView(AppSection.Home));
+    }
+
+    /// <summary>
+    /// The data behind the view shown changed (packs installed): it reads it again, as when it appears.
+    /// </summary>
+    public void RefreshCurrentView()
+    {
+        if (CurrentView is IViewLifecycle view)
+        {
+            view.OnDisappearing();
+            view.OnAppearing();
+        }
     }
 
     /// <summary>

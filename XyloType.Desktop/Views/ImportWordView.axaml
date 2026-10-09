@@ -1,0 +1,145 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.Import;assembly=XyloType.ViewModels"
+             x:Class="XyloType.Desktop.Views.ImportWordView"
+             x:DataType="vm:ImportWordViewModel">
+
+    <ScrollViewer>
+        <!-- the top margin leaves room for the floating selector of the section -->
+        <StackPanel Spacing="20" Margin="30,80,30,30" Width="580" HorizontalAlignment="Center">
+
+            <!-- word packs ready to use, downloaded from the GitHub repository -->
+            <Border Classes="card" Padding="28,22" DataContext="{Binding WordPacks}" x:DataType="vm:WordPacksViewModel">
+                <StackPanel Spacing="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Packs de mots" Classes="page-title" />
+                        <TextBlock Text="Des mots prêts à l'emploi, tirés de livres du domaine public : téléchargez-les pour commencer tout de suite."
+                                   TextWrapping="Wrap" Foreground="{DynamicResource Xd.TextSecondary}" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Clavier" Foreground="{DynamicResource Xd.TextSecondary}" />
+                        <ComboBox ItemsSource="{Binding KeyboardLayoutAvailable}" SelectedItem="{Binding SelectedKeyboard}" MinWidth="240" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding IsLoading}">
+                        <ProgressBar IsIndeterminate="True" Width="60" VerticalAlignment="Center" />
+                        <TextBlock Text="Chargement de la liste des packs…" Foreground="{DynamicResource Xd.TextSecondary}" />
+                    </StackPanel>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding HasLoadError}">
+                        <TextBlock Text="{Binding LoadError}" Classes="error" TextWrapping="Wrap" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Content="Réessayer" Command="{Binding LoadCommand}" />
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding Packs}" IsVisible="{Binding HasPacks}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="12" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:WordPackItem">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding Details}" Classes="secondary small" />
+                                        <TextBlock Text="{Binding SourcesText}" Classes="secondary small" TextWrapping="Wrap" MaxLines="2" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                                        <TextBlock Text="Déjà importé" Classes="success small" HorizontalAlignment="Right" IsVisible="{Binding IsImported}" />
+                                        <Button Content="{Binding ActionText}"
+                                                IsEnabled="{Binding $parent[ItemsControl].((vm:WordPacksViewModel)DataContext).IsNotImporting}"
+                                                Command="{Binding $parent[ItemsControl].((vm:WordPacksViewModel)DataContext).ImportPackCommand}"
+                                                CommandParameter="{Binding}" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <StackPanel Spacing="6" IsVisible="{Binding IsImporting}">
+                        <ProgressBar Value="{Binding ProgressValue}" Maximum="1" Height="8" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <TextBlock Text="{Binding ProgressText}" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                            <Button Grid.Column="1" Content="Annuler" Command="{Binding ImportPackCancelCommand}" />
+                        </Grid>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding SuccessImport}" Classes="success" TextWrapping="Wrap"
+                               IsVisible="{Binding SuccessImport, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <TextBlock Text="{Binding ErrorImport}" Classes="error" TextWrapping="Wrap"
+                               IsVisible="{Binding ErrorImport, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- the words of a text of the user -->
+            <Border Classes="card" Padding="28,22">
+                <StackPanel Spacing="14">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Importer un texte" Classes="page-title" />
+                        <TextBlock Text="Ajoutez les mots d'un livre ou d'une liste : choisissez le fichier, sa langue et le clavier cible."
+                                   TextWrapping="Wrap" Foreground="{DynamicResource Xd.TextSecondary}" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Fichier" Foreground="{DynamicResource Xd.TextSecondary}" />
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Button Content="Choisir un fichier…" Command="{Binding SelectFileCommand}" />
+                            <TextBlock Grid.Column="1" Text="{Binding ImportFilePath}" TextTrimming="PrefixCharacterEllipsis"
+                                       VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                        </Grid>
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Langue" Foreground="{DynamicResource Xd.TextSecondary}" />
+                            <ComboBox ItemsSource="{Binding AllLanguage}" SelectedItem="{Binding SelectedLanguage}" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="Clavier" Foreground="{DynamicResource Xd.TextSecondary}" />
+                            <ComboBox ItemsSource="{Binding KeyboardLayoutAvailable}" SelectedItem="{Binding SelectedKeyboard}" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Button Classes="accent" Content="Analyser" FontWeight="Bold" Padding="26,8" HorizontalAlignment="Right"
+                            IsEnabled="{Binding IsFileSelected}" Command="{Binding ImportWordsFromFileCommand}" />
+
+                    <StackPanel Spacing="6" IsVisible="{Binding IsImporting}">
+                        <ProgressBar Value="{Binding ProgressValue}" Maximum="1" Height="8" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <TextBlock Text="{Binding ProgressText}" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                            <Button Grid.Column="1" Content="Annuler l'import" Command="{Binding ImportWordsFromFileCancelCommand}" />
+                        </Grid>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding SuccessImport}" Classes="success" TextWrapping="Wrap"
+                               IsVisible="{Binding SuccessImport, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <TextBlock Text="{Binding ErrorImport}" Classes="error" TextWrapping="Wrap"
+                               IsVisible="{Binding ErrorImport, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- import history -->
+            <Border Classes="card" Padding="28,18" IsVisible="{Binding HasHistory}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Historique des imports" Classes="section-title" />
+                    <ItemsControl ItemsSource="{Binding History}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="8" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ImportedSourceItem">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Details}" Classes="secondary small" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

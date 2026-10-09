@@ -21,15 +21,16 @@ public partial class MainPage : ContentPage
     // top of the rail: the open exercise, only while it is shown
     private readonly NavRailItem _exerciseItem = new() { Icon = XdIcons.Keyboard, Key = AppSection.Exercise, IsVisible = false };
 
-    // the word packs are offered once, at the first start with an empty database
-    private const string WordPacksOfferedKey = "word_packs_offered";
+    // the packs (exercises and words) are offered once, at the first start where something is missing
+    private const string StarterPacksOfferedKey = "starter_packs_offered";
 
     public MainPage(
         AppNavigator navigator,
         ThemeViewModel theme,
         AccentColorViewModel accent,
-        ViewModels.Import.WordPacksViewModel wordPacks,
-        Application.Interfaces.IUserDialogService dialogs)
+        ViewModels.Import.StarterPacksViewModel starterPacks,
+        ViewModels.Users.UsersViewModel users,
+        Application.Interfaces.ICurrentUserService currentUser)
     {
         InitializeComponent();
 
@@ -64,35 +65,138 @@ public partial class MainPage : ContentPage
         navigator.StateChanged += () => UpdateRail(navigator);
         navigator.BusyChanged += ShowBusy;
 
+        // users: the avatar and the quick switch of the right rail
+        _navigator = navigator;
+        _users = users;
+        _currentUser = currentUser;
+        _starterPacks = starterPacks;
+        starterPacks.PropertyChanged += (_, e) =>
+        {
+            // the veil tells what is being installed
+            if (e.PropertyName == nameof(ViewModels.Import.StarterPacksViewModel.ProgressText))
+                BusyLabel.Text = string.IsNullOrEmpty(starterPacks.ProgressText) ? LoadingText : starterPacks.ProgressText;
+        };
+        UserAvatar.BindingContext = users;
+        UserMenu.BindingContext = users;
+        currentUser.Changed += (_, _) => OnUsersChanged();
+
         navigator.Start();
 
-        Loaded += async (_, _) => await OfferWordPacksAsync(navigator, wordPacks, dialogs);
+        Loaded += async (_, _) =>
+        {
+#if WINDOWS
+            HandleEscape();
+#endif
+            // without user, the change shows the users section (see OnUsersChanged)
+            await currentUser.InitializeAsync();
+            if (currentUser.HasUser)
+                await OfferStarterPacksAsync();
+        };
+    }
+
+    private readonly AppNavigator _navigator;
+    private readonly ViewModels.Users.UsersViewModel _users;
+    private readonly Application.Interfaces.ICurrentUserService _currentUser;
+    private readonly ViewModels.Import.StarterPacksViewModel _starterPacks;
+
+    private const string LoadingText = "Chargement…";
+
+    // the first start waits for a first user: the sections open once it exists
+    private bool _waitsForFirstUser;
+
+    /// <summary>
+    /// Without user, only the users section is open: the results need someone to belong to.
+    /// The first user created opens the app, home first.
+    /// </summary>
+    private async void OnUsersChanged()
+    {
+        bool hasUser = _currentUser.HasUser;
+
+        Rail.IsEnabled = hasUser;
+        UserAvatar.IsVisible = hasUser;
+
+        if (!hasUser)
+        {
+            _waitsForFirstUser = true;
+            UserPopover.IsOpen = false;
+            await _navigator.GoToSectionAsync(AppSection.Users);
+            return;
+        }
+
+        if (_waitsForFirstUser)
+        {
+            _waitsForFirstUser = false;
+            await _navigator.GoToSectionAsync(AppSection.Home);
+            await OfferStarterPacksAsync();
+        }
     }
 
     /// <summary>
-    /// First start, no word yet: the exercises of real words would be empty, the packs make the app ready at once.
-    /// Asked once; the packs stay in Import > Mots.
+    /// Opens the quick switch; in the users section, closes the section instead.
     /// </summary>
-    private static async Task OfferWordPacksAsync(
-        AppNavigator navigator,
-        ViewModels.Import.WordPacksViewModel wordPacks,
-        Application.Interfaces.IUserDialogService dialogs)
+    private async void UserAvatar_Tapped(object? sender, TappedEventArgs e)
     {
-        if (Preferences.Default.Get(WordPacksOfferedKey, false) || !await wordPacks.HasNoWordsAsync())
+        if (_navigator.CurrentSection == AppSection.Users)
+            await _navigator.CloseUsersAsync();
+        else
+            UserPopover.IsOpen = !UserPopover.IsOpen;
+    }
+
+#if WINDOWS
+    /// <summary>
+    /// Escape closes the users section (once there is a user: at the first start, there is nowhere to go back).
+    /// </summary>
+    private void HandleEscape()
+    {
+        if (Window?.Handler?.PlatformView is not Microsoft.UI.Xaml.Window window || window.Content is not Microsoft.UI.Xaml.UIElement root)
             return;
 
-        Preferences.Default.Set(WordPacksOfferedKey, true);
+        root.KeyDown += async (_, e) =>
+        {
+            if (e.Key != Windows.System.VirtualKey.Escape || _navigator.CurrentSection != AppSection.Users || !_currentUser.HasUser)
+                return;
 
-        bool download = await dialogs.ConfirmAsync(
-            "Bienvenue dans XyloType",
-            "La base de mots est vide. Voulez-vous télécharger un pack de mots prêt à l'emploi " +
-            "(des dizaines de milliers de mots tirés de livres du domaine public) ?\n\n" +
-            "Vous pourrez aussi le faire plus tard dans Import > Mots.",
-            "Voir les packs",
-            "Plus tard");
+            e.Handled = true;
+            await _navigator.CloseUsersAsync();
+        };
+    }
+#endif
 
-        if (download)
-            await navigator.GoToSectionAsync(AppSection.Import);
+    private void UserMenuItem_Tapped(object? sender, TappedEventArgs e)
+    {
+        UserPopover.IsOpen = false;
+        if (e.Parameter is ViewModels.Users.UserItemViewModel user)
+            _users.SwitchToCommand.Execute(user);
+    }
+
+    private async void ManageUsers_Tapped(object? sender, TappedEventArgs e)
+    {
+        UserPopover.IsOpen = false;
+        await _navigator.GoToSectionAsync(AppSection.Users);
+    }
+
+    /// <summary>
+    /// First start: the exercise packs and a word pack make the app ready at once; installed in one go.
+    /// Asked once (again at a later start when there was no connection); the packs stay in Exercices > Packs and Import > Mots.
+    /// </summary>
+    private async Task OfferStarterPacksAsync()
+    {
+        if (Preferences.Default.Get(StarterPacksOfferedKey, false))
+            return;
+
+        Application.Models.StarterPacksOffer? offer = await _starterPacks.GetOfferAsync();
+        if (offer is null || !offer.CatalogsAvailable)
+            return;
+
+        Preferences.Default.Set(StarterPacksOfferedKey, true);
+        if (offer.IsEmpty || !await _starterPacks.AskAsync(offer))
+            return;
+
+        Application.Models.StarterPacksSummary summary = await _navigator.RunBusyAsync(() => _starterPacks.InstallAsync(offer));
+
+        // the home page shows the new exercises
+        _navigator.RefreshCurrentView();
+        await _starterPacks.ShowSummaryAsync(summary);
     }
 
     private void ShowView(AppNavigator navigator, View view)
