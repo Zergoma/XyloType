@@ -5,6 +5,7 @@
              xmlns:stat="clr-namespace:XyloType.ViewModels.Statistic;assembly=XyloType.ViewModels"
              xmlns:converters="clr-namespace:XyloType.Converters"
              xmlns:views="clr-namespace:XyloType.MVVM.Views"
+             xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
              x:DataType="vm:StatisticViewModelMauiAdapter">
 
     <ContentView.Resources>
@@ -57,14 +58,45 @@
                 Margin="{x:Static views:StatisticView.BarMargin}"
                 Padding="24,14"
                 ZIndex="1">
-            <VerticalStackLayout Spacing="2">
-                <Label Text="Résultats"
-                       StyleClass="label_page_title"/>
-                <Label Text="{Binding Core.ExerciseName}"
-                       IsVisible="{Binding Core.HasExerciseName}"
-                       StyleClass="label_muted"
-                       FontSize="16"/>
-            </VerticalStackLayout>
+            <Grid ColumnDefinitions="*,auto" ColumnSpacing="20">
+                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                    <Label Text="Résultats"
+                           StyleClass="label_page_title"/>
+                    <Label Text="{Binding Core.ExerciseName}"
+                           IsVisible="{Binding Core.HasExerciseName}"
+                           StyleClass="label_muted"
+                           FontSize="16"/>
+                </VerticalStackLayout>
+
+                <!-- the score (net words per minute), compared with the best of the user -->
+                <Grid Grid.Column="1" ColumnDefinitions="auto,auto" ColumnSpacing="12" VerticalOptions="Center"
+                      ToolTipProperties.Text="Score : la vitesse en mots par minute, diminuée de la part d'erreurs">
+                    <Path Data="{x:Static xd:XdIcons.Trophy}"
+                          IsVisible="{Binding Core.IsRecord}"
+                          Fill="{DynamicResource Xd.AccentText}"
+                          Aspect="Uniform"
+                          WidthRequest="28"
+                          HeightRequest="28"
+                          VerticalOptions="Center"/>
+                    <VerticalStackLayout Grid.Column="1" Spacing="0">
+                        <HorizontalStackLayout Spacing="8" HorizontalOptions="End">
+                            <Label Text="{Binding Core.ScoreText}"
+                                   StyleClass="label_stat_value"
+                                   TextColor="{DynamicResource Xd.AccentText}"
+                                   VerticalOptions="End"/>
+                            <Label Text="score"
+                                   StyleClass="label_muted"
+                                   VerticalOptions="End"
+                                   Margin="0,0,0,5"/>
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding Core.ScoreComment}"
+                               IsVisible="{Binding Core.HasScoreComment}"
+                               StyleClass="label_muted"
+                               FontSize="12"
+                               HorizontalOptions="End"/>
+                    </VerticalStackLayout>
+                </Grid>
+            </Grid>
         </Border>
 
         <ScrollView>

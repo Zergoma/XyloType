@@ -35,6 +35,14 @@ internal static class ApplicationServicesModule
         services.AddTransient<IImportDuplicateChecker, ImportDuplicateChecker>();
         services.AddSingleton<IScoreCatalog, ScoreCatalog>();
 
+        // users and their results
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<ICurrentUserService, CurrentUserService>();
+        services.AddTransient<IExerciseProgressService, ExerciseProgressService>();
+
+        // exercise packs
+        services.AddTransient<IExercisePackImporter, ExercisePackImporter>();
+
         // TODO
         // need to add qwerty etc keyboard keys locators
         services.AddTransient<IKeyboardKeysLocator, AzertyKeysLocator>();

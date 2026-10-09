@@ -36,16 +36,15 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
         _logger = logger;
     }
 
-    public int TotalOccurence { get; set; } = 0;
+    // the figures of the session come from the domain
+    private TypingSessionResult Result => _statisticViewModel.Result;
+
     // Duration of the session, without the time spent out of the typing area
-    public double TotalMinute => _statisticViewModel.Duration.TotalMinutes;
+    public double TotalMinute => Result.Duration.TotalMinutes;
 
+    public double LettersPerMinute => Result.CharactersPerMinute;
 
-    public double LettersPerMinute => TotalMinute > 0
-                                        ? TotalOccurence / TotalMinute
-                                        : 0.0;
-
-    public double WordsPerMinute => LettersPerMinute / 5.0;
+    public double WordsPerMinute => Result.WordsPerMinute;
 
     public string LetterPerMinuteText => $"{LettersPerMinute:F0}";
     public string WordsPerMinuteText => $"{WordsPerMinute:F1}";
@@ -58,17 +57,10 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
     /// <summary>
     /// Number of wrong key presses (a character can be missed several times).
     /// </summary>
-    public int TotalErrors { get; private set; }
+    public int TotalErrors => Result.WrongKeyPresses;
 
-    /// <summary>
-    /// Number of characters that needed at least one retry.
-    /// </summary>
-    public int TotalCharsWithError { get; private set; }
-
-    // Share of characters typed right the first time
-    public double Accuracy => TotalOccurence > 0
-                                ? 100.0 * (TotalOccurence - TotalCharsWithError) / TotalOccurence
-                                : 100.0;
+    // Share of characters typed right the first time, in percent
+    public double Accuracy => 100.0 * Result.Accuracy;
 
     public string AccuracyText => $"{Accuracy:F0} %";
     public string TotalErrorsText => TotalErrors.ToString();
@@ -116,10 +108,6 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
         foreach (KeyValuePair<char, CharStats> item in _statisticViewModel.Statistics)
         {
             CharStats charStats = item.Value;
-
-            TotalOccurence += charStats.NbOccurence;
-            TotalErrors += charStats.RealErrors.Count;
-            TotalCharsWithError += charStats.NbCharError;
 
             _responseTimes.Add(new KeyValue(item.Key, Math.Min(charStats.ResponseTimeAverage.TotalSeconds, MaxResponseTime)));
 

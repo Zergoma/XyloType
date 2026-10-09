@@ -18,6 +18,7 @@ public static class PresenterModule
         // need more standar way, completely out of maui
         services.AddTransient<IUserKeyboardLayoutPreferenceService, MauiUserKeyboardLayoutPreferenceService>();
         services.AddTransient<IUserTypingPreferenceService, MauiUserTypingPreferenceService>();
+        services.AddTransient<ILastUserStore, MauiLastUserStore>();
         return services;
     }
 }

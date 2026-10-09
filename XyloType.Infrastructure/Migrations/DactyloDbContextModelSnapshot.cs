@@ -15,12 +15,55 @@ partial class DactyloDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261001075311_AddImportedSourcesAndWordExclusion";
+    public override string LastMigrationId => "20261009090757_AddUsersAndExerciseAttempts";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
         modelBuilder.HasAnnotation("ProductVersion", "11.0.0-preview.6.26359.118");
+
+        modelBuilder.Entity("XyloType.Domain.Entities.ExerciseAttempt", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("INTEGER");
+
+                b.Property<double>("Accuracy")
+                    .HasColumnType("REAL");
+
+                b.Property<int>("Characters")
+                    .HasColumnType("INTEGER");
+
+                b.Property<int>("CharactersWithError")
+                    .HasColumnType("INTEGER");
+
+                b.Property<DateTime>("CompletedAtUtc")
+                    .HasColumnType("TEXT");
+
+                b.Property<double>("DurationSeconds")
+                    .HasColumnType("REAL");
+
+                b.Property<Guid>("ExerciseId")
+                    .HasColumnType("TEXT");
+
+                b.Property<double>("Score")
+                    .HasColumnType("REAL");
+
+                b.Property<int>("UserId")
+                    .HasColumnType("INTEGER");
+
+                b.Property<double>("WordsPerMinute")
+                    .HasColumnType("REAL");
+
+                b.Property<int>("WrongKeyPresses")
+                    .HasColumnType("INTEGER");
+
+                b.HasKey("Id");
+
+                b.HasIndex("UserId", "ExerciseId");
+
+                b.ToTable("ExerciseAttempts");
+            });
 
         modelBuilder.Entity("XyloType.Domain.Entities.ImportedSource", b =>
             {
@@ -68,6 +111,25 @@ partial class DactyloDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("ContentHash");
 
                 b.ToTable("ImportedSources");
+            });
+
+        modelBuilder.Entity("XyloType.Domain.Entities.UserProfile", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("INTEGER");
+
+                b.Property<DateTime>("CreatedAtUtc")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasMaxLength(40)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.ToTable("Users");
             });
 
         modelBuilder.Entity("XyloType.Domain.Entities.Word", b =>
@@ -158,6 +220,17 @@ partial class DactyloDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("WordAnalyses");
             });
 
+        modelBuilder.Entity("XyloType.Domain.Entities.ExerciseAttempt", b =>
+            {
+                b.HasOne("XyloType.Domain.Entities.UserProfile", "User")
+                    .WithMany("Attempts")
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("User");
+            });
+
         modelBuilder.Entity("XyloType.Domain.Entities.WordAnalysis", b =>
             {
                 b.HasOne("XyloType.Domain.Entities.Word", "Word")
@@ -167,6 +240,11 @@ partial class DactyloDbContextModelSnapshot : ModelSnapshot
                     .IsRequired();
 
                 b.Navigation("Word");
+            });
+
+        modelBuilder.Entity("XyloType.Domain.Entities.UserProfile", b =>
+            {
+                b.Navigation("Attempts");
             });
 
         modelBuilder.Entity("XyloType.Domain.Entities.Word", b =>

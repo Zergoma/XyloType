@@ -49,9 +49,19 @@ message ProtoTypingExercice {
         ProtoTypingTextDataDynamic dynamic_text_data = 5;
     }
     bytes id = 6;
+    bytes section_id = 7;   // empty in the files written before the sections
+}
+
+// a titled group of exercises
+message ProtoExerciseSection {
+    bytes id = 1;
+    string title = 2;
+    string pack_id = 3;         // empty: a section of the user
+    string pack_version = 4;
 }
 
 message ProtoTypingExerciceList {
     ProtoKeyboardLayout keyboard_layout = 1;
     repeated ProtoTypingExercice exercices = 2;
+    repeated ProtoExerciseSection sections = 3;
 }

@@ -13,9 +13,10 @@ public class AppNavigator
     private static readonly Dictionary<AppSection, Type> s_sectionViews = new()
     {
         [AppSection.Home] = typeof(MVVM.Views.TypingLauncherView),
-        [AppSection.Exercises] = typeof(MVVM.Views.ExercisesManagerView),
+        [AppSection.Exercises] = typeof(MVVM.Views.ExercisesView),
         [AppSection.Words] = typeof(MVVM.Views.WordsExplorerView),
         [AppSection.Import] = typeof(MVVM.Views.ImportView),
+        [AppSection.Users] = typeof(MVVM.Views.UsersView),
     };
 
     private readonly IServiceProvider _services;
@@ -148,6 +149,18 @@ public class AppNavigator
         _exerciseView = null;
         CurrentSection = AppSection.Home;
         Show(SectionView(AppSection.Home));
+    }
+
+    /// <summary>
+    /// The data behind the view shown changed (packs installed): it reads it again, as when it appears.
+    /// </summary>
+    public void RefreshCurrentView()
+    {
+        if (CurrentView is IViewLifecycle view)
+        {
+            view.OnDisappearing();
+            view.OnAppearing();
+        }
     }
 
     /// <summary>

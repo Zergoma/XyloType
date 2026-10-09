@@ -1,0 +1,207 @@
+{
+  "format": 1,
+  "id": "azerty-fr-intermediaire",
+  "title": "Écrire en français",
+  "level": "Intermédiaire",
+  "description": "Tout ce qu'il faut pour écrire un vrai texte en français : majuscules, accents, ponctuation et chiffres.",
+  "layout": "AzertyFr",
+  "version": "2026.10.09",
+  "sections": [
+    {
+      "key": "capitals",
+      "title": "Intermédiaire · 1. Les majuscules",
+      "exercises": [
+        {
+          "key": "shift-names",
+          "name": "Noms propres",
+          "description": "Une majuscule : la touche Maj avec l'auriculaire de l'autre main que celle qui tape la lettre.",
+          "text": [
+            "Paris Lyon Lille Nantes Brest",
+            "Marie Paul Louis Julie Hugo",
+            "Rome Londres Madrid Berlin Oslo",
+            "Anna Jean Lucas Emma Victor"
+          ]
+        },
+        {
+          "key": "shift-sentences",
+          "name": "Débuts de phrases",
+          "description": "Une majuscule au début de chaque phrase, et aux noms propres.",
+          "text": [
+            "La Seine coule dans Paris",
+            "Victor Hugo a vu Rome et Londres",
+            "Jean et Anna partent pour Madrid",
+            "Le Rhin et la Loire sont des fleuves",
+            "Mon ami Paul habite Toulouse"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "accents",
+      "title": "Intermédiaire · 2. Les accents",
+      "exercises": [
+        {
+          "key": "e-acute",
+          "name": "é",
+          "description": "Le é a sa touche, sur la rangée des chiffres, au-dessus de z : l'annulaire gauche.",
+          "letters": "é",
+          "text": [
+            "é é é été bébé café thé",
+            "élève école étude épée",
+            "le bébé a été réveillé",
+            "la fée a dansé à la soirée"
+          ]
+        },
+        {
+          "key": "e-grave-a-grave",
+          "name": "è et à",
+          "description": "Le è est au-dessus de u (index droit), le à au-dessus de p (auriculaire droit).",
+          "letters": "èà",
+          "text": [
+            "è è è père mère frère",
+            "à à à là voilà déjà",
+            "il va à la gare à pied",
+            "très près après succès"
+          ]
+        },
+        {
+          "key": "c-cedilla-u-grave",
+          "name": "ç et ù",
+          "description": "Le ç est au-dessus de o (annulaire droit), le ù à droite de m (auriculaire droit).",
+          "letters": "çù",
+          "text": [
+            "ç ç ç ça leçon garçon reçu",
+            "ù ù ù où où où",
+            "où est le garçon",
+            "le maçon a refait la façade"
+          ]
+        },
+        {
+          "key": "accent-words",
+          "name": "Vrais mots accentués",
+          "description": "De vrais mots avec é, è, à, ç et ù (il faut avoir importé des mots, dans Import > Mots).",
+          "letters": "azertyuiopqsdfghjklmwxcvbnéèàçù",
+          "generator": { "source": "words", "lengthMin": 3, "lengthMax": 7, "languages": [ "fr" ] }
+        }
+      ]
+    },
+    {
+      "key": "dead-keys",
+      "title": "Intermédiaire · 3. Accents circonflexes et trémas",
+      "exercises": [
+        {
+          "key": "circumflex",
+          "name": "â ê î ô û",
+          "description": "La touche ^ à droite de p ne tape rien seule : appuyez dessus, puis sur la voyelle.",
+          "letters": "âêîôû",
+          "text": [
+            "fête tête bête forêt",
+            "château gâteau âne pâte",
+            "île dîner huître",
+            "hôtel côte rôti diplôme",
+            "sûr mûr flûte goût"
+          ]
+        },
+        {
+          "key": "diaeresis",
+          "name": "ë ï ü",
+          "description": "Le tréma : Maj et ^ ensemble, puis la voyelle.",
+          "letters": "ëïü",
+          "text": [
+            "Noël naïf maïs aïe",
+            "héroïne égoïste ouïe",
+            "canoë Loïc Joël",
+            "le naïf a goûté le maïs à Noël"
+          ]
+        },
+        {
+          "key": "all-accent-words",
+          "name": "Vrais mots, tous les accents",
+          "description": "De vrais mots avec tous les accents (il faut avoir importé des mots, dans Import > Mots).",
+          "letters": "azertyuiopqsdfghjklmwxcvbnéèàçùâêîôûëïü",
+          "generator": { "source": "words", "lengthMin": 3, "lengthMax": 8, "languages": [ "fr" ] }
+        }
+      ]
+    },
+    {
+      "key": "punctuation",
+      "title": "Intermédiaire · 4. La ponctuation",
+      "exercises": [
+        {
+          "key": "comma-period",
+          "name": "Virgule et point",
+          "description": "La virgule est sous j, à droite de n ; le point demande Maj, avec la touche ; à sa droite.",
+          "text": [
+            "Il pleut, il vente, il neige.",
+            "Le chat dort. Le chien joue.",
+            "Pommes, poires, prunes et cerises.",
+            "Elle arrive. Il part. Ils se croisent."
+          ]
+        },
+        {
+          "key": "colon-semicolon",
+          "name": "Deux-points et point-virgule",
+          "description": "En français, une espace avant les deux-points et le point-virgule.",
+          "text": [
+            "Il a tout : du pain, du vin et du fromage.",
+            "Elle lit ; il dort.",
+            "Trois couleurs : bleu, blanc, rouge.",
+            "Le jour se lève ; la ville s'éveille."
+          ]
+        },
+        {
+          "key": "exclamation-question",
+          "name": "Point d'exclamation et d'interrogation",
+          "description": "Le ! est en bas à droite ; le ? demande Maj avec la virgule. Une espace avant les deux.",
+          "text": [
+            "Quelle belle journée !",
+            "Tu viens ce soir ?",
+            "Oui ! Et toi, tu restes ?",
+            "Qui a mangé le gâteau ? Pas moi !"
+          ]
+        },
+        {
+          "key": "punctuation-text",
+          "name": "Un petit texte",
+          "description": "Majuscules, accents et ponctuation, tout ensemble.",
+          "text": [
+            "Ce matin, Léa a pris le train pour Lyon.",
+            "Elle avait tout prévu : un livre, une pomme et son carnet.",
+            "Le voyage a été court ; le paysage, très beau.",
+            "À l'arrivée, son frère l'attendait sur le quai.",
+            "Quelle surprise ! Il avait apporté des fleurs."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "digits",
+      "title": "Intermédiaire · 5. Les chiffres",
+      "exercises": [
+        {
+          "key": "digits-row",
+          "name": "La rangée des chiffres",
+          "description": "Sur un clavier AZERTY, les chiffres demandent la touche Maj (ou le verrouillage des majuscules).",
+          "text": [
+            "1 2 3 4 5 6 7 8 9 0",
+            "12 34 56 78 90",
+            "10 20 30 40 50 60 70 80 90",
+            "1789 1848 1914 1945 2000"
+          ]
+        },
+        {
+          "key": "digits-sentences",
+          "name": "Des nombres dans les phrases",
+          "description": "Passer des lettres aux chiffres et revenir, sans perdre le rythme.",
+          "text": [
+            "Il y a 7 jours dans une semaine.",
+            "Le train part à 8 h 15, quai 3.",
+            "Paris compte 20 arrondissements.",
+            "Une année compte 365 jours, ou 366.",
+            "Rendez-vous le 14 juillet à 22 h."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -38,13 +38,13 @@ public partial class TypingLauncherView : ContentView, IViewLifecycle
 
         if(BindingContext is TypingLauncherViewModel vm)
 		{
+            // no keyboard chosen yet (first start): the first one
             Result<int> keyboardCodeResult = _userKeyboardPreferenceService.GetKeyboardType();
-            if(!keyboardCodeResult.Success)
-            {
-                return;
-            }
+            int keyboardCode = keyboardCodeResult.Success
+                ? keyboardCodeResult.GetValue
+                : (int)vm.KeyboardLayoutAvailable[0].KeyBoardCode;
 
-            await vm.InitilizationAsync(keyboardCodeResult.GetValue);
+            await vm.InitilizationAsync(keyboardCode);
 		}
     }
 

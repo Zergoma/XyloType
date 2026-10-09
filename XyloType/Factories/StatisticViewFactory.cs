@@ -20,6 +20,7 @@ public class StatisticViewFactory : IStatisticViewFactory
     private readonly ITypingExerciseRunService _runService;
     private readonly IUserTypingPreferenceService _typingPreference;
     private readonly IUserDialogService _dialogService;
+    private readonly IExerciseProgressService _progress;
 
     public StatisticViewFactory(
         IThemeChangerService themeChangerService,
@@ -28,7 +29,8 @@ public class StatisticViewFactory : IStatisticViewFactory
         ILogger<StatisticViewModelMauiAdapter> logger,
         ITypingExerciseRunService runService,
         IUserTypingPreferenceService typingPreference,
-        IUserDialogService dialogService)
+        IUserDialogService dialogService,
+        IExerciseProgressService progress)
     {
         _themeChangerService = themeChangerService;
         _chartResponseTimeColorsProvider = chartResponseTimeColorsProvider;
@@ -37,6 +39,7 @@ public class StatisticViewFactory : IStatisticViewFactory
         _runService = runService;
         _typingPreference = typingPreference;
         _dialogService = dialogService;
+        _progress = progress;
     }
 
     public async Task<Result<ContentView>> Create(
@@ -53,7 +56,11 @@ public class StatisticViewFactory : IStatisticViewFactory
                 _runService,
                 navigationService,
                 _typingPreference,
-                _dialogService);
+                _dialogService,
+                _progress);
+
+        // the result is kept for the current user before it is shown, with its comparison
+        await vm.RecordAsync();
 
         StatisticViewModelMauiAdapter vmadapter =
             new(

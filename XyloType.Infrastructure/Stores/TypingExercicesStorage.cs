@@ -11,12 +11,15 @@ public class TypingExercicesStorage : ITypingExercicesStorage
     private readonly IExerciseSettingsStore _exerciceStrore;
     private readonly ITypingExercicesFileNameProvider _exerciceFilenameProvider;
     private readonly string _exerciceFolder;
+    private readonly IGuidProvider _guidProvider;
 
     public TypingExercicesStorage(
         IExerciseSettingsStore exerciceStrore,
         IExercicesSettingPathProvider exercicePathProvider,
-        ITypingExercicesFileNameProvider exerciceFilenameProvider)
+        ITypingExercicesFileNameProvider exerciceFilenameProvider,
+        IGuidProvider guidProvider)
     {
+        _guidProvider = guidProvider;
         _exerciceStrore = exerciceStrore;
         _exerciceFilenameProvider = exerciceFilenameProvider;
         _exerciceFolder = exercicePathProvider.ExerciceSettingPath();
@@ -34,7 +37,13 @@ public class TypingExercicesStorage : ITypingExercicesStorage
             _exerciceFolder,
             filenameResult.GetValue);
 
-        return await _exerciceStrore.LoadAsync(_fullPath);
+        Result<TypingExercices> loaded = await _exerciceStrore.LoadAsync(_fullPath);
+
+        // files written before the sections: their exercises go to a default section
+        if (loaded.Success)
+            loaded.GetValue.NormalizeSections(_guidProvider.CreateGuid);
+
+        return loaded;
     }
     
     
@@ -47,6 +56,9 @@ public class TypingExercicesStorage : ITypingExercicesStorage
         
         Result<string> filenameResult =
             _exerciceFilenameProvider.GetFileName(exercices.KeyboardLayout.KeyBoardCode);
+
+        if (!filenameResult.Success)
+            return Result<bool>.Fail(filenameResult.Error);
 
         string _fullPath = Path.Combine(
             _exerciceFolder,

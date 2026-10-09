@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.Users;assembly=XyloType.ViewModels"
+             x:Class="XyloType.MVVM.Views.UsersView"
+             x:DataType="vm:UsersViewModel"
+             x:Name="RootView">
+
+    <!-- the users of the app: who is typing; the results of the exercises are kept per user -->
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="20" HorizontalOptions="Center" VerticalOptions="Center">
+
+            <Border StyleClass="BorderTypingRounded10, BorderBgStd" Padding="30,24" WidthRequest="560">
+                <VerticalStackLayout Spacing="18">
+
+                    <!-- first start: nobody yet -->
+                    <VerticalStackLayout Spacing="4" IsVisible="{Binding HasNoUser}">
+                        <Label Text="Bienvenue dans XyloType" StyleClass="label_page_title"/>
+                        <Label Text="Qui va taper ? Créez votre profil : XyloType gardera vos résultats, exercice par exercice."
+                               StyleClass="label_muted"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4" IsVisible="{Binding HasUser}">
+                        <Label Text="Utilisateurs" StyleClass="label_page_title"/>
+                        <Label Text="Chacun a ses résultats : les exercices faits, et ses scores. Le dernier utilisateur est repris au démarrage."
+                               StyleClass="label_muted"/>
+                    </VerticalStackLayout>
+
+                    <!-- the users: the current one is marked, a click on another one switches to it -->
+                    <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Users}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:UserItemViewModel">
+                                <Border StyleClass="BorderRounded10, BorderBgDescription" Padding="12,10">
+                                    <Grid ColumnDefinitions="auto,*,auto,auto,auto" ColumnSpacing="12">
+
+                                        <!-- avatar: the initials on the main color -->
+                                        <Border WidthRequest="38" HeightRequest="38"
+                                                StrokeShape="RoundRectangle 19"
+                                                StrokeThickness="0"
+                                                BackgroundColor="{DynamicResource Xd.Accent}"
+                                                VerticalOptions="Center">
+                                            <Label Text="{Binding Initials}"
+                                                   TextColor="{DynamicResource Xd.AccentForeground}"
+                                                   FontAttributes="Bold"
+                                                   FontSize="15"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"/>
+                                        </Border>
+
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" FontAttributes="Bold" StyleClass="label_on_description"/>
+                                            <Label Text="{Binding AttemptsText}" StyleClass="label_muted" FontSize="12"/>
+                                        </VerticalStackLayout>
+
+                                        <!-- current user, or the button to switch to this one -->
+                                        <Border Grid.Column="2"
+                                                IsVisible="{Binding IsCurrent}"
+                                                VerticalOptions="Center"
+                                                StrokeShape="RoundRectangle 12"
+                                                StrokeThickness="0"
+                                                Padding="10,4"
+                                                BackgroundColor="{DynamicResource Xd.AccentSoft}">
+                                            <HorizontalStackLayout Spacing="5">
+                                                <Path Data="{x:Static xd:XdIcons.Check}"
+                                                      Fill="{DynamicResource Xd.AccentText}"
+                                                      Aspect="Uniform"
+                                                      WidthRequest="12"
+                                                      HeightRequest="12"
+                                                      VerticalOptions="Center"/>
+                                                <Label Text="Actuel"
+                                                       TextColor="{DynamicResource Xd.AccentText}"
+                                                       FontSize="12"
+                                                       FontAttributes="Bold"
+                                                       VerticalOptions="Center"/>
+                                            </HorizontalStackLayout>
+                                        </Border>
+                                        <Button Grid.Column="2"
+                                                IsVisible="{Binding IsNotCurrent}"
+                                                Text="Choisir"
+                                                StyleClass="button_hover"
+                                                Padding="14,0"
+                                                HeightRequest="30"
+                                                MinimumHeightRequest="30"
+                                                CornerRadius="15"
+                                                VerticalOptions="Center"
+                                                Command="{Binding BindingContext.SwitchToCommand, Source={x:Reference RootView}, x:DataType=ContentView}"
+                                                CommandParameter="{Binding .}"/>
+
+                                        <xd:IconButton Grid.Column="3"
+                                                       Icon="{x:Static xd:XdIcons.Rename}"
+                                                       VerticalOptions="Center"
+                                                       ToolTipProperties.Text="Renommer"
+                                                       Command="{Binding BindingContext.RenameCommand, Source={x:Reference RootView}, x:DataType=ContentView}"
+                                                       CommandParameter="{Binding .}"/>
+                                        <xd:IconButton Grid.Column="4"
+                                                       Icon="{x:Static xd:XdIcons.Delete}"
+                                                       VerticalOptions="Center"
+                                                       ToolTipProperties.Text="Supprimer"
+                                                       Command="{Binding BindingContext.DeleteCommand, Source={x:Reference RootView}, x:DataType=ContentView}"
+                                                       CommandParameter="{Binding .}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <!-- a new user -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Nouvel utilisateur" StyleClass="label_field"/>
+                        <Grid ColumnDefinitions="*,auto" ColumnSpacing="10">
+                            <Entry x:Name="NewUserEntry"
+                                   Text="{Binding NewUserName}"
+                                   Placeholder="Prénom ou pseudo"
+                                   MaxLength="{Binding NameMaxLength}"
+                                   StyleClass="entry_no_spell_no_prediction"
+                                   ReturnCommand="{Binding CreateCommand}"/>
+                            <Button Grid.Column="1"
+                                    Text="Ajouter"
+                                    StyleClass="ButtonHoverAddExercice"
+                                    Padding="20,0"
+                                    HeightRequest="36"
+                                    MinimumHeightRequest="36"
+                                    CornerRadius="18"
+                                    Command="{Binding CreateCommand}"/>
+                        </Grid>
+                        <Label Text="{Binding Error}" IsVisible="{Binding HasError}" StyleClass="label_error" FontSize="12"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>

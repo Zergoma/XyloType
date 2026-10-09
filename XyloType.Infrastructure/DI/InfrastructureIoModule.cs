@@ -15,6 +15,7 @@ internal static class InfrastructureIoModule
         services.AddTransient<IWordStreamReader, TextFileWordReader>();
         services.AddTransient<IWordPackReader, WordPackReader>();
         services.AddSingleton<IWordPackSource, GitHubWordPackSource>();
+        services.AddSingleton<IExercisePackSource, GitHubExercisePackSource>();
         services.AddTransient<IContentHasher, NormalizedTextHasher>();
 
         services.AddSingleton<AssetThemesLoader>();

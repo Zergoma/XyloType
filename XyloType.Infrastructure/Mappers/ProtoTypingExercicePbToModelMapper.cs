@@ -15,7 +15,7 @@ public static class ProtoTypingExercicePbToModelMapper
     {
         if (proto.TextDataTypeCase != ProtoTypingExercice.TextDataTypeOneofCase.DynamicTextData)
         {
-            Result<TypingTextData>.Fail("Not a dynamic");
+            return Result<TypingTextData>.Fail("Not a dynamic");
         }
 
         Result<GeneratedTypeSource> generationTypeSourceResult
@@ -43,6 +43,15 @@ public static class ProtoTypingExercicePbToModelMapper
         return Result<TypingTextData>.Ok(curr);
     }
 
+    public static ExerciseSection ToModel(ProtoExerciseSection proto)
+        => new()
+        {
+            Id = new(proto.Id.ToByteArray()),
+            Title = proto.Title,
+            PackId = string.IsNullOrEmpty(proto.PackId) ? null : proto.PackId,
+            PackVersion = string.IsNullOrEmpty(proto.PackVersion) ? null : proto.PackVersion,
+        };
+
     public static Result<TypingExercise> ToModel(ProtoTypingExercice proto)
     {
         TypingExercise typingExercice
@@ -52,6 +61,8 @@ public static class ProtoTypingExercicePbToModelMapper
                 Description = proto.Description,
                 AllowedCharacters = proto.AllowedCharacters,
                 Id = new (proto.Id.ToByteArray()),
+                // no section yet: the exercise goes to the default one when the list is normalized
+                SectionId = proto.SectionId.Length == 16 ? new(proto.SectionId.ToByteArray()) : Guid.Empty,
             };
 
         Result<TypingTextData> staticDynamicResult = proto.TextDataTypeCase switch
@@ -102,6 +113,17 @@ public static class ProtoTypingExerciceModeltoPbMapper
 
 
 
+        foreach (ExerciseSection section in settings.Sections)
+        {
+            exercicesList.Sections.Add(new ProtoExerciseSection
+            {
+                Id = Google.Protobuf.ByteString.CopyFrom(section.Id.ToByteArray()),
+                Title = section.Title,
+                PackId = section.PackId ?? string.Empty,
+                PackVersion = section.PackVersion ?? string.Empty,
+            });
+        }
+
         foreach (TypingExercise typingExercice in settings.Exercices)
         {
             ProtoTypingExercice protoTypingExo = new()
@@ -110,6 +132,7 @@ public static class ProtoTypingExerciceModeltoPbMapper
                 Description = typingExercice.Description,
                 AllowedCharacters = typingExercice.AllowedCharacters,
                 Id = Google.Protobuf.ByteString.CopyFrom(typingExercice.Id.ToByteArray()),
+                SectionId = Google.Protobuf.ByteString.CopyFrom(typingExercice.SectionId.ToByteArray()),
             };
 
 

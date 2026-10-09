@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
+             x:Class="XyloType.MVVM.Views.ExercisesView">
+
+    <!-- exercises section: the editor or the packs, one at a time (same layout as the import section) -->
+    <Grid>
+        <!-- both views stay in place, only the selected one is visible (WinUI does not like a view taken out and put back) -->
+        <Grid x:Name="KindHost"/>
+
+        <!-- the selector floats at the top, in a container fitting it: radius = its own (18) + padding (4) + stroke (1) -->
+        <Border HorizontalOptions="Center"
+                VerticalOptions="Start"
+                Margin="0,14,0,0"
+                Padding="4"
+                StrokeShape="RoundRectangle 23"
+                StrokeThickness="1"
+                StyleClass="BorderBgStd"
+                Stroke="{DynamicResource Xd.Border}">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.18"/>
+            </Border.Shadow>
+            <xd:SegmentedControl x:Name="KindSelector"/>
+        </Border>
+    </Grid>
+</ContentView>

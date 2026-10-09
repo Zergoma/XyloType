@@ -1,0 +1,243 @@
+{
+  "format": 1,
+  "id": "azerty-fr-debutant",
+  "title": "Premiers pas",
+  "level": "Débutant",
+  "description": "Placer ses doigts et apprendre les lettres, rangée par rangée : la rangée de repos, puis celle du haut, puis celle du bas.",
+  "layout": "AzertyFr",
+  "version": "2026.10.09",
+  "sections": [
+    {
+      "key": "home-row",
+      "title": "Débutant · 1. La rangée de repos",
+      "exercises": [
+        {
+          "key": "f-j",
+          "name": "f et j",
+          "description": "Les index sur f et j : ce sont les touches avec un petit relief, vos repères sans regarder le clavier. Le pouce tape l'espace.",
+          "text": [
+            "fff jjj fff jjj fff jjj",
+            "fj fj fj jf jf jf fj jf",
+            "ffj jjf fjf jfj ffj jjf",
+            "fjjf jffj fjfj jfjf ffjj jjff"
+          ]
+        },
+        {
+          "key": "d-k",
+          "name": "d et k",
+          "description": "Les majeurs, à côté des index : d à gauche, k à droite.",
+          "text": [
+            "ddd kkk ddd kkk ddd kkk",
+            "dk dk kd kd dkdk kdkd",
+            "fd jk df kj fdjk kjdf",
+            "dfjk kjfd dkfj jfkd fdkj"
+          ]
+        },
+        {
+          "key": "s-l",
+          "name": "s et l",
+          "description": "Les annulaires : s à gauche, l à droite. Les index restent sur f et j.",
+          "text": [
+            "sss lll sss lll sss lll",
+            "sl ls slsl lsls sl ls",
+            "sd lk ds kl sdf lkj",
+            "fdsl jkls sdfj lkjf dsfl"
+          ]
+        },
+        {
+          "key": "q-m",
+          "name": "q et m",
+          "description": "Les auriculaires, les petits doigts : q à gauche, m à droite.",
+          "text": [
+            "qqq mmm qqq mmm qqq mmm",
+            "qm mq qmqm mqmq qm mq",
+            "qs ml sq lm qsd mlk",
+            "qsdf mlkj fdsq jklm"
+          ]
+        },
+        {
+          "key": "home-all",
+          "name": "Toute la rangée",
+          "description": "Les huit doigts sur leur touche : chacun ne tape que la sienne.",
+          "text": [
+            "qsdf jklm qsdf jklm",
+            "fdsq mlkj fdsq mlkj",
+            "qs df jk lm sd kl fj",
+            "fjdk slqm fjdk slqm",
+            "dsf klj qdm fks jls"
+          ]
+        },
+        {
+          "key": "g-h",
+          "name": "g et h",
+          "description": "Les index s'étirent vers le centre : f vers g, j vers h, puis ils reviennent sur leur repère.",
+          "text": [
+            "fgf jhj fgf jhj fgf jhj",
+            "gh hg ghgh hghg gh hg",
+            "fg hj gf jh fghj jhgf",
+            "dfgh jklm ghjk sdfg hgfd"
+          ]
+        },
+        {
+          "key": "home-pseudo",
+          "name": "Mots inventés",
+          "description": "Des mots inventés avec les dix lettres de la rangée de repos, nouveaux à chaque partie.",
+          "letters": "qsdfghjklm",
+          "generator": { "source": "pseudoWords", "lengthMin": 2, "lengthMax": 4 }
+        }
+      ]
+    },
+    {
+      "key": "top-row",
+      "title": "Débutant · 2. La rangée du haut",
+      "exercises": [
+        {
+          "key": "e-i",
+          "name": "e et i",
+          "description": "Le majeur gauche monte de d vers e, le majeur droit de k vers i, puis ils redescendent.",
+          "text": [
+            "ded kik ded kik ded kik",
+            "de ki ed ik dei kie",
+            "des les mes ses fil mil",
+            "le de je me se il si mi"
+          ]
+        },
+        {
+          "key": "r-u",
+          "name": "r et u",
+          "description": "Les index montent : f vers r, j vers u.",
+          "text": [
+            "frf juj frf juj frf juj",
+            "ru ur rure urru ru ur",
+            "dur sur mur fur rue",
+            "jure sure rude ruse"
+          ]
+        },
+        {
+          "key": "t-y",
+          "name": "t et y",
+          "description": "Les index montent en s'étirant : f vers t, j vers y.",
+          "text": [
+            "ftf jyj ftf jyj ftf jyj",
+            "ty yt tyty ytyt ty yt",
+            "tu te ta tes tas tir",
+            "style taire tiret yeti"
+          ]
+        },
+        {
+          "key": "a-z",
+          "name": "a et z",
+          "description": "À gauche : l'auriculaire monte de q vers a, l'annulaire de s vers z.",
+          "text": [
+            "qaq szs qaq szs qaq szs",
+            "az za aza zaz az za",
+            "la sa ma ta ra da",
+            "gaz raz zade azur"
+          ]
+        },
+        {
+          "key": "o-p",
+          "name": "o et p",
+          "description": "À droite : l'annulaire monte de l vers o, l'auriculaire de m vers p.",
+          "text": [
+            "lol mpm lol mpm lol mpm",
+            "op po opop popo op po",
+            "pot mot sol port pore",
+            "pomme poule loup troupe"
+          ]
+        },
+        {
+          "key": "top-pseudo",
+          "name": "Mots inventés",
+          "description": "Des mots inventés avec les rangées de repos et du haut, nouveaux à chaque partie.",
+          "letters": "azertyuiopqsdfghjklm",
+          "generator": { "source": "pseudoWords", "lengthMin": 3, "lengthMax": 5 }
+        },
+        {
+          "key": "top-words",
+          "name": "Vrais mots",
+          "description": "De vrais mots qui n'utilisent que les rangées de repos et du haut (il faut avoir importé des mots, dans Import > Mots).",
+          "letters": "azertyuiopqsdfghjklm",
+          "generator": { "source": "words", "lengthMin": 2, "lengthMax": 5, "languages": [ "fr" ] }
+        },
+        {
+          "key": "top-sentences",
+          "name": "Premières phrases",
+          "description": "Des phrases avec les deux rangées déjà apprises.",
+          "text": [
+            "le loup a faim et il trotte",
+            "julie a mis sa jupe",
+            "elle a sept tortues",
+            "le petit esquif part sur la mer",
+            "il faut quatre poires"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "bottom-row",
+      "title": "Débutant · 3. La rangée du bas",
+      "exercises": [
+        {
+          "key": "c-v",
+          "name": "c et v",
+          "description": "Le majeur gauche descend de d vers c, l'index de f vers v.",
+          "text": [
+            "dcd fvf dcd fvf dcd fvf",
+            "cv vc cvcv vcvc cv vc",
+            "cave vice ici vif",
+            "vrac cerf avec cuve"
+          ]
+        },
+        {
+          "key": "b-n",
+          "name": "b et n",
+          "description": "Les index descendent en s'étirant vers le centre : g vers b à gauche, h vers n à droite.",
+          "text": [
+            "fbf jnj fbf jnj fbf jnj",
+            "bn nb bnbn nbnb bn nb",
+            "bon ban bien nous",
+            "banc bonne nombre robe"
+          ]
+        },
+        {
+          "key": "w-x",
+          "name": "w et x",
+          "description": "À gauche : l'auriculaire descend de q vers w, l'annulaire de s vers x.",
+          "text": [
+            "qwq sxs qwq sxs qwq sxs",
+            "wx xw wxwx xwxw wx xw",
+            "taxi wagon index axe",
+            "luxe kiwi deux six"
+          ]
+        },
+        {
+          "key": "all-pseudo",
+          "name": "Mots inventés",
+          "description": "Des mots inventés avec tout l'alphabet, nouveaux à chaque partie.",
+          "letters": "azertyuiopqsdfghjklmwxcvbn",
+          "generator": { "source": "pseudoWords", "lengthMin": 3, "lengthMax": 6 }
+        },
+        {
+          "key": "all-words",
+          "name": "Vrais mots",
+          "description": "De vrais mots sans accent, avec tout l'alphabet (il faut avoir importé des mots, dans Import > Mots).",
+          "letters": "azertyuiopqsdfghjklmwxcvbn",
+          "generator": { "source": "words", "lengthMin": 2, "lengthMax": 6, "languages": [ "fr" ] }
+        },
+        {
+          "key": "alphabet-sentences",
+          "name": "Tout l'alphabet",
+          "description": "Des phrases qui passent par toutes les lettres.",
+          "text": [
+            "portez ce vieux whisky au juge blond qui fume",
+            "le chat noir saute sur le mur",
+            "un bon chat dort sous la table",
+            "nous avons vu un cerf dans le bois",
+            "le vent souffle sur la plage"
+          ]
+        }
+      ]
+    }
+  ]
+}

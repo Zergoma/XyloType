@@ -7,37 +7,8 @@ using XyloType.Application;
 using XyloType.Application.DTOs;
 using XyloType.Application.Interfaces;
 using XyloType.Application.Models;
-using XyloType.Domain.Entities;
 
 namespace XyloType.ViewModels.Import;
-
-/// <summary>
-/// A word pack of the catalog, as shown in the import section.
-/// </summary>
-public partial class WordPackItem : ObservableObject
-{
-    public WordPackItem(WordPackInfo info)
-    {
-        Info = info;
-    }
-
-    public WordPackInfo Info { get; }
-
-    public string Title => Info.Title;
-
-    public string Details => $"{Info.WordCount:N0} mots · {Info.Size / 1024.0:N0} Ko · version {Info.Version}";
-
-    public string SourcesText => Info.Sources.Count == 0 ? string.Empty : "Tiré de : " + string.Join(", ", Info.Sources);
-
-    /// <summary>
-    /// This very pack (same checksum) is already in the import history.
-    /// </summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ActionText))]
-    public partial bool IsImported { get; set; }
-
-    public string ActionText => IsImported ? "Réimporter" : "Télécharger et importer";
-}
 
 /// <summary>
 /// Word packs ready to use, downloaded from the GitHub repository and imported like a text:
@@ -49,7 +20,6 @@ public partial class WordPacksViewModel : ObservableObject
     private readonly IWordImportOrchestrator _importOrchestrator;
     private readonly IKeyboardKeyLocatorManager _keyboardKeyLocatorManager;
     private readonly IImportedSourceRepository _sourceRepository;
-    private readonly IDactyloRepository _wordRepository;
     private bool _isLoaded;
 
     public WordPacksViewModel(
@@ -58,14 +28,12 @@ public partial class WordPacksViewModel : ObservableObject
         IKeyboardKeyLocatorManager keyboardKeyLocatorManager,
         IKeyBoardLayoutAvailableService keyboardLayoutAvailableService,
         IUserKeyboardLayoutPreferenceService keyboardPreference,
-        IImportedSourceRepository sourceRepository,
-        IDactyloRepository wordRepository)
+        IImportedSourceRepository sourceRepository)
     {
         _packSource = packSource;
         _importOrchestrator = importOrchestrator;
         _keyboardKeyLocatorManager = keyboardKeyLocatorManager;
         _sourceRepository = sourceRepository;
-        _wordRepository = wordRepository;
 
         KeyboardLayoutAvailable = keyboardLayoutAvailableService.GetKeyBoardAvailable();
 
@@ -116,16 +84,6 @@ public partial class WordPacksViewModel : ObservableObject
 
     [ObservableProperty]
     public partial double ProgressValue { get; set; }
-
-    /// <summary>
-    /// The database has no word yet (first start): the packs are worth offering.
-    /// </summary>
-    public async Task<bool> HasNoWordsAsync()
-    {
-        WordSearchPage page = await _wordRepository.SearchPageAsync(
-            new WordQueryBuilder().WithExclusion(WordExclusionFilter.All).Build(), WordSort.Default, 0, 1);
-        return page.TotalCount == 0;
-    }
 
     /// <summary>
     /// Loads the catalog once (again after a failure, e.g. no connection).

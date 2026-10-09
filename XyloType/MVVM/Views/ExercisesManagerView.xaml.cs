@@ -12,7 +12,8 @@ public partial class ExercisesManagerView : ContentView, IViewLifecycle, INaviga
 
     private readonly ExercisesManagerViewModel _vm;
 
-    // drag state
+    // drag state: the list of the section of the item pressed (an item moves inside its section)
+    private Layout? _list;
     private View? _pressedItem;
     private bool _isDragging;
     private int _fromIndex;
@@ -38,6 +39,8 @@ public partial class ExercisesManagerView : ContentView, IViewLifecycle, INaviga
 #endif
     }
 
+    public ExercisesManagerViewModel ViewModel => _vm;
+
     public async void OnAppearing()
     {
         await _vm.InitializeAsync();
@@ -58,20 +61,21 @@ public partial class ExercisesManagerView : ContentView, IViewLifecycle, INaviga
 
     private void Item_PointerPressed(object? sender, PointerEventArgs e)
     {
-        if (sender is not View item || !ExerciseList.Children.Contains(item))
+        if (sender is not View item || item.Parent is not Layout list)
             return;
 
+        _list = list;
         _pressedItem = item;
         _isDragging = false;
-        _fromIndex = ExerciseList.Children.IndexOf(item);
+        _fromIndex = list.Children.IndexOf(item);
         _targetIndex = _fromIndex;
-        _startY = e.GetPosition(ExerciseList)?.Y ?? 0;
+        _startY = e.GetPosition(list)?.Y ?? 0;
         _pitch = item.Height + item.Margin.Bottom;
     }
 
     private void List_PointerMoved(object? sender, PointerEventArgs e)
     {
-        if (_pressedItem is null || e.GetPosition(ExerciseList) is not Point position)
+        if (_pressedItem is null || _list is null || sender != _list || e.GetPosition(_list) is not Point position)
             return;
 
         double dy = position.Y - _startY;
@@ -83,7 +87,7 @@ public partial class ExercisesManagerView : ContentView, IViewLifecycle, INaviga
             StartDrag();
         }
 
-        int count = ExerciseList.Children.Count;
+        int count = _list.Children.Count;
 
         // the item follows the cursor, kept inside the list
         double minDy = -_fromIndex * _pitch;
@@ -120,9 +124,9 @@ public partial class ExercisesManagerView : ContentView, IViewLifecycle, INaviga
     /// </summary>
     private void ShiftOtherItems()
     {
-        for (int i = 0; i < ExerciseList.Children.Count; i++)
+        for (int i = 0; i < _list!.Children.Count; i++)
         {
-            if (i == _fromIndex || ExerciseList.Children[i] is not View child)
+            if (i == _fromIndex || _list.Children[i] is not View child)
                 continue;
 
             double shift =
@@ -138,12 +142,14 @@ public partial class ExercisesManagerView : ContentView, IViewLifecycle, INaviga
     private async Task EndDragAsync()
     {
         View? item = _pressedItem;
+        Layout? list = _list;
         bool wasDragging = _isDragging;
 
         _pressedItem = null;
+        _list = null;
         _isDragging = false;
 
-        if (item is null || !wasDragging)
+        if (item is null || list is null || !wasDragging)
             return;
 
         int from = _fromIndex;
@@ -155,7 +161,7 @@ public partial class ExercisesManagerView : ContentView, IViewLifecycle, INaviga
             item.ScaleToAsync(1, DropAnimationMs),
             item.FadeToAsync(1, DropAnimationMs));
 
-        foreach (IView child in ExerciseList.Children)
+        foreach (IView child in list.Children)
         {
             if (child is View view)
             {
@@ -165,7 +171,8 @@ public partial class ExercisesManagerView : ContentView, IViewLifecycle, INaviga
         }
         item.ZIndex = 0;
 
-        _vm.Move(from, to);
+        if (list.BindingContext is ExerciseSectionViewModel section)
+            _vm.Move(section, from, to);
     }
 
     #endregion

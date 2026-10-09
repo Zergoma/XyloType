@@ -66,7 +66,7 @@ public static class MauiProgram
         Log.Information(
         "Application started {ApplicationName} {Version}",
         "XyloType",
-        "1.0.0");
+        AppInfo.Current.VersionString);
 
 
         builder.Services
@@ -94,8 +94,6 @@ public static class MauiProgram
                 options.UseSqlite($"Data Source={databasePath}"));
 
         var app = builder.Build();
-
-        Log.Logger.Information("Fun {chat}", "sympa");
 
         // INFRASTRUCTURE
         // DB: init or upgrade according to the migration state (errors are logged)
