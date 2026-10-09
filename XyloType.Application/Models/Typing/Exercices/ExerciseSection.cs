@@ -1,3 +1,5 @@
+using XyloType.Domain.Typing;
+
 namespace XyloType.Application.Models.Typing.Exercices;
 
 /// <summary>
@@ -13,6 +15,11 @@ public class ExerciseSection
     public required Guid Id { get; set; }
 
     public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The level of its exercises: their results are judged against its targets.
+    /// </summary>
+    public TypingLevel Level { get; set; } = TypingLevel.Intermediate;
 
     /// <summary>
     /// The exercise pack the section comes from, null for a section of the user.

@@ -5,7 +5,7 @@
   "level": "Débutant",
   "description": "Placer ses doigts et apprendre les lettres, rangée par rangée : la rangée de repos, puis celle du haut, puis celle du bas.",
   "layout": "AzertyFr",
-  "version": "2026.10.09",
+  "version": "2026.10.09.2",
   "sections": [
     {
       "key": "home-row",

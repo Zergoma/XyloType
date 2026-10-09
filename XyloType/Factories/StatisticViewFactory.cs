@@ -14,8 +14,7 @@ namespace XyloType.Factories;
 public class StatisticViewFactory : IStatisticViewFactory
 {
     private readonly IThemeChangerService _themeChangerService;
-    private readonly IChartResponseTimeColorsProvider _chartResponseTimeColorsProvider;
-    private readonly IChartErrorProvider _chartErrorColorsProvider;
+    private readonly IStatColorScale _colors;
     private readonly ILogger<StatisticViewModelMauiAdapter> _logger;
     private readonly ITypingExerciseRunService _runService;
     private readonly IUserTypingPreferenceService _typingPreference;
@@ -24,8 +23,7 @@ public class StatisticViewFactory : IStatisticViewFactory
 
     public StatisticViewFactory(
         IThemeChangerService themeChangerService,
-        IChartResponseTimeColorsProvider chartResponseTimeColorsProvider,
-        IChartErrorProvider chartErrorColorsProvider,
+        IStatColorScale colors,
         ILogger<StatisticViewModelMauiAdapter> logger,
         ITypingExerciseRunService runService,
         IUserTypingPreferenceService typingPreference,
@@ -33,8 +31,7 @@ public class StatisticViewFactory : IStatisticViewFactory
         IExerciseProgressService progress)
     {
         _themeChangerService = themeChangerService;
-        _chartResponseTimeColorsProvider = chartResponseTimeColorsProvider;
-        _chartErrorColorsProvider = chartErrorColorsProvider;
+        _colors = colors;
         _logger = logger;
         _runService = runService;
         _typingPreference = typingPreference;
@@ -65,8 +62,7 @@ public class StatisticViewFactory : IStatisticViewFactory
         StatisticViewModelMauiAdapter vmadapter =
             new(
                 vm,
-                _chartResponseTimeColorsProvider,
-                _chartErrorColorsProvider,
+                _colors,
                 themeState,
                 _logger);
         

@@ -1,5 +1,6 @@
 ﻿using XyloType.Application.DTOs;
 using XyloType.Application.Models.Typing.Exercices;
+using XyloType.Domain.Typing;
 
 namespace XyloType.Application.Interfaces;
 
@@ -20,6 +21,11 @@ public interface ITypingExerciseRunService
     string CurrentExerciseName { get; }
 
     bool HasNext { get; }
+
+    /// <summary>
+    /// Level of the last exercise started (the one of its section), intermediate if none.
+    /// </summary>
+    TypingLevel CurrentLevel { get; }
 
     /// <summary>
     /// Starts the exercise at <paramref name="idx"/> and creates its text.

@@ -116,6 +116,17 @@
                                                CommandParameter="{Binding .}"/>
                             </Grid>
 
+                            <!-- the level: the colors of the results follow it -->
+                            <HorizontalStackLayout Spacing="8" Margin="2,-2,14,2">
+                                <Label Text="Niveau" StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                <Picker ItemsSource="{x:Static vm:ExerciseSectionViewModel.LevelNames}"
+                                        SelectedItem="{Binding LevelName}"
+                                        StyleClass="picker_themed"
+                                        FontSize="12"
+                                        MinimumWidthRequest="130"
+                                        ToolTipProperties.Text="Les résultats de ses exercices sont jugés selon ce niveau"/>
+                            </HorizontalStackLayout>
+
                             <Label Text="Section vide : choisissez-la dans la fiche d'un exercice pour l'y mettre."
                                    IsVisible="{Binding IsEmpty}"
                                    StyleClass="label_muted"

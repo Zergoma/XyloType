@@ -192,6 +192,23 @@
                                         VerticalOptions="Center"/>
                             </Grid>
 
+                            <!-- the colors at the level of the exercise -->
+                            <HorizontalStackLayout Spacing="16" Margin="0,-4,0,10">
+                                <Label Text="{Binding Core.LevelText}" StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                <HorizontalStackLayout Spacing="14" BindableLayout.ItemsSource="{Binding ResponseTimeLegend}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="stat:StatLegendItem">
+                                            <HorizontalStackLayout Spacing="6">
+                                                <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                                         VerticalOptions="Center"
+                                                         Color="{Binding ColorHex, Converter={StaticResource stringToColor}}"/>
+                                                <Label Text="{Binding Text}" StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                            </HorizontalStackLayout>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </HorizontalStackLayout>
+                            </HorizontalStackLayout>
+
                             <VerticalStackLayout Spacing="6"
                                                  BindableLayout.ItemsSource="{Binding ResponseTimeBars}"
                                                  BindableLayout.ItemTemplate="{StaticResource BarRowTemplate}"/>
@@ -271,6 +288,23 @@
                                             VerticalOptions="Center"/>
                                 </Grid>
 
+                                <!-- the colors at the level of the exercise -->
+                                <HorizontalStackLayout Spacing="16" Margin="0,-4,0,10">
+                                    <Label Text="{Binding Core.LevelText}" StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                    <HorizontalStackLayout Spacing="14" BindableLayout.ItemsSource="{Binding ErrorLegend}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="stat:StatLegendItem">
+                                                <HorizontalStackLayout Spacing="6">
+                                                    <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                                             VerticalOptions="Center"
+                                                             Color="{Binding ColorHex, Converter={StaticResource stringToColor}}"/>
+                                                    <Label Text="{Binding Text}" StyleClass="label_muted" FontSize="12" VerticalOptions="Center"/>
+                                                </HorizontalStackLayout>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </HorizontalStackLayout>
+                                </HorizontalStackLayout>
+
                                 <VerticalStackLayout Spacing="6"
                                                      BindableLayout.ItemsSource="{Binding ErrorBars}"
                                                      BindableLayout.ItemTemplate="{StaticResource BarRowTemplate}"/>
@@ -302,6 +336,7 @@
                         Command="{Binding Core.HomeCommand}"/>
 
                 <Button Grid.Column="2"
+                        x:Name="RetryButton"
                         Text="Refaire"
                         StyleClass="button_hover"
                         Padding="24,10"
@@ -309,6 +344,7 @@
                         Command="{Binding Core.RetryCommand}"/>
 
                 <Button Grid.Column="3"
+                        x:Name="NextButton"
                         Text="Suivant"
                         StyleClass="ButtonHoverLaunch"
                         FontAttributes="Bold"

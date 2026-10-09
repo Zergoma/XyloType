@@ -22,7 +22,20 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4" IsVisible="{Binding HasUser}">
-                        <Label Text="Utilisateurs" StyleClass="label_page_title"/>
+                        <!-- nothing to change: back to where the user was (Escape too) -->
+                        <Grid ColumnDefinitions="*,auto">
+                            <Label Text="Utilisateurs" StyleClass="label_page_title" VerticalOptions="Center"/>
+                            <Button Grid.Column="1"
+                                    Text="Fermer"
+                                    StyleClass="button_hover"
+                                    Padding="18,0"
+                                    HeightRequest="34"
+                                    MinimumHeightRequest="34"
+                                    CornerRadius="17"
+                                    VerticalOptions="Center"
+                                    ToolTipProperties.Text="Revenir où vous étiez (Échap)"
+                                    Clicked="Close_Clicked"/>
+                        </Grid>
                         <Label Text="Chacun a ses résultats : les exercices faits, et ses scores. Le dernier utilisateur est repris au démarrage."
                                StyleClass="label_muted"/>
                     </VerticalStackLayout>

@@ -58,6 +58,7 @@ message ProtoExerciseSection {
     string title = 2;
     string pack_id = 3;         // empty: a section of the user
     string pack_version = 4;
+    int32 level = 5;            // 1 beginner, 2 intermediate, 3 expert; 0: written before the levels (intermediate)
 }
 
 message ProtoTypingExerciceList {

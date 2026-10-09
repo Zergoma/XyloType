@@ -51,6 +51,9 @@ public class AppNavigator
 
     public AppSection CurrentSection { get; private set; } = AppSection.Home;
 
+    // where a side section (the users) goes back to when it is closed
+    private AppSection _returnSection = AppSection.Home;
+
     public View? CurrentView { get; private set; }
 
     /// <summary>
@@ -127,9 +130,19 @@ public class AppNavigator
 
         // leaving the exercise ends it: there is no going back to it
         _exerciseView = null;
+        // the users are opened from the side: closing them goes back to the section of the rail left
+        if (section == AppSection.Users && CurrentSection is not (AppSection.Users or AppSection.Exercise))
+            _returnSection = CurrentSection;
+
         CurrentSection = section;
         Show(view);
     }
+
+    /// <summary>
+    /// Closes the users section: back to the section shown before it.
+    /// </summary>
+    public Task CloseUsersAsync()
+        => CurrentSection == AppSection.Users ? GoToSectionAsync(_returnSection) : Task.CompletedTask;
 
     /// <summary>
     /// Opens an exercise, in place of the one open before, or shows its results in place of it.

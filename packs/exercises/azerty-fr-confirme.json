@@ -5,7 +5,7 @@
   "level": "Confirmé",
   "description": "Les symboles, la vitesse et l'endurance : des mots au hasard le plus vite possible, puis des textes entiers.",
   "layout": "AzertyFr",
-  "version": "2026.10.09",
+  "version": "2026.10.09.2",
   "sections": [
     {
       "key": "symbols",

@@ -101,6 +101,7 @@ public class ExercisePackTests
         saved!.Exercices.Select(e => e.Name).Should().Equal("a", "b", "c", "mine");
         saved.Sections.Should().HaveCount(2);
         (await importer.GetImportedVersionsAsync(s_azerty)).Should().ContainKey("test-pack").WhoseValue.Should().Be("2");
+        saved.Sections[0].Level.Should().Be(XyloType.Domain.Typing.TypingLevel.Beginner, "the level of the pack");
     }
 
     [Fact]

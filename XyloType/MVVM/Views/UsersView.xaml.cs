@@ -6,12 +6,17 @@ namespace XyloType.MVVM.Views;
 public partial class UsersView : ContentView, IViewLifecycle
 {
     private readonly UsersViewModel _vm;
+    private readonly AppNavigator _navigator;
 
-    public UsersView(UsersViewModel vm)
+    public UsersView(UsersViewModel vm, AppNavigator navigator)
     {
         InitializeComponent();
         BindingContext = _vm = vm;
+        _navigator = navigator;
     }
+
+    private async void Close_Clicked(object? sender, EventArgs e)
+        => await _navigator.CloseUsersAsync();
 
     public async void OnAppearing()
     {

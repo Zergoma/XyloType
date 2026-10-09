@@ -17,22 +17,19 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
 {
     private readonly StatisticViewModel _statisticViewModel;
 
-    private readonly IChartResponseTimeColorsProvider _chartResponseTimeColorsProvider;
-    private readonly IChartErrorProvider _chartErrorColorsProvider;
+    private readonly IStatColorScale _colors;
     private readonly ThemeState _themeState;
     private readonly ILogger<StatisticViewModelMauiAdapter> _logger;
 
     public StatisticViewModelMauiAdapter(
         StatisticViewModel statisticViewModel,
-        IChartResponseTimeColorsProvider chartResponseTimeColorsProvider,
-        IChartErrorProvider chartErrorColorsProvider,
+        IStatColorScale colors,
         ThemeState themeState,
         ILogger<StatisticViewModelMauiAdapter> logger)
     {
         _statisticViewModel = statisticViewModel;
-        _chartResponseTimeColorsProvider = chartResponseTimeColorsProvider;
+        _colors = colors;
         _themeState = themeState;
-        _chartErrorColorsProvider = chartErrorColorsProvider;
         _logger = logger;
     }
 
@@ -75,6 +72,27 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
                 : duration.ToString(@"m\:ss");
         }
     }
+
+    /// <summary>
+    /// What the colors mean at the level of the exercise: good, between, too slow.
+    /// </summary>
+    public IReadOnlyList<StatLegendItem> ResponseTimeLegend => Legend(
+        $"≤ {Core.Targets.GoodResponseSeconds:0.0#} s",
+        $"≥ {Core.Targets.SlowResponseSeconds:0.0#} s");
+
+    /// <summary>
+    /// What the colors mean at the level of the exercise: good, between, too many errors.
+    /// </summary>
+    public IReadOnlyList<StatLegendItem> ErrorLegend => Legend(
+        $"≤ {Core.Targets.GoodErrorPercent:0} %",
+        $"≥ {Core.Targets.BadErrorPercent:0} %");
+
+    private IReadOnlyList<StatLegendItem> Legend(string good, string bad) =>
+    [
+        new(good, _colors.GetHexColor(0, _themeState)),
+        new("entre les deux", _colors.GetHexColor(0.5, _themeState)),
+        new(bad, _colors.GetHexColor(1, _themeState)),
+    ];
 
     public bool ShowErrorsChart => HasError;
     public bool ShowNoErrorMessage => !HasError;
@@ -162,7 +180,7 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
                 group.Value,
                 group.IsSingle ? $"{group.Value:0.00} s" : $"≈ {group.Value:0.00} s",
                 group.Value / max,
-                _chartResponseTimeColorsProvider.GetHexColorTimeResponse(group.Value, _themeState)));
+                _colors.GetHexColor(Core.Targets.ResponseBadness(group.Value), _themeState)));
         }
     }
 
@@ -190,7 +208,7 @@ public partial class StatisticViewModelMauiAdapter : ObservableObject
                 group.Value,
                 valueText,
                 group.Value / max,
-                _chartErrorColorsProvider.GetHexColorError(group.Value, _themeState)));
+                _colors.GetHexColor(Core.Targets.ErrorBadness(group.Value), _themeState)));
         }
     }
 }

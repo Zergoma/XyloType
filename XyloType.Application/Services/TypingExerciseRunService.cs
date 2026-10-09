@@ -2,6 +2,7 @@
 using XyloType.Application.Interfaces;
 using XyloType.Application.Models.Typing.Engine;
 using XyloType.Application.Models.Typing.Exercices;
+using XyloType.Domain.Typing;
 
 namespace XyloType.Application.Services;
 
@@ -24,6 +25,9 @@ public class TypingExerciseRunService : ITypingExerciseRunService
 
     public string CurrentExerciseName
         => CurrentExercise?.Name ?? string.Empty;
+
+    public TypingLevel CurrentLevel
+        => _exercises?.Sections.Find(s => s.Id == CurrentExercise?.SectionId)?.Level ?? TypingLevel.Intermediate;
 
     public bool HasNext
         => _exercises is not null && _idx + 1 < _exercises.Exercices.Count;

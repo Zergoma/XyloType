@@ -50,6 +50,7 @@ public static class ProtoTypingExercicePbToModelMapper
             Title = proto.Title,
             PackId = string.IsNullOrEmpty(proto.PackId) ? null : proto.PackId,
             PackVersion = string.IsNullOrEmpty(proto.PackVersion) ? null : proto.PackVersion,
+            Level = Enum.IsDefined((Domain.Typing.TypingLevel)proto.Level) ? (Domain.Typing.TypingLevel)proto.Level : Domain.Typing.TypingLevel.Intermediate,
         };
 
     public static Result<TypingExercise> ToModel(ProtoTypingExercice proto)
@@ -121,6 +122,7 @@ public static class ProtoTypingExerciceModeltoPbMapper
                 Title = section.Title,
                 PackId = section.PackId ?? string.Empty,
                 PackVersion = section.PackVersion ?? string.Empty,
+                Level = (int)section.Level,
             });
         }
 

@@ -180,6 +180,11 @@ public partial class ExercisesManagerViewModel : ObservableObject
         foreach (ExerciseSection section in _session.Sections)
         {
             ExerciseSectionViewModel sectionVm = new(section);
+            sectionVm.LevelChanged += (_, _) =>
+            {
+                _session.MarkChanged();
+                HasChanges = _session.HasChanges;
+            };
             foreach (TypingExercise exercise in _session.Exercises.Where(e => e.SectionId == section.Id))
                 sectionVm.Items.Add(new ExerciseListItemViewModel(exercise));
 

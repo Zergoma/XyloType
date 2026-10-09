@@ -48,6 +48,7 @@ public class ExercisePackImporter : IExercisePackImporter
                 Title = packSection.Title,
                 PackId = pack.Id,
                 PackVersion = pack.Version,
+                Level = TypingLevelNames.Parse(pack.Level),
             };
 
             List<TypingExercise> exercises = [];
@@ -145,6 +146,7 @@ public class ExercisePackImporter : IExercisePackImporter
                 existing.Title = section.Title;
                 existing.PackId = section.PackId;
                 existing.PackVersion = section.PackVersion;
+                existing.Level = section.Level;
             }
             else
             {

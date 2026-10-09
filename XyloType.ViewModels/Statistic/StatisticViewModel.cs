@@ -29,6 +29,16 @@ public partial class StatisticViewModel : ObservableObject
     /// </summary>
     public TypingSessionResult Result { get; }
 
+    /// <summary>
+    /// What is good at the level of the exercise.
+    /// </summary>
+    public TypingTargets Targets { get; }
+
+    /// <summary>
+    /// E.g. "Repères du niveau Débutant".
+    /// </summary>
+    public string LevelText { get; }
+
     public StatisticViewModel(
         TypingSessionResult result,
         ITypingExerciseRunService runService,
@@ -38,6 +48,8 @@ public partial class StatisticViewModel : ObservableObject
         IExerciseProgressService progress)
     {
         Result = result;
+        Targets = TypingTargets.For(runService.CurrentLevel);
+        LevelText = $"Repères du niveau {TypingLevelNames.Of(runService.CurrentLevel)}";
         Statistics = result.CharStats;
         Duration = result.Duration;
         _runService = runService;

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
+using XyloType.Application.Models;
 using XyloType.Application.Models.Typing.Exercices;
 
 namespace XyloType.ViewModels.ExercisesManager;
@@ -21,6 +22,33 @@ public partial class ExerciseSectionViewModel : ObservableObject
     public Guid Id => Section.Id;
 
     public string Title => Section.Title;
+
+    /// <summary>
+    /// The names of the levels, for the picker.
+    /// </summary>
+    public static IReadOnlyList<string> LevelNames { get; } = [.. TypingLevelNames.All.Select(TypingLevelNames.Of)];
+
+    /// <summary>
+    /// The level of the exercises of the section: their results are judged against it.
+    /// </summary>
+    public string LevelName
+    {
+        get => TypingLevelNames.Of(Section.Level);
+        set
+        {
+            if (value is null || value == LevelName)
+                return;
+
+            Section.Level = TypingLevelNames.Parse(value);
+            OnPropertyChanged();
+            LevelChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>
+    /// The level was changed in the editor.
+    /// </summary>
+    public event EventHandler? LevelChanged;
 
     /// <summary>
     /// Sections imported from a pack: an update of the pack overwrites their exercises.

@@ -84,6 +84,9 @@ public partial class MainPage : ContentPage
 
         Loaded += async (_, _) =>
         {
+#if WINDOWS
+            HandleEscape();
+#endif
             // without user, the change shows the users section (see OnUsersChanged)
             await currentUser.InitializeAsync();
             if (currentUser.HasUser)
@@ -128,8 +131,36 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private void UserAvatar_Tapped(object? sender, TappedEventArgs e)
-        => UserPopover.IsOpen = !UserPopover.IsOpen;
+    /// <summary>
+    /// Opens the quick switch; in the users section, closes the section instead.
+    /// </summary>
+    private async void UserAvatar_Tapped(object? sender, TappedEventArgs e)
+    {
+        if (_navigator.CurrentSection == AppSection.Users)
+            await _navigator.CloseUsersAsync();
+        else
+            UserPopover.IsOpen = !UserPopover.IsOpen;
+    }
+
+#if WINDOWS
+    /// <summary>
+    /// Escape closes the users section (once there is a user: at the first start, there is nowhere to go back).
+    /// </summary>
+    private void HandleEscape()
+    {
+        if (Window?.Handler?.PlatformView is not Microsoft.UI.Xaml.Window window || window.Content is not Microsoft.UI.Xaml.UIElement root)
+            return;
+
+        root.KeyDown += async (_, e) =>
+        {
+            if (e.Key != Windows.System.VirtualKey.Escape || _navigator.CurrentSection != AppSection.Users || !_currentUser.HasUser)
+                return;
+
+            e.Handled = true;
+            await _navigator.CloseUsersAsync();
+        };
+    }
+#endif
 
     private void UserMenuItem_Tapped(object? sender, TappedEventArgs e)
     {
