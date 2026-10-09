@@ -1,9 +1,12 @@
 ﻿using XyloType.Application.Interfaces;
 using XyloType.Application.Models;
 
-namespace XyloType.Services;
+namespace XyloType.Application.Services;
 
-public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
+/// <summary>
+/// The settings of the typing screens, in the settings store of the app.
+/// </summary>
+public class UserTypingPreferenceService : IUserTypingPreferenceService
 {
     private const string OkVolumeKey = "sound_ok_volume";
     private const string ErrorVolumeKey = "sound_error_volume";
@@ -35,75 +38,82 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
     private const bool DefaultShowResponseTimeResult = true;
     private const bool DefaultShowErrorsResult = true;
 
+    private readonly ISettingsStore _store;
+
+    public UserTypingPreferenceService(ISettingsStore store)
+    {
+        _store = store;
+    }
+
     public double GetOkVolume()
-        => Preferences.Default.Get(OkVolumeKey, DefaultOkVolume);
+        => _store.Get(OkVolumeKey, DefaultOkVolume);
 
     public void SetOkVolume(double volume)
-        => Preferences.Default.Set(OkVolumeKey, Math.Clamp(volume, 0, 1));
+        => _store.Set(OkVolumeKey, Math.Clamp(volume, 0, 1));
 
     public double GetErrorVolume()
-        => Preferences.Default.Get(ErrorVolumeKey, DefaultErrorVolume);
+        => _store.Get(ErrorVolumeKey, DefaultErrorVolume);
 
     public void SetErrorVolume(double volume)
-        => Preferences.Default.Set(ErrorVolumeKey, Math.Clamp(volume, 0, 1));
+        => _store.Set(ErrorVolumeKey, Math.Clamp(volume, 0, 1));
 
     public bool GetBackReturnEnable()
-        => Preferences.Default.Get(BackReturnEnableKey, DefaultBackReturnEnable);
+        => _store.Get(BackReturnEnableKey, DefaultBackReturnEnable);
 
     public void SetBackReturnEnable(bool enable)
-        => Preferences.Default.Set(BackReturnEnableKey, enable);
+        => _store.Set(BackReturnEnableKey, enable);
 
     public bool GetStopOnError()
-        => Preferences.Default.Get(StopOnErrorKey, DefaultStopOnError);
+        => _store.Get(StopOnErrorKey, DefaultStopOnError);
 
     public void SetStopOnError(bool enable)
-        => Preferences.Default.Set(StopOnErrorKey, enable);
+        => _store.Set(StopOnErrorKey, enable);
 
     public int GetLineNumber()
-        => Preferences.Default.Get(LineNumberKey, IUserTypingPreferenceService.DefaultLineNumber);
+        => _store.Get(LineNumberKey, IUserTypingPreferenceService.DefaultLineNumber);
 
     public void SetLineNumber(int lineNumber)
-        => Preferences.Default.Set(LineNumberKey, lineNumber);
+        => _store.Set(LineNumberKey, lineNumber);
 
     public int GetWordNumber()
-        => Preferences.Default.Get(WordNumberKey, IUserTypingPreferenceService.DefaultWordNumber);
+        => _store.Get(WordNumberKey, IUserTypingPreferenceService.DefaultWordNumber);
 
     public void SetWordNumber(int wordNumber)
-        => Preferences.Default.Set(WordNumberKey, wordNumber);
+        => _store.Set(WordNumberKey, wordNumber);
 
     public bool GetShowSpeedResult()
-        => Preferences.Default.Get(ShowSpeedResultKey, DefaultShowSpeedResult);
+        => _store.Get(ShowSpeedResultKey, DefaultShowSpeedResult);
 
     public void SetShowSpeedResult(bool show)
-        => Preferences.Default.Set(ShowSpeedResultKey, show);
+        => _store.Set(ShowSpeedResultKey, show);
 
     public bool GetShowResponseTimeResult()
-        => Preferences.Default.Get(ShowResponseTimeResultKey, DefaultShowResponseTimeResult);
+        => _store.Get(ShowResponseTimeResultKey, DefaultShowResponseTimeResult);
 
     public void SetShowResponseTimeResult(bool show)
-        => Preferences.Default.Set(ShowResponseTimeResultKey, show);
+        => _store.Set(ShowResponseTimeResultKey, show);
 
     public bool GetShowErrorsResult()
-        => Preferences.Default.Get(ShowErrorsResultKey, DefaultShowErrorsResult);
+        => _store.Get(ShowErrorsResultKey, DefaultShowErrorsResult);
 
     public void SetShowErrorsResult(bool show)
-        => Preferences.Default.Set(ShowErrorsResultKey, show);
+        => _store.Set(ShowErrorsResultKey, show);
 
     public bool GetGroupResponseTimes()
-        => Preferences.Default.Get(GroupResponseTimesKey, false);
+        => _store.Get(GroupResponseTimesKey, false);
 
     public void SetGroupResponseTimes(bool group)
-        => Preferences.Default.Set(GroupResponseTimesKey, group);
+        => _store.Set(GroupResponseTimesKey, group);
 
     public bool GetGroupErrors()
-        => Preferences.Default.Get(GroupErrorsKey, false);
+        => _store.Get(GroupErrorsKey, false);
 
     public void SetGroupErrors(bool group)
-        => Preferences.Default.Set(GroupErrorsKey, group);
+        => _store.Set(GroupErrorsKey, group);
 
     public OkSoundMode GetOkSoundMode()
     {
-        string saved = Preferences.Default.Get(OkSoundModeKey, nameof(OkSoundMode.Standard));
+        string saved = _store.Get(OkSoundModeKey, nameof(OkSoundMode.Standard));
 
         // before songs and instrumental pieces were told apart, every piece was a "Score"
         if (saved == "Score")
@@ -113,69 +123,69 @@ public class MauiUserTypingPreferenceService : IUserTypingPreferenceService
     }
 
     public void SetOkSoundMode(OkSoundMode mode)
-        => Preferences.Default.Set(OkSoundModeKey, mode.ToString());
+        => _store.Set(OkSoundModeKey, mode.ToString());
 
     public ScoreEndBehavior GetScoreEndBehavior()
-        => Enum.TryParse(Preferences.Default.Get(ScoreEndBehaviorKey, nameof(ScoreEndBehavior.Loop)), out ScoreEndBehavior behavior)
+        => Enum.TryParse(_store.Get(ScoreEndBehaviorKey, nameof(ScoreEndBehavior.Loop)), out ScoreEndBehavior behavior)
             ? behavior
             : ScoreEndBehavior.Loop;
 
     public void SetScoreEndBehavior(ScoreEndBehavior behavior)
-        => Preferences.Default.Set(ScoreEndBehaviorKey, behavior.ToString());
+        => _store.Set(ScoreEndBehaviorKey, behavior.ToString());
 
     public bool GetScoreShuffle()
-        => Preferences.Default.Get(ScoreShuffleKey, true);
+        => _store.Get(ScoreShuffleKey, true);
 
     public void SetScoreShuffle(bool shuffle)
-        => Preferences.Default.Set(ScoreShuffleKey, shuffle);
+        => _store.Set(ScoreShuffleKey, shuffle);
 
     public bool GetShowTypingProgress()
-        => Preferences.Default.Get(ShowTypingProgressKey, true);
+        => _store.Get(ShowTypingProgressKey, true);
 
     public void SetShowTypingProgress(bool show)
-        => Preferences.Default.Set(ShowTypingProgressKey, show);
+        => _store.Set(ShowTypingProgressKey, show);
 
     public bool GetShowLiveSpeed()
-        => Preferences.Default.Get(ShowLiveSpeedKey, true);
+        => _store.Get(ShowLiveSpeedKey, true);
 
     public void SetShowLiveSpeed(bool show)
-        => Preferences.Default.Set(ShowLiveSpeedKey, show);
+        => _store.Set(ShowLiveSpeedKey, show);
 
     public bool GetShowScoreProgress()
-        => Preferences.Default.Get(ShowScoreProgressKey, true);
+        => _store.Get(ShowScoreProgressKey, true);
 
     public void SetShowScoreProgress(bool show)
-        => Preferences.Default.Set(ShowScoreProgressKey, show);
+        => _store.Set(ShowScoreProgressKey, show);
 
     public bool GetShowScoreChangeMarker()
-        => Preferences.Default.Get(ShowScoreChangeMarkerKey, true);
+        => _store.Get(ShowScoreChangeMarkerKey, true);
 
     public void SetShowScoreChangeMarker(bool show)
-        => Preferences.Default.Set(ShowScoreChangeMarkerKey, show);
+        => _store.Set(ShowScoreChangeMarkerKey, show);
 
     public InstrumentChoice GetInstrument()
-        => Enum.TryParse(Preferences.Default.Get(InstrumentKey, nameof(InstrumentChoice.Xylophone)), out InstrumentChoice instrument)
+        => Enum.TryParse(_store.Get(InstrumentKey, nameof(InstrumentChoice.Xylophone)), out InstrumentChoice instrument)
             ? instrument
             : InstrumentChoice.Xylophone;
 
     public void SetInstrument(InstrumentChoice instrument)
-        => Preferences.Default.Set(InstrumentKey, instrument.ToString());
+        => _store.Set(InstrumentKey, instrument.ToString());
 
     public IReadOnlySet<InstrumentChoice> GetDisabledInstruments()
-        => Preferences.Default.Get(DisabledInstrumentsKey, string.Empty)
+        => _store.Get(DisabledInstrumentsKey, string.Empty)
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(name => Enum.TryParse(name, out InstrumentChoice instrument) ? instrument : (InstrumentChoice?)null)
             .OfType<InstrumentChoice>()
             .ToHashSet();
 
     public void SetDisabledInstruments(IEnumerable<InstrumentChoice> instruments)
-        => Preferences.Default.Set(DisabledInstrumentsKey, string.Join(',', instruments));
+        => _store.Set(DisabledInstrumentsKey, string.Join(',', instruments));
 
     public IReadOnlySet<string> GetDisabledScores()
-        => Preferences.Default.Get(DisabledScoresKey, string.Empty)
+        => _store.Get(DisabledScoresKey, string.Empty)
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
     public void SetDisabledScores(IEnumerable<string> scoreIds)
-        => Preferences.Default.Set(DisabledScoresKey, string.Join(',', scoreIds));
+        => _store.Set(DisabledScoresKey, string.Join(',', scoreIds));
 }

@@ -13,14 +13,6 @@ using XyloType.Domain.Enums;
 namespace XyloType.ViewModels.WordsExplorer;
 
 /// <summary>
-/// A choice of a picker: the label is shown, the value is used.
-/// </summary>
-public record PickerOption<T>(string Label, T Value)
-{
-    public override string ToString() => Label;
-}
-
-/// <summary>
 /// Words menu: search the imported words with criteria, exclude or restore them.
 /// </summary>
 public partial class WordsExplorerViewModel : ObservableObject

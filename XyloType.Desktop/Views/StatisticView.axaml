@@ -1,0 +1,200 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:stat="clr-namespace:XyloType.ViewModels.Statistic;assembly=XyloType.ViewModels"
+             xmlns:conv="clr-namespace:XyloType.Desktop.Converters"
+             x:Class="XyloType.Desktop.Views.StatisticView"
+             x:DataType="stat:StatisticChartsViewModel">
+
+    <UserControl.Styles>
+        <!-- a figure: the value, what it is under it -->
+        <Style Selector="Border.kpi">
+            <Setter Property="Background" Value="{DynamicResource Xd.PanelBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Xd.Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="20,14" />
+        </Style>
+        <Style Selector="TextBlock.kpi-value">
+            <Setter Property="FontSize" Value="34" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{DynamicResource Xd.Link}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Expander.result">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="ProgressBar.bar">
+            <Setter Property="Height" Value="14" />
+            <Setter Property="MinHeight" Value="14" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Maximum" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource App.Inset}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <!-- one row of a horizontal bar chart: key(s), bar, value -->
+        <DataTemplate x:Key="BarRowTemplate" x:DataType="stat:StatBarItem">
+            <Grid ColumnDefinitions="120,*,130" ColumnSpacing="12" MinHeight="26">
+                <TextBlock Text="{Binding Label}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" TextWrapping="Wrap" />
+                <ProgressBar Grid.Column="1" Classes="bar" Value="{Binding Ratio}"
+                             Foreground="{Binding ColorHex, Converter={x:Static conv:HexToBrushConverter.Instance}}" />
+                <TextBlock Grid.Column="2" Text="{Binding ValueText}" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+            </Grid>
+        </DataTemplate>
+
+        <!-- what the colors mean at the level of the exercise -->
+        <DataTemplate x:Key="LegendTemplate" x:DataType="stat:StatLegendItem">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <Ellipse Width="10" Height="10" VerticalAlignment="Center"
+                         Fill="{Binding ColorHex, Converter={x:Static conv:HexToBrushConverter.Instance}}" />
+                <TextBlock Text="{Binding Text}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <DockPanel Margin="16,12">
+
+        <!-- header: the exercise, and its score compared with the best of the user -->
+        <Border DockPanel.Dock="Top" Classes="card" Padding="24,14" Margin="0,0,0,12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+                <StackPanel Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="Résultats" Classes="page-title" />
+                    <TextBlock Text="{Binding Core.ExerciseName}" IsVisible="{Binding Core.HasExerciseName}"
+                               FontSize="15" Foreground="{DynamicResource Xd.TextSecondary}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center"
+                            ToolTip.Tip="Score : la vitesse en mots par minute, diminuée de la part d'erreurs">
+                    <Path Classes="icon" Data="{StaticResource App.Icon.Trophy}" IsVisible="{Binding Core.IsRecord}"
+                          Width="28" Height="28" Stretch="Uniform" Stroke="{DynamicResource Xd.Link}" StrokeThickness="1.5" />
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding Core.ScoreText}" Classes="kpi-value" />
+                            <TextBlock Text="score" VerticalAlignment="Bottom" Margin="0,0,0,7" Foreground="{DynamicResource Xd.TextSecondary}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding Core.ScoreComment}" IsVisible="{Binding Core.HasScoreComment}"
+                                   FontSize="12" HorizontalAlignment="Right" Foreground="{DynamicResource Xd.TextSecondary}" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- actions: Enter chains to the next exercise -->
+        <Border DockPanel.Dock="Bottom" Classes="card" Padding="20,10" Margin="0,12,0,0">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                <Button Content="Accueil" Padding="22,8" Command="{Binding Core.HomeCommand}" />
+                <Button x:Name="RetryButton" Grid.Column="2" Content="Refaire" Padding="22,8" Command="{Binding Core.RetryCommand}" />
+                <Button x:Name="NextButton" Grid.Column="3" Classes="accent" Content="Suivant" FontWeight="Bold" Padding="30,8"
+                        Command="{Binding Core.NextCommand}" />
+            </Grid>
+        </Border>
+
+        <ScrollViewer>
+            <StackPanel Spacing="10" Margin="0,0,12,0">
+
+                <!-- speed (each section folds, remembered) -->
+                <Expander Classes="result" IsExpanded="{Binding Core.ShowSpeed}">
+                    <Expander.Header>
+                        <TextBlock Text="Vitesse" Classes="section-title" />
+                    </Expander.Header>
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="16">
+                        <Border Classes="kpi">
+                            <StackPanel>
+                                <TextBlock Text="{Binding WordsPerMinuteText}" Classes="kpi-value" />
+                                <TextBlock Text="mots / minute" HorizontalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Classes="kpi">
+                            <StackPanel>
+                                <TextBlock Text="{Binding LetterPerMinuteText}" Classes="kpi-value" />
+                                <TextBlock Text="lettres / minute" HorizontalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Classes="kpi">
+                            <StackPanel>
+                                <TextBlock Text="{Binding DurationText}" Classes="kpi-value" />
+                                <TextBlock Text="durée" HorizontalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Expander>
+
+                <!-- response time per key -->
+                <Expander Classes="result" IsExpanded="{Binding Core.ShowResponseTime}">
+                    <Expander.Header>
+                        <TextBlock Text="Temps de réponse par touche" Classes="section-title" />
+                    </Expander.Header>
+                    <Border Classes="kpi" Padding="20,14,20,18">
+                        <StackPanel Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                                <TextBlock Text="Plus c'est court, mieux c'est" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding Core.GroupResponseTimes}"
+                                              OnContent="Regrouper les valeurs proches" OffContent="Regrouper les valeurs proches" />
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,0,0,8">
+                                <TextBlock Text="{Binding Core.LevelText}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                <ItemsControl ItemsSource="{Binding ResponseTimeLegend}" ItemTemplate="{StaticResource LegendTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="14" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{Binding ResponseTimeBars}" ItemTemplate="{StaticResource BarRowTemplate}" />
+                        </StackPanel>
+                    </Border>
+                </Expander>
+
+                <!-- errors -->
+                <Expander Classes="result" IsExpanded="{Binding Core.ShowErrors}">
+                    <Expander.Header>
+                        <TextBlock Text="Erreurs" Classes="section-title" />
+                    </Expander.Header>
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                            <Border Classes="kpi">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding AccuracyText}" Classes="kpi-value" />
+                                    <TextBlock Text="précision" HorizontalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="1" Classes="kpi">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding TotalErrorsText}" Classes="kpi-value" />
+                                    <TextBlock Text="erreurs" HorizontalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border Classes="kpi" IsVisible="{Binding ShowNoErrorMessage}">
+                            <TextBlock Text="Aucune erreur, bravo !" Classes="success" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                        </Border>
+
+                        <Border Classes="kpi" IsVisible="{Binding ShowErrorsChart}" Padding="20,14,20,18">
+                            <StackPanel Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                                    <TextBlock Text="Taux d'erreur par touche (fautes / fois tapée)" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding Core.GroupErrors}"
+                                                  OnContent="Regrouper les valeurs proches" OffContent="Regrouper les valeurs proches" />
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,0,0,8">
+                                    <TextBlock Text="{Binding Core.LevelText}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                    <ItemsControl ItemsSource="{Binding ErrorLegend}" ItemTemplate="{StaticResource LegendTemplate}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="14" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{Binding ErrorBars}" ItemTemplate="{StaticResource BarRowTemplate}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

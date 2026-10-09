@@ -12,7 +12,6 @@ using XyloType.Domain.Enums;
 using XyloType.Domain.Music;
 using XyloType.Domain.Typing;
 using XyloType.Domain.Typing.Analysis;
-using XyloType.ViewModels.WordsExplorer;
 
 
 namespace XyloType.ViewModels.Typing;
@@ -714,7 +713,7 @@ public partial class TypingViewModel : ObservableObject
         => StopOnErrorEnable = !StopOnErrorEnable;
 
     public string StopOnErrorTxt
-        => StopOnErrorEnable ? "Arret sur erreur" : "Continue sur erreur";
+        => StopOnErrorEnable ? "Arrêt sur erreur" : "On continue sur une erreur";
 
     public bool BackReturnEnable
     {

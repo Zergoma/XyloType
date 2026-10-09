@@ -1,12 +1,12 @@
 <ContentView x:Class="XyloType.MVVM.Views.StatisticView"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm ="clr-namespace:XyloType.MVVM.ViewModels"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.Statistic;assembly=XyloType.ViewModels"
              xmlns:stat="clr-namespace:XyloType.ViewModels.Statistic;assembly=XyloType.ViewModels"
              xmlns:converters="clr-namespace:XyloType.Converters"
              xmlns:views="clr-namespace:XyloType.MVVM.Views"
              xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
-             x:DataType="vm:StatisticViewModelMauiAdapter">
+             x:DataType="vm:StatisticChartsViewModel">
 
     <ContentView.Resources>
         <converters:StringToColorConverter x:Key="stringToColor"/>

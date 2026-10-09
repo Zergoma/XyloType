@@ -1,0 +1,238 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:xd="https://github.com/Zergoma/Xylocopadream.UI"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.ExercisesManager;assembly=XyloType.ViewModels"
+             xmlns:limits="clr-namespace:XyloType.Application.Models;assembly=XyloType.Application"
+             x:Class="XyloType.Desktop.Views.ExercisesManagerView"
+             x:DataType="vm:ExercisesManagerViewModel">
+
+    <UserControl.Styles>
+        <!-- an exercise of the list: selected with the main color -->
+        <Style Selector="Border.exercise">
+            <Setter Property="Background" Value="{DynamicResource App.Inset}" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="Height" Value="56" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Border.exercise:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Xd.Hover}" />
+        </Style>
+        <Style Selector="Border.exercise.selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource Xd.Accent}" />
+        </Style>
+        <Style Selector="ContentPresenter.xd-dragging Border.exercise">
+            <Setter Property="Opacity" Value="0.85" />
+        </Style>
+        <Style Selector="TextBlock.field">
+            <Setter Property="Foreground" Value="{DynamicResource Xd.TextSecondary}" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="5*,7*" ColumnSpacing="20" Margin="20,16,20,0">
+
+        <!-- header -->
+        <Grid Grid.ColumnSpan="2" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12" Margin="0,0,0,14">
+            <TextBlock Text="Exercices" Classes="page-title" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="2" Text="Clavier" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+            <ComboBox Grid.Column="3" ItemsSource="{Binding KeyboardLayoutAvailable}" SelectedItem="{Binding KeyboardLayoutSelected}" MinWidth="160" />
+        </Grid>
+
+        <!-- exercises, by section -->
+        <Border Grid.Row="1" Classes="card" Padding="12">
+            <Grid RowDefinitions="Auto,*" RowSpacing="10">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <TextBlock Text="Glisser ⠿ pour réordonner" FontSize="12" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Xd.TextSecondary}" />
+                    <Button Grid.Column="1" Content="+ Section" Command="{Binding NewSectionCommand}" />
+                    <Button Grid.Column="2" Classes="accent" Content="+ Nouveau" Command="{Binding NewExerciseCommand}" />
+                </Grid>
+
+                <TextBlock Grid.Row="1" Text="Aucun exercice pour ce clavier. Créez-en un avec « + Nouveau », ou importez un pack."
+                           IsVisible="{Binding HasNoItems}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,30"
+                           Foreground="{DynamicResource Xd.TextSecondary}" />
+
+                <ScrollViewer Grid.Row="1">
+                    <ItemsControl ItemsSource="{Binding Sections}" Margin="0,0,12,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ExerciseSectionViewModel">
+                                <StackPanel Spacing="6" Margin="0,6,0,4">
+                                    <!-- the section: its title and its tools -->
+                                    <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="2">
+                                        <TextBlock Text="{Binding Title}" Classes="section-title" FontSize="15" TextWrapping="Wrap" MaxLines="2" VerticalAlignment="Center" />
+                                        <Button Grid.Column="1" Classes="tool" IsEnabled="{Binding !IsFirst}" ToolTip.Tip="Monter la section"
+                                                Command="{Binding $parent[UserControl].((vm:ExercisesManagerViewModel)DataContext).MoveSectionUpCommand}" CommandParameter="{Binding}">
+                                            <Path Classes="icon" Data="{StaticResource Xd.Icon.Up}" />
+                                        </Button>
+                                        <Button Grid.Column="2" Classes="tool" IsEnabled="{Binding !IsLast}" ToolTip.Tip="Descendre la section"
+                                                Command="{Binding $parent[UserControl].((vm:ExercisesManagerViewModel)DataContext).MoveSectionDownCommand}" CommandParameter="{Binding}">
+                                            <Path Classes="icon" Data="{StaticResource Xd.Icon.Down}" />
+                                        </Button>
+                                        <Button Grid.Column="3" Classes="tool" ToolTip.Tip="Renommer la section"
+                                                Command="{Binding $parent[UserControl].((vm:ExercisesManagerViewModel)DataContext).RenameSectionCommand}" CommandParameter="{Binding}">
+                                            <Path Classes="icon" Data="{StaticResource Xd.Icon.Rename}" />
+                                        </Button>
+                                        <Button Grid.Column="4" Classes="tool" ToolTip.Tip="Supprimer la section et ses exercices"
+                                                Command="{Binding $parent[UserControl].((vm:ExercisesManagerViewModel)DataContext).DeleteSectionCommand}" CommandParameter="{Binding}">
+                                            <Path Classes="icon" Data="{StaticResource Xd.Icon.Delete}" />
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- the level: the colors of the results follow it -->
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Niveau" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                        <ComboBox ItemsSource="{x:Static vm:ExerciseSectionViewModel.LevelNames}" SelectedItem="{Binding LevelName}"
+                                                  MinWidth="140" FontSize="12"
+                                                  ToolTip.Tip="Les résultats de ses exercices sont jugés selon ce niveau" />
+                                    </StackPanel>
+
+                                    <TextBlock Text="Section vide : choisissez-la dans la fiche d'un exercice pour l'y mettre."
+                                               IsVisible="{Binding IsEmpty}" FontSize="12" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource Xd.TextSecondary}" />
+
+                                    <!-- its exercises: dragged by their grip, inside the section -->
+                                    <ItemsControl ItemsSource="{Binding Items}" xd:Reorder.Animate="True">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ExerciseListItemViewModel">
+                                                <Border Classes="exercise" Classes.selected="{Binding IsSelected}" PointerPressed="Exercise_PointerPressed">
+                                                    <Grid ColumnDefinitions="30,*,Auto" ColumnSpacing="6" Margin="0,0,12,0">
+                                                        <TextBlock Text="⠿" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource Xd.TextSecondary}" Background="Transparent"
+                                                                   xd:Reorder.IsHandle="True" />
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Text="{Binding Letters}" FontSize="12" TextTrimming="CharacterEllipsis"
+                                                                       Foreground="{DynamicResource Xd.TextSecondary}" />
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="2" Text="{Binding TypeText}" FontSize="11" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource Xd.TextSecondary}" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- the exercise selected -->
+        <Border Grid.Row="1" Grid.Column="1" Classes="card" Padding="22,18">
+            <Panel>
+                <TextBlock Text="Sélectionnez un exercice à gauche pour le modifier" IsVisible="{Binding HasNoSelection}"
+                           FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"
+                           Foreground="{DynamicResource Xd.TextSecondary}" />
+
+                <!-- the fields keep their size, the fixed text takes the room left -->
+                <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,*" RowSpacing="12">
+                    <StackPanel Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                            <TextBlock Text="Modifier l'exercice" Classes="section-title" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            <Border Grid.Column="1" Classes="badge" Classes.real="{Binding IsRealWords}" VerticalAlignment="Center"
+                                    IsVisible="{Binding IsDynamic}" ToolTip.Tip="Nouveaux mots à chaque partie">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <Path Classes="icon" Data="{StaticResource App.Icon.Shuffle}" />
+                                    <TextBlock Text="{Binding BadgeText}" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Button Grid.Column="2" Content="Supprimer" Command="{Binding DeleteExerciseCommand}" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="10">
+                            <StackPanel>
+                                <TextBlock Text="Nom" Classes="field" />
+                                <TextBox Text="{Binding ExerciseName}" PlaceholderText="Nom de l'exercice" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Section" Classes="field" />
+                                <ComboBox ItemsSource="{Binding Sections}" SelectedItem="{Binding EditorSection}" HorizontalAlignment="Stretch">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ExerciseSectionViewModel">
+                                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+                                <TextBlock Text="Lettres autorisées" Classes="field" />
+                                <TextBox Text="{Binding AllowedChars}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel>
+                            <TextBlock Text="Description" Classes="field" />
+                            <!-- two lines: a longer description scrolls -->
+                            <TextBox Text="{Binding Description}" PlaceholderText="Description" AcceptsReturn="True" TextWrapping="Wrap" Height="54" />
+                        </StackPanel>
+
+                        <!-- fixed or generated text, and where the words come from -->
+                        <WrapPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,24,6">
+                                <ToggleSwitch IsChecked="{Binding IsDynamic}" OnContent="" OffContent="" MinWidth="0" />
+                                <TextBlock Text="{Binding StaticDynamicText}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,6">
+                                <TextBlock Text="Mots" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                <ComboBox ItemsSource="{Binding GenerationTypeSourceAvailable}" SelectedItem="{Binding GenerationTypeSourceSelected}" MinWidth="150"
+                                          ToolTip.Tip="PseudoWords : mots inventés à partir des lettres. Words : vrais mots importés (menu Import) de la langue choisie." />
+                                <ComboBox ItemsSource="{Binding LanguageAvailable}" SelectedItem="{Binding LanguageSelected}" IsVisible="{Binding IsLanguageUsed}"
+                                          MinWidth="80" ToolTip.Tip="Langue des mots" />
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <!-- word length, and the size of the text to generate (fixed text only) -->
+                        <WrapPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,24,6">
+                                <TextBlock Text="Longueur" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                <TextBox Text="{Binding MinLengthWord}" Width="60" ToolTip.Tip="Longueur minimale des mots" />
+                                <TextBlock Text="à" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                <TextBox Text="{Binding MaxLengthWord}" Width="60" ToolTip.Tip="Longueur maximale des mots" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,6" IsVisible="{Binding IsStatic}">
+                                <TextBlock Text="Lignes" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                <TextBox Text="{Binding LineCount}" Width="60" ToolTip.Tip="{x:Static limits:ExerciseSizeLimits.LinesHint}" />
+                                <TextBlock Text="mots par ligne" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                <TextBox Text="{Binding WordsPerLine}" Width="60" ToolTip.Tip="{x:Static limits:ExerciseSizeLimits.WordsPerLineHint}" />
+                            </StackPanel>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <!-- fixed text -->
+                    <Grid Grid.Row="1" RowDefinitions="Auto,*" RowSpacing="6" IsVisible="{Binding IsStatic}">
+                        <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                            <TextBlock Text="Texte" Classes="field" VerticalAlignment="Bottom" />
+                            <!-- characters out of the limit; in red when a text saved before is too long -->
+                            <TextBlock Grid.Column="1" Text="{Binding TextLengthText}" FontSize="12" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource Xd.TextSecondary}" Classes.error="{Binding IsTextTooLong}"
+                                       ToolTip.Tip="{x:Static limits:ExerciseSizeLimits.TextHint}" />
+                            <Button Grid.Column="2" Classes="tool" Content="↵" ToolTip.Tip="Ajouter ↵ : une touche Entrée à taper" Click="AddEnterMark_Click" />
+                            <Button Grid.Column="3" Classes="tool" Content="⟶" ToolTip.Tip="Ajouter ⟶ : une tabulation à taper" Click="AddTabMark_Click" />
+                            <Button Grid.Column="4" Classes="accent" Content="Générer" Command="{Binding GenerateWordsCommand}" />
+                        </Grid>
+                        <!-- a new line is a "\r", as in the exercise files -->
+                        <TextBox x:Name="TextEditor" Grid.Row="1" Text="{Binding GeneratedText}" MaxLength="{Binding TextMaxLength}"
+                                 AcceptsReturn="True" NewLine="&#13;" TextWrapping="Wrap" FontSize="18" MinHeight="120"
+                                 VerticalContentAlignment="Top" PlaceholderText="Tapez un texte, ou générez des mots" />
+                    </Grid>
+                </Grid>
+            </Panel>
+        </Border>
+
+        <!-- actions -->
+        <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" Margin="0,14">
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="● Modifications non enregistrées" IsVisible="{Binding HasChanges}" FontWeight="Bold"
+                           Foreground="{DynamicResource Xd.TextSecondary}" />
+                <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatus}" TextWrapping="Wrap"
+                           Classes="success" Classes.error="{Binding IsStatusError}" />
+            </StackPanel>
+            <Button Grid.Column="1" Content="Annuler" Padding="22,8" Command="{Binding CancelCommand}" />
+            <Button Grid.Column="2" Classes="accent" Content="Enregistrer" FontWeight="Bold" Padding="30,8" Command="{Binding SaveCommand}" />
+        </Grid>
+    </Grid>
+</UserControl>

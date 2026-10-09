@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Runtime.Versioning;
 
 using Microsoft.Extensions.Logging;
 
@@ -7,27 +8,31 @@ using NAudio.Wave.SampleProviders;
 
 using XyloType.Application.Interfaces;
 
-namespace XyloType.Services;
+namespace XyloType.Infrastructure.Audio;
 
 /// <summary>
 /// Plays short feedback sounds through a single, always-running WASAPI output and a mixer.
 /// The output stream never stops (the mixer outputs silence when idle), so the audio device
 /// stays awake: sounds start immediately, are never clipped at the start, and can overlap.
+/// The sound files are read from the assets of the app (<see cref="IAssetReader"/>).
 /// Must be registered as a singleton.
 /// </summary>
-public sealed class MauiPlaySoundSample : IPlaySoundSample, IDisposable
+[SupportedOSPlatform("windows")]
+public sealed class NAudioSoundPlayer : IPlaySoundSample, IDisposable
 {
     private const int MixerSampleRate = 44100;
     private const int MixerChannels = 2;
     private const int OutputLatencyMs = 40;
 
-    private readonly ILogger<MauiPlaySoundSample> _logger;
+    private readonly ILogger<NAudioSoundPlayer> _logger;
+    private readonly IAssetReader _assets;
     private readonly ConcurrentDictionary<string, Lazy<Task<short[]>>> _sounds = new();
     private readonly Lazy<MixingSampleProvider?> _mixer;
     private WasapiPlayer? _output;
 
-    public MauiPlaySoundSample(ILogger<MauiPlaySoundSample> logger)
+    public NAudioSoundPlayer(IAssetReader assets, ILogger<NAudioSoundPlayer> logger)
     {
+        _assets = assets;
         _logger = logger;
         _mixer = new Lazy<MixingSampleProvider?>(StartOutput);
     }
@@ -102,7 +107,7 @@ public sealed class MauiPlaySoundSample : IPlaySoundSample, IDisposable
         try
         {
             using MemoryStream buffer = new();
-            await using (Stream file = await FileSystem.OpenAppPackageFileAsync(sound))
+            await using (Stream file = await _assets.OpenAsync(sound))
             {
                 await file.CopyToAsync(buffer);
             }

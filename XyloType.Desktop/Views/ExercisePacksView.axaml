@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.ExercisesManager;assembly=XyloType.ViewModels"
+             x:Class="XyloType.Desktop.Views.ExercisePacksView"
+             x:DataType="vm:ExercisePacksViewModel">
+
+    <ScrollViewer>
+        <!-- the top margin leaves room for the floating selector of the section -->
+        <Border Classes="card" Width="640" Padding="28,22" Margin="30,80,30,30" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="14">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Packs d'exercices" Classes="page-title" />
+                    <TextBlock Text="Des exercices qui montent en difficulté, des premières touches aux textes entiers. Ils arrivent dans leurs propres sections ; vos exercices restent tels quels."
+                               TextWrapping="Wrap" Foreground="{DynamicResource Xd.TextSecondary}" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Clavier" Foreground="{DynamicResource Xd.TextSecondary}" />
+                    <ComboBox ItemsSource="{Binding KeyboardLayoutAvailable}" SelectedItem="{Binding SelectedKeyboard}" MinWidth="240" />
+                </StackPanel>
+
+                <!-- the catalog: loading, not available (no connection?), nothing for this keyboard, or the packs -->
+                <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding IsLoading}">
+                    <ProgressBar IsIndeterminate="True" Width="60" VerticalAlignment="Center" />
+                    <TextBlock Text="Chargement de la liste des packs…" Foreground="{DynamicResource Xd.TextSecondary}" />
+                </StackPanel>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding HasLoadError}">
+                    <TextBlock Text="{Binding LoadError}" Classes="error" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Content="Réessayer" Command="{Binding LoadCommand}" />
+                </Grid>
+                <TextBlock Text="Pas encore de pack pour ce clavier." IsVisible="{Binding HasNoPackForKeyboard}" Foreground="{DynamicResource Xd.TextSecondary}" />
+
+                <ItemsControl ItemsSource="{Binding Packs}" IsVisible="{Binding HasPacks}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="10" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ExercisePackItem">
+                            <Border Classes="inset">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                    <StackPanel Spacing="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Text="{Binding Title}" FontWeight="Bold" VerticalAlignment="Center" />
+                                            <Border Classes="pill" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Level}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Xd.Link}" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Description}" FontSize="13" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Details}" Classes="secondary small" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding StateText}" Classes="success small" HorizontalAlignment="Right"
+                                                   IsVisible="{Binding StateText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                        <Button Content="{Binding ActionText}"
+                                                IsEnabled="{Binding $parent[ItemsControl].((vm:ExercisePacksViewModel)DataContext).IsNotImporting}"
+                                                Command="{Binding $parent[ItemsControl].((vm:ExercisePacksViewModel)DataContext).ImportPackCommand}"
+                                                CommandParameter="{Binding}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding IsImporting}">
+                    <ProgressBar IsIndeterminate="True" Width="60" VerticalAlignment="Center" />
+                    <TextBlock Text="Import du pack…" Foreground="{DynamicResource Xd.TextSecondary}" />
+                </StackPanel>
+                <TextBlock Text="{Binding ErrorImport}" Classes="error" TextWrapping="Wrap"
+                           IsVisible="{Binding ErrorImport, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <TextBlock Text="{Binding SuccessImport}" Classes="success" TextWrapping="Wrap"
+                           IsVisible="{Binding SuccessImport, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>

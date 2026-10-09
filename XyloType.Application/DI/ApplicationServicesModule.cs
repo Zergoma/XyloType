@@ -33,6 +33,11 @@ internal static class ApplicationServicesModule
         services.AddTransient<IImportDuplicateChecker, ImportDuplicateChecker>();
         services.AddSingleton<IScoreCatalog, ScoreCatalog>();
 
+        // settings of the user, on the settings store of the app (ISettingsStore, given by the app)
+        services.AddTransient<IUserTypingPreferenceService, UserTypingPreferenceService>();
+        services.AddTransient<IUserKeyboardLayoutPreferenceService, UserKeyboardLayoutPreferenceService>();
+        services.AddTransient<ILastUserStore, LastUserStore>();
+
         // users and their results
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<ICurrentUserService, CurrentUserService>();

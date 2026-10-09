@@ -1,4 +1,4 @@
-using XyloType.MVVM.ViewModels;
+using XyloType.ViewModels.Statistic;
 using XyloType.Navigation;
 
 namespace XyloType.MVVM.Views;
@@ -14,7 +14,7 @@ public partial class StatisticView : ContentView, IViewLifecycle
     // gap between a floating bar and the first / last result card
     private const double ContentGap = 16;
 
-    public StatisticView(StatisticViewModelMauiAdapter vm)
+    public StatisticView(StatisticChartsViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;
@@ -62,13 +62,13 @@ public partial class StatisticView : ContentView, IViewLifecycle
     // the grouping labels switch their grouping too
     private void GroupResponseTimes_Tapped(object? sender, TappedEventArgs e)
     {
-        if (BindingContext is StatisticViewModelMauiAdapter vm)
+        if (BindingContext is StatisticChartsViewModel vm)
             vm.Core.GroupResponseTimes = !vm.Core.GroupResponseTimes;
     }
 
     private void GroupErrors_Tapped(object? sender, TappedEventArgs e)
     {
-        if (BindingContext is StatisticViewModelMauiAdapter vm)
+        if (BindingContext is StatisticChartsViewModel vm)
             vm.Core.GroupErrors = !vm.Core.GroupErrors;
     }
 

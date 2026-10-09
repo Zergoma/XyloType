@@ -4,28 +4,29 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 using Microsoft.Extensions.Logging;
 
-using XyloType.ViewModels.Statistic;
-
 using XyloType.Application.Interfaces;
 using XyloType.Application.Models.Themes;
 using XyloType.Domain.Typing.Analysis;
 
-namespace XyloType.MVVM.ViewModels;
+namespace XyloType.ViewModels.Statistic;
 
-
-public partial class StatisticViewModelMauiAdapter : ObservableObject
+/// <summary>
+/// The results of a session as figures and bar charts (speed, response time and errors per key),
+/// with the actions of the results screen (<see cref="Core"/>).
+/// </summary>
+public partial class StatisticChartsViewModel : ObservableObject
 {
     private readonly StatisticViewModel _statisticViewModel;
 
     private readonly IStatColorScale _colors;
     private readonly ThemeState _themeState;
-    private readonly ILogger<StatisticViewModelMauiAdapter> _logger;
+    private readonly ILogger<StatisticChartsViewModel> _logger;
 
-    public StatisticViewModelMauiAdapter(
+    public StatisticChartsViewModel(
         StatisticViewModel statisticViewModel,
         IStatColorScale colors,
         ThemeState themeState,
-        ILogger<StatisticViewModelMauiAdapter> logger)
+        ILogger<StatisticChartsViewModel> logger)
     {
         _statisticViewModel = statisticViewModel;
         _colors = colors;

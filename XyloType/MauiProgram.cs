@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 
 
 using Serilog;
+using Serilog.Events;
 
 using XyloType.Application.DI;
 using XyloType.DI;
@@ -29,6 +30,8 @@ public static class MauiProgram
         Log.Logger =
             new LoggerConfiguration()
                 .MinimumLevel.Information()
+                // one line per SQL command (37 000 to install the words): only the problems
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("Application", "XyloType")
                 .WriteTo.Console()

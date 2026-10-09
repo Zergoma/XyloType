@@ -23,6 +23,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="NAudio.Wasapi" Version="3.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>

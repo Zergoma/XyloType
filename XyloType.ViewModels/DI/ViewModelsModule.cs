@@ -22,6 +22,7 @@ public static class ViewModelsModule
         services.AddTransient<ExercisesManagerViewModel>();
         services.AddTransient<ExercisePacksViewModel>();
         services.AddTransient<WordsExplorerViewModel>();
+        services.AddTransient<ExerciseViewModelFactory>();
         services.AddSingleton<ThemeViewModel>();
         services.AddSingleton<AccentColorViewModel>();
 

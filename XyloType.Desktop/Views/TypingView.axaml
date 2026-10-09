@@ -1,0 +1,301 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.Typing;assembly=XyloType.ViewModels"
+             xmlns:conv="clr-namespace:XyloType.Desktop.Converters"
+             xmlns:ctl="clr-namespace:XyloType.Desktop.Controls"
+             x:Class="XyloType.Desktop.Views.TypingView"
+             x:DataType="vm:TypingViewModel"
+             Focusable="True"
+             Background="Transparent">
+
+    <UserControl.Styles>
+        <!-- a letter of the text: its colors come from the typing theme (to type, typed, wrong...) -->
+        <Style Selector="Border.letter">
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Margin" Value="0,0,1,6" />
+            <Setter Property="MinWidth" Value="14" />
+        </Style>
+        <!-- a line of settings: a switch and its text -->
+        <Style Selector="ToggleSwitch.setting">
+            <Setter Property="OnContent" Value="" />
+            <Setter Property="OffContent" Value="" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <!-- a kind of music in the settings of the pieces -->
+        <DataTemplate x:Key="ScoreGroupTemplate" x:DataType="vm:ScoreCategoryViewModel">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <ToggleSwitch Classes="setting" IsChecked="{Binding IsEnabled}" VerticalAlignment="Top" Margin="0,6,0,0" />
+                <Expander Grid.Column="1" HorizontalAlignment="Stretch">
+                    <Expander.Header>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding CountText}" Foreground="{DynamicResource Xd.TextSecondary}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Expander.Header>
+                    <ItemsControl ItemsSource="{Binding Pieces}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ScoreOptionViewModel">
+                                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,2">
+                                    <ToggleSwitch Classes="setting" IsChecked="{Binding IsEnabled}" />
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" />
+                                        <TextBlock Text="{Binding Composer}" Classes="secondary small" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Expander>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <!-- (a background: a click on an empty spot comes to the view too, and pauses the typing) -->
+    <!-- the page scrolls: the settings stay reachable when the window is small -->
+    <ScrollViewer x:Name="PageScroll">
+        <StackPanel>
+
+            <!-- the text to type -->
+            <Panel x:Name="TypingArea" Margin="20,20,20,10">
+                <Border Classes="card" Padding="10" PointerPressed="TypingArea_PointerPressed">
+                    <Panel>
+                        <ScrollViewer x:Name="LinesScroll"
+                                      Height="350"
+                                      VerticalScrollBarVisibility="Visible"
+                                      ScrollChanged="LinesScroll_ScrollChanged">
+                            <ItemsControl x:Name="LinesList" ItemsSource="{Binding VisibleLines}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:TypingLineStateViewModel">
+                                        <ItemsControl ItemsSource="{Binding Characters}" Margin="10">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:TypingCharStateViewModel">
+                                                    <Border Classes="letter"
+                                                            Background="{Binding BgColor, Converter={x:Static conv:HexToBrushConverter.Instance}}">
+                                                        <StackPanel HorizontalAlignment="Center">
+                                                            <TextBlock Text="{Binding Character}"
+                                                                       Foreground="{Binding TextColor, Converter={x:Static conv:HexToBrushConverter.Instance}}"
+                                                                       FontSize="42"
+                                                                       HorizontalAlignment="Center" />
+                                                            <Border Height="4" Width="20" HorizontalAlignment="Center"
+                                                                    Background="{Binding BorderColor, Converter={x:Static conv:HexToBrushConverter.Instance}}" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <!-- over the text, placed by the code behind: the mark where the piece of music changes,
+                             and under the letter being typed, the live speed above a small progress bar -->
+                        <Canvas x:Name="Overlay" IsHitTestVisible="False" ClipToBounds="True">
+                            <TextBlock x:Name="ScoreChangeMark" Text="♪" FontSize="12" Opacity="0"
+                                       Foreground="{DynamicResource Xd.Accent}" />
+                            <StackPanel x:Name="CaretInfo" Width="90" Spacing="2" Opacity="0">
+                                <StackPanel.Transitions>
+                                    <Transitions>
+                                        <DoubleTransition Property="Canvas.Left" Duration="0:0:0.09" Easing="CubicEaseOut" />
+                                        <DoubleTransition Property="Canvas.Top" Duration="0:0:0.09" Easing="CubicEaseOut" />
+                                    </Transitions>
+                                </StackPanel.Transitions>
+                                <TextBlock Text="{Binding LiveSpeedText}" IsVisible="{Binding ShowLiveSpeed}"
+                                           FontSize="10" HorizontalAlignment="Center"
+                                           Foreground="{DynamicResource Xd.TextSecondary}" />
+                                <ProgressBar IsVisible="{Binding ShowTypingProgress}"
+                                             Value="{Binding TypingProgress}" Maximum="1"
+                                             Width="44" Height="3" MinHeight="3" MinWidth="0"
+                                             HorizontalAlignment="Center" Opacity="0.7" />
+                            </StackPanel>
+                        </Canvas>
+                    </Panel>
+                </Border>
+
+                <!-- the keyboard focus is somewhere else: the typing is paused -->
+                <Border x:Name="TakeFocusOverlay" CornerRadius="10" Background="{DynamicResource App.Veil}"
+                        PointerPressed="TakeFocusOverlay_PointerPressed">
+                    <Button x:Name="TakeFocusButton" Classes="accent" Content="Reprendre la saisie" FontSize="16" Padding="30,12"
+                            HorizontalAlignment="Center" VerticalAlignment="Center" Click="TakeFocus_Click" />
+                </Border>
+            </Panel>
+
+            <!-- under the text, on the right: the piece being played and the instrument,
+                 each with previous, next and "never again" -->
+            <Grid x:Name="MusicBar" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto"
+                  ColumnSpacing="6" RowSpacing="6" HorizontalAlignment="Right" Margin="20,0,24,14">
+
+                <ToggleButton Classes="tool" IsVisible="{Binding HasCurrentScore}" IsChecked="{Binding IsScoreShuffle, Mode=OneWay}"
+                              ToolTip.Tip="Morceaux au hasard (sinon dans l'ordre)" Click="ToggleScoreShuffle_Click">
+                    <Path Classes="icon" Data="{StaticResource App.Icon.Shuffle}" />
+                </ToggleButton>
+                <Button Grid.Column="1" Classes="tool" IsVisible="{Binding HasCurrentScore}" IsEnabled="{Binding HasPreviousScore}"
+                        ToolTip.Tip="Morceau précédent" Click="PreviousScore_Click">
+                    <Path Classes="icon" Data="{StaticResource App.Icon.Previous}" />
+                </Button>
+
+                <!-- the title of the piece over a discreet bar showing where the melody is (composer in the tooltip) -->
+                <Border Grid.Column="2" IsVisible="{Binding HasCurrentScore}" Width="280" Height="30" Margin="4,0"
+                        CornerRadius="15" BorderThickness="1" BorderBrush="{DynamicResource Xd.Border}"
+                        Background="{DynamicResource App.Inset}" ClipToBounds="True"
+                        ToolTip.Tip="{Binding CurrentScoreDetails}">
+                    <Panel>
+                        <ProgressBar IsVisible="{Binding ShowScoreProgress}" Value="{Binding ScoreProgress}" Maximum="1"
+                                     Height="30" MinHeight="0" CornerRadius="0" Opacity="0.25" Background="Transparent" />
+                        <TextBlock Text="{Binding CurrentScoreTitle, StringFormat='♪ {0}'}" FontStyle="Italic" FontSize="13"
+                                   TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="12,0" />
+                    </Panel>
+                </Border>
+
+                <Button Grid.Column="3" Classes="tool" IsVisible="{Binding HasCurrentScore}" ToolTip.Tip="Morceau suivant" Click="SkipScore_Click">
+                    <Path Classes="icon" Data="{StaticResource App.Icon.Next}" />
+                </Button>
+                <Button Grid.Column="4" Classes="tool" IsVisible="{Binding HasCurrentScore}" ToolTip.Tip="Ne plus jouer ce morceau" Click="ExcludeScore_Click">
+                    <Path Classes="icon" Data="{StaticResource App.Icon.Block}" />
+                </Button>
+
+                <ToggleButton Grid.Row="1" Classes="tool" IsChecked="{Binding IsRandomInstrument, Mode=OneWay}"
+                              ToolTip.Tip="Instrument au hasard, change à chaque morceau" Click="ToggleRandomInstrument_Click">
+                    <Path Classes="icon" Data="{StaticResource App.Icon.Shuffle}" />
+                </ToggleButton>
+                <Button Grid.Row="1" Grid.Column="1" Classes="tool" IsEnabled="{Binding HasPreviousInstrument}"
+                        ToolTip.Tip="Instrument précédent" Click="PreviousInstrument_Click">
+                    <Path Classes="icon" Data="{StaticResource App.Icon.Previous}" />
+                </Button>
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding CurrentInstrumentLabel, StringFormat='🎵 {0}'}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                <Button Grid.Row="1" Grid.Column="3" Classes="tool" ToolTip.Tip="Changer d'instrument" Click="ChangeInstrument_Click">
+                    <Path Classes="icon" Data="{StaticResource App.Icon.Next}" />
+                </Button>
+                <Button Grid.Row="1" Grid.Column="4" Classes="tool" ToolTip.Tip="Ne plus utiliser cet instrument" Click="ExcludeInstrument_Click">
+                    <Path Classes="icon" Data="{StaticResource App.Icon.Block}" />
+                </Button>
+            </Grid>
+
+            <!-- typing, display and sound settings -->
+            <Border Classes="card" Margin="70,0,70,40" Padding="16,8">
+                <Expander x:Name="SettingsExpander" Header="Réglages" HorizontalAlignment="Stretch"
+                          Expanded="SettingsExpander_Changed" Collapsed="SettingsExpander_Changed">
+                    <StackPanel Spacing="14" Margin="0,8,0,0">
+
+                        <!-- one section at a time -->
+                        <ctl:SegmentedControl ItemsSource="{Binding SettingsSectionOptions}" SelectedItem="{Binding SettingsSectionOption}" />
+
+                        <!-- typing -->
+                        <StackPanel Spacing="6" IsVisible="{Binding IsTypingSection}">
+                            <TextBlock Text="CORRECTIONS ET ERREURS" Classes="caption" />
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <ToggleSwitch Classes="setting" IsChecked="{Binding BackReturnEnable}" />
+                                <TextBlock Text="{Binding BackReturnTxt}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <ToggleSwitch Classes="setting" IsChecked="{Binding StopOnErrorEnable}" />
+                                <TextBlock Text="{Binding StopOnErrorTxt}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- display: during the exercise, then on the results -->
+                        <StackPanel Spacing="6" IsVisible="{Binding IsDisplaySection}">
+                            <TextBlock Text="PENDANT L'EXERCICE" Classes="caption" />
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <ToggleSwitch Classes="setting" IsChecked="{Binding ShowTypingProgress}" />
+                                <TextBlock Text="Barre de progression sous la lettre en cours" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <ToggleSwitch Classes="setting" IsChecked="{Binding ShowLiveSpeed}" />
+                                <TextBlock Text="Vitesse de frappe en direct (10 dernières secondes)" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <ToggleSwitch Classes="setting" IsChecked="{Binding ShowScoreProgress}" />
+                                <TextBlock Text="Avancement du morceau derrière son titre" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <ToggleSwitch Classes="setting" IsChecked="{Binding ShowScoreChangeMarker}" />
+                                <TextBlock Text="Repère ♪ dans le texte là où le morceau change" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <TextBlock Text="À LA FIN DE L'EXERCICE" Classes="caption" Margin="0,10,0,0" />
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <ToggleSwitch Classes="setting" IsChecked="{Binding ShowSpeedResult}" />
+                                <TextBlock Text="Afficher la vitesse (mots et lettres par minute, durée)" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <ToggleSwitch Classes="setting" IsChecked="{Binding ShowResponseTimeResult}" />
+                                <TextBlock Text="Afficher le temps de réponse par touche" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <ToggleSwitch Classes="setting" IsChecked="{Binding ShowErrorsResult}" />
+                                <TextBlock Text="Afficher les erreurs" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- sound -->
+                        <StackPanel Spacing="6" IsVisible="{Binding IsSoundSection}">
+                            <TextBlock Text="VOLUME" Classes="caption" />
+                            <Grid ColumnDefinitions="Auto,*,50,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="6">
+                                <TextBlock Text="Son correct" VerticalAlignment="Center" />
+                                <Slider x:Name="OkVolumeSlider" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding OkVolume}" />
+                                <TextBlock Grid.Column="2" Text="{Binding OkVolumeTxt}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                <Button Grid.Column="3" Classes="tool" ToolTip.Tip="Écouter" Command="{Binding PreviewOkSoundCommand}">
+                                    <Path Data="{StaticResource App.Icon.Play}" Fill="{DynamicResource Xd.Icon}" Width="12" Height="12" Stretch="Uniform" />
+                                </Button>
+
+                                <TextBlock Grid.Row="1" Text="Son erreur" VerticalAlignment="Center" />
+                                <Slider x:Name="ErrorVolumeSlider" Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding ErrorVolume}" />
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding ErrorVolumeTxt}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                <Button Grid.Row="1" Grid.Column="3" Classes="tool" ToolTip.Tip="Écouter" Command="{Binding PreviewErrorSoundCommand}">
+                                    <Path Data="{StaticResource App.Icon.Play}" Fill="{DynamicResource Xd.Icon}" Width="12" Height="12" Stretch="Uniform" />
+                                </Button>
+                            </Grid>
+
+                            <TextBlock Text="INSTRUMENT" Classes="caption" Margin="0,10,0,0" />
+                            <ctl:SegmentedControl ItemsSource="{Binding InstrumentOptions}" SelectedItem="{Binding InstrumentSelected}" />
+                            <StackPanel IsVisible="{Binding IsRandomInstrument}" Spacing="2">
+                                <TextBlock Text="Instruments tirés au hasard" Classes="secondary" />
+                                <ItemsControl ItemsSource="{Binding InstrumentSwitches}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:InstrumentOptionViewModel">
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <ToggleSwitch Classes="setting" IsChecked="{Binding IsEnabled}" />
+                                                <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <TextBlock Text="BONNES FRAPPES" Classes="caption" Margin="0,10,0,0" />
+                            <ctl:SegmentedControl ItemsSource="{Binding OkSoundModeOptions}" SelectedItem="{Binding OkSoundModeSelected}" />
+
+                            <StackPanel Spacing="6" IsVisible="{Binding IsScoreMode}">
+                                <TextBlock Text="{Binding CurrentScoreText}" FontStyle="Italic" Foreground="{DynamicResource Xd.TextSecondary}" />
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock Text="En fin de morceau" VerticalAlignment="Center" />
+                                    <ComboBox ItemsSource="{Binding ScoreEndOptions}" SelectedItem="{Binding ScoreEndSelected}" MinWidth="220" />
+                                </StackPanel>
+                                <TextBlock Text="Morceaux joués (un au hasard à chaque exercice)" Classes="secondary" />
+
+                                <!-- one folded line per kind of music: a switch for the group, the pieces inside;
+                                     both lists stay in place, only the one of the mode is shown -->
+                                <ItemsControl ItemsSource="{Binding InstrumentalScoreGroups}" IsVisible="{Binding !IsSongMode}"
+                                              ItemTemplate="{StaticResource ScoreGroupTemplate}" />
+                                <ItemsControl ItemsSource="{Binding SongScoreGroups}" IsVisible="{Binding IsSongMode}"
+                                              ItemTemplate="{StaticResource ScoreGroupTemplate}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Expander>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>

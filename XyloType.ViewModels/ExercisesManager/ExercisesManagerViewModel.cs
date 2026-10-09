@@ -188,6 +188,16 @@ public partial class ExercisesManagerViewModel : ObservableObject
             foreach (TypingExercise exercise in _session.Exercises.Where(e => e.SectionId == section.Id))
                 sectionVm.Items.Add(new ExerciseListItemViewModel(exercise));
 
+            // an exercise moved in the list (drag and drop of the view, or Move): the same move in the session
+            sectionVm.Items.CollectionChanged += (_, e) =>
+            {
+                if (e.Action != System.Collections.Specialized.NotifyCollectionChangedAction.Move)
+                    return;
+
+                _session.Move(sectionVm.Id, e.OldStartingIndex, e.NewStartingIndex);
+                HasChanges = _session.HasChanges;
+            };
+
             Sections.Add(sectionVm);
         }
 
@@ -231,15 +241,15 @@ public partial class ExercisesManagerViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Moves an exercise inside its section (drag and drop), indexes in the section.
+    /// Moves an exercise inside its section (drag and drop), indexes in the section;
+    /// the session follows the list (see <see cref="RebuildItems"/>).
     /// </summary>
     public void Move(ExerciseSectionViewModel section, int fromIndex, int toIndex)
     {
-        if (fromIndex == toIndex || !_session.Move(section.Id, fromIndex, toIndex).Success)
+        if (fromIndex == toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= section.Items.Count || toIndex >= section.Items.Count)
             return;
 
         section.Items.Move(fromIndex, toIndex);
-        HasChanges = _session.HasChanges;
     }
 
     [RelayCommand]

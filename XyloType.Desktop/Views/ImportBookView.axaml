@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:XyloType.ViewModels.Import;assembly=XyloType.ViewModels"
+             x:Class="XyloType.Desktop.Views.ImportBookView"
+             x:DataType="vm:ImportBookViewModel">
+
+    <ScrollViewer>
+        <!-- the top margin leaves room for the floating selector of the section -->
+        <Border Classes="card" Padding="28,22" Margin="30,80,30,30" Width="580" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="14">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Import livre" Classes="page-title" />
+                    <TextBlock Text="Choisissez un livre à importer comme texte de frappe." Foreground="{DynamicResource Xd.TextSecondary}" />
+                </StackPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Fichier" Foreground="{DynamicResource Xd.TextSecondary}" />
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Button Content="Choisir un livre…" Command="{Binding SelectFileCommand}" />
+                        <TextBlock Grid.Column="1" Text="{Binding ImportFilePath}" TextTrimming="PrefixCharacterEllipsis"
+                                   VerticalAlignment="Center" Foreground="{DynamicResource Xd.TextSecondary}" />
+                    </Grid>
+                </StackPanel>
+                <Button Classes="accent" Content="Importer" FontWeight="Bold" Padding="26,8" HorizontalAlignment="Right"
+                        IsEnabled="{Binding IsFileSelected}" Command="{Binding ImportFileCommand}" />
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>
